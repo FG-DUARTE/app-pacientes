@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Seguimiento de Pacientes - Actuaciones Pendientes</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --bg-grad-1:#ffffff;
+      --bg-grad-2:#eef4ff;
+      --bg-grad-3:#f8fafc;
+      --card:#ffffff;
+      --panel:#f8fafc;
+      --muted:#64748b;
+      --txt:#0f172a;
+      --border:#cbd5e1;
+      --accent:#2563eb;
+      --danger:#ef4444;
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --info:#3b82f6;
+      --violet:#8b5cf6;
+      --orange:#f97316;
+      --off:#94a3b8;
+      --shadow: 0 10px 30px rgba(15,23,42,.08);
+      --radius:16px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    body.theme-dark{
+      --bg:#0b1220;
+      --bg-grad-1:#060a14;
+      --bg-grad-2:#0b1220;
+      --bg-grad-3:#060a14;
+      --card:#121a2b;
+      --panel:#0b1324;
+      --muted:#93a4c7;
+      --txt:#e8eefc;
+      --border:#22304f;
+      --accent:#6ea8fe;
+      --danger:#ff6b6b;
+      --ok:#2ee59d;
+      --warn:#ffd166;
+      --info:#6ea8fe;
+      --violet:#b084ff;
+      --orange:#fb923c;
+      --off:#5f6b86;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    body{margin:0;background:linear-gradient(180deg,var(--bg-grad-1) 0%, var(--bg-grad-2) 55%, var(--bg-grad-3) 100%); color:var(--txt);}
+    header{padding:20px 18px 10px; max-width:1200px; margin:0 auto;}
+    h1{margin:0 0 6px; font-size:20px; letter-spacing:.2px;}
+    .sub{color:var(--muted); font-size:13px;}
+    .wrap{max-width:1200px; margin:0 auto; padding:12px 18px 40px;}
+    .grid{display:grid; gap:12px; grid-template-columns: 380px 1fr;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    label{font-size:12px; color:var(--muted); display:block; margin:8px 0 4px;}
+    input, textarea, select{
+      width:100%;
+      box-sizing:border-box;
+      background:var(--panel);
+      border:1px solid var(--border);
+      color:var(--txt);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    input:disabled{opacity:.75; cursor:not-allowed;}
+    textarea{min-height:70px; resize:vertical;}
+    .btn{
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s ease;
+      font-weight:600;
+      font-size:13px;
+    }
+    .btn:hover{transform: translateY(-1px); border-color:#2b3d66;}
+    .btn.primary{background: linear-gradient(180deg, #2b6cff, #1c4ed8); border-color:#2b6cff;}
+    .btn.danger{background: linear-gradient(180deg, #ff5a5a, #d81c1c); border-color:#ff5a5a;}
+    .btn.ghost{background:transparent;}
+    .btn.small{padding:8px 10px; font-size:12px; border-radius:10px;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      border:1px solid var(--border); background:var(--panel); color:var(--muted);
+      font-size:12px;
+    }
+    .pill.clickable{cursor:pointer; user-select:none; transition:.15s ease;}
+    .pill.clickable:hover{transform: translateY(-1px); border-color:#2b3d66;}
+    .pill.clickable.active-filter{box-shadow: 0 0 0 2px rgba(110,168,254,.18) inset; border-color:var(--accent); color:var(--txt);}
+    .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    .sep{height:1px;background:var(--border); margin:12px 0;}
+    .list{display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow:auto; padding-right:4px;}
+    .item{
+      border:1px solid var(--border);
+      background:var(--panel);
+      border-radius:14px;
+      padding:10px;
+      cursor:pointer;
+    }
+    .item:hover{border-color:#2b3d66;}
+    .item.active{border-color: var(--accent); box-shadow: 0 0 0 2px rgba(110,168,254,.15) inset;}
+    .item.archived{opacity:.7;}
+    .muted{color:var(--muted); font-size:12px;}
+    .title{font-weight:800; font-size:14px; margin:0;}
+    .hc{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
+    .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 8px; border-radius:999px; font-size:12px;
+      background:var(--panel); border:1px solid var(--border);
+    }
+    .dot{width:10px;height:10px;border-radius:50%;}
+    .dot.off{background:var(--off);}
+    .dot.warn{background:var(--warn);}
+    .dot.info{background:var(--info);}
+    .dot.violet{background:var(--violet);}
+    .dot.orange{background:var(--orange);}
+    .dot.ok{background:var(--ok);}
+    .dot.danger{background:var(--danger);}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:var(--accent);}
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--panel);
+}
+    .table th, .table td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      vertical-align:top;
+      font-size:13px;
+    }
+    .table th{color:var(--muted); text-align:left; background:var(--panel);}
+    .table tr:last-child td{border-bottom:none;}
+    .right{margin-left:auto;}
+    .hint{color:var(--muted); font-size:12px; line-height:1.35;}
+    .search{display:flex; gap:8px;}
+    .inline{display:flex; gap:8px; align-items:center;}
+    .mini{font-size:12px; color:var(--muted);}
+    #historyPanel{
+  max-height: 50vh;
+  overflow-y: auto;
+}
+    #historyPanel thead th{
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 2;
+}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Seguimiento de pacientes (actuaciones / estudios pendientes)</h1>
+  <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
+  <div class="sub">Todo queda en este PC (localStorage). Exportá/Importá en JSON para backup o migración.</div>
+  <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
+</div>
+
+  <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
+    <div class="pill clickable" id="pillRed" title="Ver pacientes con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillYellow" title="Ver pacientes con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillBlue" title="Ver pacientes en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillPurple" title="Ver pacientes VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
+    <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- LEFT -->
+    <section class="card">
+      <div class="row">
+        <div class="pill">Pacientes: <span id="countPatients" class="kbd">0</span></div>
+        <div class="pill">Historial: <span id="countLogs" class="kbd">0</span></div>
+        <button class="btn small right" id="btnNew">+ Nuevo</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="search">
+        <input id="search" placeholder="Buscar por HC, teléfono o texto (estudio inicial / motivos)" />
+        <select id="filterStatus" style="max-width:190px">
+          <option value="active">Activos</option>
+          <option value="followup">En seguimiento</option>
+          <option value="various">Varios</option>
+          <option value="archived">Archivados</option>
+          <option value="notes">Notas</option>
+          <option value="all">Todos</option>
+        </select>
+      </div>
+
+      <div class="hint" style="margin-top:8px">
+        La búsqueda <span class="kbd">NO</span> usa el nombre. Busca en HC/teléfono y también en <span class="kbd">Estudio inicial</span> y <span class="kbd">motivos</span> de actuaciones. Si buscás, aparecen archivados y también los casos <span class="kbd">En seguimiento</span> o <span class="kbd">Varios</span> aunque no se muestren en “Activos”.
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="list" id="patientList"></div>
+
+      <div class="sep"></div>
+
+      <h3 style="margin:0 0 8px; font-size:14px">🟠 Notas</h3>
+      <div class="hint" style="margin-bottom:8px">Notas rápidas sin HC ni nombre. Quedan en memoria para búsqueda aunque se borren de la vista.</div>
+      <textarea id="noteDraft" placeholder="Nueva nota..."></textarea>
+      <div class="mini" style="margin-top:6px">Se guarda con el botón Guardar / Actualizar.</div>
+      <div class="list" id="noteList" style="margin-top:10px; max-height:26vh"></div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button class="btn" id="btnExport">Exportar JSON</button>
+        <button class="btn" id="btnImport">Importar JSON</button>
+        <input type="file" id="fileImport" accept="application/json" style="display:none" />
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button class="btn ghost" id="btnViewGlobalHistory">Ver historial global</button>
+        <button class="btn danger" id="btnFactoryReset" title="Borra SOLO del navegador de este PC">Reset local</button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        <span class="kbd">Reset local</span> borra datos solo de este navegador. Antes hacé exportación si querés conservar.
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+      <div class="row">
+        <div class="pill">Paciente seleccionado: <span id="selectedName" class="kbd">—</span></div>
+        <div class="right row" style="gap:8px">
+          <button class="btn danger" id="btnDeletePatient">Borrar paciente</button>
+          <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="split">
+        <div>
+          <label>Nombre</label>
+          <input id="f_name" placeholder="Apellido, Nombre" />
+        </div>
+        <div>
+          <label>Nº HC</label>
+          <div class="inline">
+            <input id="f_hc" placeholder="Historia clínica" />
+            <button class="btn small" id="btnUnlockHC" title="Permite editar HC para correcciones puntuales">Editar</button>
+          </div>
+          <div class="mini" id="hcHelp">La HC queda bloqueada tras el primer guardado.</div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div>
+          <label>Teléfono</label>
+          <input id="f_phone" placeholder="+34 ..." />
+        </div>
+        <div>
+          <label>Estado del paciente</label>
+          <select id="f_archived">
+            <option value="no">Activo</option>
+            <option value="yes">Archivado</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Datos generales / de interés del paciente
+      <textarea id="f_initial" placeholder="Ej: alergias / antecedentes / deatos de interes ...  "></textarea>
+
+      <div class="sep"></div>
+
+      <h3 style="margin:0 0 8px; font-size:14px">Actuaciones (dinámicas)</h3>
+      <div class="hint" style="margin-bottom:10px">
+        Estados: 🔴 Pendiente (no integrado) · 🟡 Realizado (falta integrar) · 🔵 En seguimiento · 🟣 Varios · 🟢 Integrado/Completado. 
+      </div>
+
+      <div id="actionsWrap"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="btnAddAction">+ Añadir actuación</button>
+        <div class="right muted" id="actionsCount">0 actuaciones</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button class="btn" id="btnViewPatientHistory">Ver historial de este paciente</button>
+        <div class="right muted" id="lastUpdated">—</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div id="historyPanel" style="display:none"></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  const KEY = "rx_followup_app_v6";
+  const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
+
+  const nowISO = () => new Date().toISOString();
+  const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+
+  function defaultState(){
+    return { patients: [], logs: [], notes: [] };
+  }
+
+  function isUsedAction(a){
+    return !!(a && (String(a.status || "") !== "" || String(a.note || "").trim() !== ""));
+  }
+
+  function normalizeActions(actions){
+    const arr = Array.isArray(actions) ? actions : [];
+    return arr.map(a => ({ status: String(a?.status || ""), note: String(a?.note || "") })).filter(isUsedAction);
+  }
+
+  function normalizePatient(p){
+    return {
+      id: p?.id || uid(),
+      name: String(p?.name || ""),
+      hc: String(p?.hc || ""),
+      phone: String(p?.phone || ""),
+      initialStudy: String(p?.initialStudy || ""),
+      archived: !!p?.archived,
+      actions: normalizeActions(p?.actions),
+      createdAt: p?.createdAt || nowISO(),
+      updatedAt: p?.updatedAt || nowISO(),
+    };
+  }
+
+  function normalizeNote(n){
+    return {
+      id: n?.id || uid(),
+      text: String(n?.text || ""),
+      createdAt: n?.createdAt || nowISO(),
+      deletedAt: n?.deletedAt || null,
+      is_deleted: !!n?.is_deleted,
+    };
+  }
+
+  function loadState(){
+    try {
+      for(const key of [KEY, ...LEGACY_KEYS]){
+        const raw = localStorage.getItem(key);
+        if(!raw) continue;
+        const st = JSON.parse(raw);
+        const migrated = {
+          patients: (Array.isArray(st?.patients) ? st.patients : []).map(normalizePatient),
+          logs: Array.isArray(st?.logs) ? st.logs : [],
+          notes: (Array.isArray(st?.notes) ? st.notes : []).map(normalizeNote)
+        };
+        if(key !== KEY) localStorage.setItem(KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+      return defaultState();
+    } catch (e) {
+      console.warn("loadState error", e);
+      return defaultState();
+    }
+  }
+
+  function saveState(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  function addLog(patientId, type, snapshot){
+    state.logs.push({ id: uid(), patientId, ts: nowISO(), type, snapshot });
+  }
+
+  const el = (id) => document.getElementById(id);
+
+  const patientList = el("patientList");
+  const noteList = el("noteList");
+  const noteDraft = el("noteDraft");
+  const countPatients = el("countPatients");
+  const countLogs = el("countLogs");
+  const selectedName = el("selectedName");
+  const lastUpdated = el("lastUpdated");
+  const historyPanel = el("historyPanel");
+
+  const f_name = el("f_name");
+  const f_hc = el("f_hc");
+  const f_phone = el("f_phone");
+  const f_initial = el("f_initial");
+  const f_archived = el("f_archived");
+  const btnUnlockHC = el("btnUnlockHC");
+
+  const search = el("search");
+  const filterStatus = el("filterStatus");
+
+  const actionsWrap = el("actionsWrap");
+  const btnAddAction = el("btnAddAction");
+  const actionsCount = el("actionsCount");
+
+  const btnNew = el("btnNew");
+  const btnSave = el("btnSave");
+  const btnExport = el("btnExport");
+  const btnImport = el("btnImport");
+  const fileImport = el("fileImport");
+  const btnViewPatientHistory = el("btnViewPatientHistory");
+  const btnViewGlobalHistory = el("btnViewGlobalHistory");
+  const btnDeletePatient = el("btnDeletePatient");
+  const btnFactoryReset = el("btnFactoryReset");
+  const btnThemeToggle = el("btnThemeToggle");
+
+  const pillRed = el("pillRed");
+  const pillYellow = el("pillYellow");
+  const pillBlue = el("pillBlue");
+  const pillPurple = el("pillPurple");
+  const pillOrange = el("pillOrange");
+
+  let state = loadState();
+  let selectedPatientId = null;
+  let hcUnlocked = false;
+  let severityFilter = null; // red | yellow | blue | purple | orange | null
+  let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
+
+  let toastTimer = null;
+  function applyTheme(theme){
+    currentTheme = theme === "dark" ? "dark" : "light";
+    document.body.classList.toggle("theme-dark", currentTheme === "dark");
+    localStorage.setItem("rx_theme_mode", currentTheme);
+    if(btnThemeToggle){
+      btnThemeToggle.textContent = currentTheme === "dark" ? "☀️ Modo día" : "🌙 Modo noche";
+    }
+  }
+
+  function toggleTheme(){
+    applyTheme(currentTheme === "dark" ? "light" : "dark");
+  }
+
+  function ensureToast(){
+    let t = document.getElementById("toast");
+    if(t) return t;
+    t = document.createElement("div");
+    t.id = "toast";
+    t.style.position = "fixed";
+    t.style.left = "18px";
+    t.style.bottom = "18px";
+    t.style.zIndex = "9999";
+    t.style.maxWidth = "420px";
+    t.style.padding = "12px";
+    t.style.borderRadius = "14px";
+    t.style.border = "1px solid var(--border)";
+    t.style.background = "var(--card)";
+    t.style.color = "var(--txt)";
+    t.style.boxShadow = "var(--shadow)";
+    t.style.display = "none";
+    t.innerHTML = '<div class="row" style="gap:10px"><div style="font-weight:800" id="toastMsg"></div><div class="right"></div></div><div class="row" style="margin-top:10px; gap:10px"><button class="btn small" id="toastAction"></button><button class="btn small ghost" id="toastClose">Cerrar</button></div>';
+    document.body.appendChild(t);
+    t.querySelector("#toastClose").addEventListener("click", hideToast);
+    return t;
+  }
+
+  function showToast(message, actionLabel, actionFn, timeoutMs = 12000){
+    const t = ensureToast();
+    t.querySelector("#toastMsg").textContent = message;
+    const oldBtn = t.querySelector("#toastAction");
+    const btn = oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(btn, oldBtn);
+    btn.id = "toastAction";
+    btn.textContent = actionLabel || "";
+    btn.style.display = actionLabel ? "inline-flex" : "none";
+    if(actionLabel){
+      btn.addEventListener("click", () => {
+        try { if(actionFn) actionFn(); }
+        finally { hideToast(); }
+      });
+    }
+    t.style.display = "block";
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, timeoutMs);
+  }
+
+  function hideToast(){
+    const t = document.getElementById("toast");
+    if(t) t.style.display = "none";
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = null;
+  }
+
+  function escapeHTML(s){
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+  }
+
+  function sortPatients(){
+    state.patients.sort((a, b) => {
+      const na = Number(a.hc);
+      const nb = Number(b.hc);
+      if(!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+      return (a.hc || "").localeCompare(b.hc || "", "es", { sensitivity: "base" });
+    });
+  }
+
+  function formatTS(iso){
+    try {
+      return new Date(iso).toLocaleString("es-ES", {
+        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+      });
+    } catch { return iso; }
+  }
+
+  function statusDotClass(status){
+    if(status === "integrated") return "ok";
+    if(status === "followup") return "info";
+    if(status === "various") return "violet";
+    if(status === "done") return "warn";
+    if(status === "pending") return "danger";
+    return "off";
+  }
+
+  function statusLabel(status){
+    if(status === "") return "—";
+    if(status === "pending") return "Pendiente";
+    if(status === "done") return "Realizado";
+    if(status === "followup") return "En seguimiento";
+    if(status === "various") return "Varios";
+    if(status === "integrated") return "Integrado";
+    return "—";
+  }
+
+  function hasRed(p){ return (p.actions || []).some(a => a.status === "pending"); }
+  function hasYellow(p){ return (p.actions || []).some(a => a.status === "done"); }
+  function hasBlue(p){ return (p.actions || []).some(a => a.status === "followup"); }
+  function hasPurple(p){ return (p.actions || []).some(a => a.status === "various"); }
+
+  function pendingDotBySeverity(p){
+    if(hasRed(p)) return "danger";
+    if(hasYellow(p)) return "warn";
+    if(hasBlue(p)) return "info";
+    if(hasPurple(p)) return "violet";
+    return "off";
+  }
+
+  function isFollowupOnly(p){ return !p.archived && hasBlue(p) && !hasRed(p) && !hasYellow(p) && !hasPurple(p); }
+  function isVariousOnly(p){ return !p.archived && hasPurple(p) && !hasRed(p) && !hasYellow(p) && !hasBlue(p); }
+
+  function patientAllIntegrated(p){
+    const used = (p.actions || []).some(isUsedAction);
+    if(!used) return false;
+    return (p.actions || []).filter(isUsedAction).every(a => a.status === "integrated");
+  }
+
+  function patientHasZeroActions(p){ return Array.isArray(p.actions) && p.actions.length === 0; }
+
+  function computeCounts(p){
+    const counts = { pending: 0, done: 0, followup: 0, various: 0, integrated: 0, total: 0 };
+    for(const a of (p.actions || [])){
+      if(!isUsedAction(a)) continue;
+      counts.total += 1;
+      if(a.status === "pending") counts.pending += 1;
+      else if(a.status === "done") counts.done += 1;
+      else if(a.status === "followup") counts.followup += 1;
+      else if(a.status === "various") counts.various += 1;
+      else if(a.status === "integrated") counts.integrated += 1;
+    }
+    return counts;
+  }
+
+  function normTxt(s){
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  }
+
+  function matchesSearchAll(p, q){
+    if(!q) return true;
+    const qq = normTxt(q);
+    if(!qq) return true;
+    if(normTxt(p.hc).includes(qq)) return true;
+    if(normTxt(p.phone).includes(qq)) return true;
+    if(normTxt(p.initialStudy).includes(qq)) return true;
+    for(const a of (Array.isArray(p.actions) ? p.actions : [])){
+      if(normTxt(a?.note).includes(qq)) return true;
+    }
+    return false;
+  }
+
+  function matchesNote(n, q){
+    if(!q) return true;
+    return normTxt(n.text).includes(normTxt(q));
+  }
+
+  function activeNotes(){
+    return (state.notes || []).filter(n => !n.is_deleted);
+  }
+
+  function visibleNotes(){
+    const q = (search.value || "").trim();
+    if(filterStatus.value === "notes") return (state.notes || []).filter(n => matchesNote(n, q));
+    return activeNotes().filter(n => matchesNote(n, q));
+  }
+
+  function getActionsFromDOM(){
+    const actions = [];
+    actionsWrap.querySelectorAll(".action-block").forEach(n => {
+      actions.push({ status: String(n.querySelector("select").value || ""), note: String(n.querySelector("textarea").value || "") });
+    });
+    return actions;
+  }
+
+  function setActionsCount(n){ actionsCount.textContent = `${n} actuaciones`; }
+
+  function renderActions(actions){
+    actionsWrap.innerHTML = "";
+    const display = Array.isArray(actions) && actions.length ? actions : [{ status: "", note: "" }];
+    display.forEach((a, idx) => {
+      const block = document.createElement("div");
+      block.className = "card action-block";
+      block.style.padding = "12px";
+      block.style.marginBottom = "10px";
+      block.style.boxShadow = "none";
+      block.style.background = "var(--card)";
+      block.innerHTML = `
+        <div class="row">
+          <div class="pill">
+            <span class="dot ${statusDotClass(a.status)}" data-role="dot"></span>
+            Actuación ${idx + 1}: <span class="kbd" data-role="lbl">${escapeHTML(statusLabel(a.status))}</span>
+          </div>
+          <div class="right" style="min-width:220px; flex:1">
+            <select>
+              <option value="">Estado de la actuación</option>
+              <option value="pending">🔴 Pendiente</option>
+              <option value="done">🟡 Realizado</option>
+              <option value="followup">🔵 En seguimiento</option>
+              <option value="various">🟣 Varios</option>
+              <option value="integrated">🟢 Integrado/Completado</option>
+            </select>
+          </div>
+          <button class="btn small danger" data-role="remove" title="Eliminar esta actuación">Eliminar</button>
+        </div>
+        <label>Motivo / texto libre</label>
+        <textarea placeholder="Ej: Pedir RM con contraste por ..."></textarea>
+      `;
+      const sel = block.querySelector("select");
+      const ta = block.querySelector("textarea");
+      sel.value = a.status || "";
+      ta.value = a.note || "";
+      sel.addEventListener("change", () => {
+        block.querySelector('[data-role="dot"]').className = `dot ${statusDotClass(sel.value)}`;
+        block.querySelector('[data-role="lbl"]').textContent = statusLabel(sel.value);
+      });
+      block.querySelector('[data-role="remove"]').addEventListener("click", () => {
+        const current = getActionsFromDOM();
+        current.splice(idx, 1);
+        renderActions(current);
+      });
+      actionsWrap.appendChild(block);
+    });
+    setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
+  }
+
+  btnAddAction.addEventListener("click", () => {
+    const current = getActionsFromDOM();
+    current.push({ status: "", note: "" });
+    renderActions(current);
+  });
+
+  function renderNotes(){
+    const notes = visibleNotes().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+    noteList.innerHTML = "";
+    if(!notes.length){
+      const empty = document.createElement("div");
+      empty.className = "muted";
+      empty.textContent = "Sin notas.";
+      noteList.appendChild(empty);
+      return;
+    }
+
+    notes.forEach(n => {
+      const item = document.createElement("div");
+      item.className = "item" + (n.is_deleted ? " archived" : "");
+      item.style.cursor = "default";
+      const preview = n.text.length > 180 ? n.text.slice(0, 180) + "…" : n.text;
+      const delBtn = n.is_deleted ? "" : `<button class="btn small danger" data-note-del="${n.id}">Borrar</button>`;
+      item.innerHTML = `
+        <div class="row">
+          <div class="pill"><span class="dot orange"></span>🟠 NOTA</div>
+          <div class="right muted">${escapeHTML(formatTS(n.createdAt))}</div>
+        </div>
+        <div style="margin-top:8px; white-space:pre-wrap">${escapeHTML(preview)}</div>
+        <div class="row" style="margin-top:8px">${delBtn}</div>
+      `;
+      noteList.appendChild(item);
+    });
+
+    noteList.querySelectorAll("[data-note-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const note = state.notes.find(x => x.id === btn.getAttribute("data-note-del"));
+        if(!note) return;
+        note.is_deleted = true;
+        note.deletedAt = nowISO();
+        addLog(null, "note_deleted", structuredClone(note));
+        saveState();
+        renderNotes();
+        renderList();
+      });
+    });
+  }
+
+  function updateSummaryPillsActiveState(){
+    [pillRed, pillYellow, pillBlue, pillPurple, pillOrange].forEach(p => p && p.classList.remove("active-filter"));
+    if(severityFilter === "red" && pillRed) pillRed.classList.add("active-filter");
+    if(severityFilter === "yellow" && pillYellow) pillYellow.classList.add("active-filter");
+    if(severityFilter === "blue" && pillBlue) pillBlue.classList.add("active-filter");
+    if(severityFilter === "purple" && pillPurple) pillPurple.classList.add("active-filter");
+    if(severityFilter === "orange" && pillOrange) pillOrange.classList.add("active-filter");
+  }
+
+  function renderList(){
+    let sumRed = 0, sumYellow = 0, sumBlue = 0, sumPurple = 0;
+    state.patients.forEach(p => {
+      const c = computeCounts(p);
+      sumRed += c.pending;
+      sumYellow += c.done;
+      sumBlue += c.followup;
+      sumPurple += c.various;
+    });
+    const sumOrange = activeNotes().length;
+    const sumTotal = sumRed + sumYellow + sumBlue;
+    if(el("sumRed")) el("sumRed").textContent = String(sumRed);
+    if(el("sumYellow")) el("sumYellow").textContent = String(sumYellow);
+    if(el("sumBlue")) el("sumBlue").textContent = String(sumBlue);
+    if(el("sumPurple")) el("sumPurple").textContent = String(sumPurple);
+    if(el("sumOrange")) el("sumOrange").textContent = String(sumOrange);
+    if(el("sumTotal")) el("sumTotal").textContent = String(sumTotal);
+    updateSummaryPillsActiveState();
+
+    sortPatients();
+    const q = (search.value || "").trim();
+    const f = filterStatus.value;
+
+    if(f === "notes" || severityFilter === "orange"){
+      patientList.innerHTML = "";
+      countPatients.textContent = String(state.patients.length);
+      countLogs.textContent = String(state.logs.length);
+      renderNotes();
+      return;
+    }
+
+    const filtered = state.patients.filter(p => {
+      const m = matchesSearchAll(p, q);
+      if(q && m){
+        if(severityFilter === "red") return hasRed(p);
+        if(severityFilter === "yellow") return hasYellow(p);
+        if(severityFilter === "blue") return hasBlue(p);
+        if(severityFilter === "purple") return hasPurple(p);
+        return true;
+      }
+      if(!m) return false;
+
+      if(f === "followup"){
+        if(!hasBlue(p)) return false;
+      } else if(f === "various"){
+        if(!hasPurple(p)) return false;
+      } else if(f === "active"){
+        if(p.archived || isFollowupOnly(p) || isVariousOnly(p)) return false;
+      } else if(f === "archived"){
+        if(!p.archived) return false;
+      }
+
+      if(severityFilter === "red") return hasRed(p);
+      if(severityFilter === "yellow") return hasYellow(p);
+      if(severityFilter === "blue") return hasBlue(p);
+      if(severityFilter === "purple") return hasPurple(p);
+      return true;
+    });
+
+    const hcNum = (x) => {
+      const n = Number(x?.hc);
+      return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n;
+    };
+    const sevScore = (p) => hasRed(p) ? 0 : hasYellow(p) ? 1 : hasBlue(p) ? 2 : hasPurple(p) ? 3 : 4;
+    const actives = filtered.filter(p => !p.archived).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b));
+    const followups = filtered.filter(p => hasBlue(p)).sort((a, b) => hcNum(a) - hcNum(b));
+    const various = filtered.filter(p => hasPurple(p)).sort((a, b) => hcNum(a) - hcNum(b));
+    const archived = filtered.filter(p => p.archived).sort((a, b) => hcNum(a) - hcNum(b));
+
+    const ordered = (f === "followup") ? followups
+      : (f === "various") ? various
+      : (f === "archived") ? archived
+      : (f === "active") ? actives
+      : [...actives, ...various, ...archived];
+
+    patientList.innerHTML = "";
+    ordered.forEach(p => {
+      const counts = computeCounts(p);
+      const it = document.createElement("div");
+      it.className = "item" + (p.id === selectedPatientId ? " active" : "") + (p.archived ? " archived" : "");
+      const pendingDot = pendingDotBySeverity(p);
+      const integratedDot = patientAllIntegrated(p) ? "ok" : "off";
+      const arch = p.archived ? '<span class="badge"><span class="dot danger"></span>Archivado</span>' : "";
+      it.innerHTML = `
+        <p class="title">${escapeHTML(p.name || "—")}</p>
+        <div class="muted">HC: <span class="hc">${escapeHTML(p.hc || "—")}</span> · Tel: ${escapeHTML(p.phone || "—")}</div>
+        <div class="badges">
+          <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
+          <span class="badge"><span class="dot ${integratedDot}"></span>Todo integrado</span>
+          <span class="badge"><span class="dot off"></span>Actuaciones: ${counts.total}</span>
+          <span class="badge"><span class="dot danger"></span>🔴: ${counts.pending}</span>
+          <span class="badge"><span class="dot warn"></span>🟡: ${counts.done}</span>
+          <span class="badge"><span class="dot info"></span>🔵: ${counts.followup}</span>
+          <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
+          <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
+          ${arch}
+        </div>
+      `;
+      it.addEventListener("click", () => selectPatient(p.id));
+      patientList.appendChild(it);
+    });
+
+    countPatients.textContent = String(state.patients.length);
+    countLogs.textContent = String(state.logs.length);
+    renderNotes();
+  }
+
+  function lockHCIfNeeded(){
+    if(!selectedPatientId){
+      f_hc.disabled = false;
+      hcUnlocked = false;
+      btnUnlockHC.textContent = "Editar";
+      btnUnlockHC.disabled = true;
+      el("hcHelp").textContent = "La HC se puede editar al crear. Luego queda bloqueada.";
+      return;
+    }
+    if(hcUnlocked){
+      f_hc.disabled = false;
+      btnUnlockHC.textContent = "Bloquear";
+      btnUnlockHC.disabled = false;
+      el("hcHelp").textContent = "Modo edición de HC ACTIVADO (usalo solo para correcciones).";
+    } else {
+      f_hc.disabled = true;
+      btnUnlockHC.textContent = "Editar";
+      btnUnlockHC.disabled = false;
+      el("hcHelp").textContent = "HC bloqueada tras el primer guardado. Podés desbloquear para corregir.";
+    }
+  }
+
+  function clearForm(){
+    selectedPatientId = null;
+    hcUnlocked = false;
+    selectedName.textContent = "—";
+    lastUpdated.textContent = "—";
+    historyPanel.style.display = "none";
+    historyPanel.innerHTML = "";
+    f_name.value = "";
+    f_hc.value = "";
+    f_phone.value = "";
+    f_initial.value = "";
+    f_archived.value = "no";
+    renderActions([]);
+    lockHCIfNeeded();
+    renderList();
+  }
+
+  function selectPatient(id){
+    const p = state.patients.find(x => x.id === id);
+    if(!p) return;
+    selectedPatientId = id;
+    hcUnlocked = false;
+    selectedName.textContent = p.name || "—";
+    lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
+    f_name.value = p.name || "";
+    f_hc.value = p.hc || "";
+    f_phone.value = p.phone || "";
+    f_initial.value = p.initialStudy || "";
+    f_archived.value = p.archived ? "yes" : "no";
+    renderActions(p.actions || []);
+    historyPanel.style.display = "none";
+    historyPanel.innerHTML = "";
+    lockHCIfNeeded();
+    renderList();
+  }
+
+  function autocorrectActions(actions){
+    return actions.map(a => {
+      const note = String(a.note || "");
+      let status = String(a.status || "");
+      if(note.trim() !== "" && status === "") status = "pending";
+      return { status, note };
+    }).filter(isUsedAction);
+  }
+
+  function readFormToPatient(existing){
+    const p = normalizePatient(existing || {});
+    p.name = (f_name.value || "").trim();
+    p.hc = (f_hc.value || "").trim();
+    p.phone = (f_phone.value || "").trim();
+    p.initialStudy = (f_initial.value || "").trim();
+    p.archived = (f_archived.value === "yes");
+    p.actions = autocorrectActions(getActionsFromDOM());
+    if(!existing) p.createdAt = nowISO();
+    p.updatedAt = nowISO();
+    return p;
+  }
+
+  function validatePatient(p, existing){
+    const errs = [];
+    if(!p.name) errs.push("Falta Nombre.");
+    if(!p.hc) errs.push("Falta Nº HC.");
+
+    if(existing && !hcUnlocked && (p.hc !== (existing.hc || ""))) {
+      errs.push("HC está bloqueada. Si querés corregirla, usá el botón 'Editar' al lado de HC.");
+    }
+
+    const hcNorm = String(p.hc || "").trim();
+    if(hcNorm){
+      const duplicate = state.patients.find(x => String(x.hc || "").trim() === hcNorm && (!existing || x.id !== existing.id));
+      if(duplicate){
+        errs.push("Ya existe un paciente con esa HC.");
+      }
+    }
+
+    return errs;
+  }
+
+  btnUnlockHC.addEventListener("click", () => {
+    if(!selectedPatientId) return;
+    if(!hcUnlocked){
+      const ok = confirm(`Vas a habilitar la edición de la HC.
+Usalo solo para correcciones.
+¿Continuar?`);
+      if(!ok) return;
+      hcUnlocked = true;
+    } else {
+      hcUnlocked = false;
+    }
+    lockHCIfNeeded();
+  });
+
+  btnNew.addEventListener("click", clearForm);
+
+  btnSave.addEventListener("click", () => {
+    const draft = (noteDraft.value || "").trim();
+    if(draft){
+      const note = normalizeNote({ text: draft, createdAt: nowISO(), is_deleted: false });
+      state.notes.push(note);
+      addLog(null, "note_created", structuredClone(note));
+      noteDraft.value = "";
+    }
+
+    const existing = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
+    const shouldSavePatient = (f_name.value || "").trim() || (f_hc.value || "").trim() || (f_phone.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
+    if(!shouldSavePatient){
+      saveState();
+      renderList();
+      if(draft) showToast("Nota guardada.", "", null, 2500);
+      return;
+    }
+
+    const p = readFormToPatient(existing);
+    const errs = validatePatient(p, existing);
+    if(errs.length){
+      alert("No se pudo guardar:\n- " + errs.join("\n- "));
+      return;
+    }
+
+    const wasArchived = !!p.archived;
+    const shouldBeArchived = patientAllIntegrated(p) || patientHasZeroActions(p);
+    if(!wasArchived && shouldBeArchived) p.archived = true;
+    if(wasArchived && !shouldBeArchived) p.archived = false;
+    const willAutoArchive = !wasArchived && shouldBeArchived;
+
+    if(existing){
+      Object.assign(existing, p);
+      addLog(existing.id, "updated", structuredClone(existing));
+      saveState();
+      hcUnlocked = false;
+      selectPatient(existing.id);
+      if(willAutoArchive){
+        showToast("Paciente archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+          const px = state.patients.find(x => x.id === existing.id);
+          if(!px) return;
+          px.archived = false;
+          px.updatedAt = nowISO();
+          addLog(px.id, "unarchived", structuredClone(px));
+          saveState();
+          selectPatient(px.id);
+          renderList();
+        });
+      }
+    } else {
+      p.id = uid();
+      state.patients.push(p);
+      addLog(p.id, "created", structuredClone(p));
+      saveState();
+      selectPatient(p.id);
+      if(willAutoArchive){
+        showToast("Paciente archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+          const px = state.patients.find(x => x.id === p.id);
+          if(!px) return;
+          px.archived = false;
+          px.updatedAt = nowISO();
+          addLog(px.id, "unarchived", structuredClone(px));
+          saveState();
+          selectPatient(px.id);
+          renderList();
+        });
+      }
+    }
+    renderList();
+  });
+
+  btnDeletePatient.addEventListener("click", () => {
+    if(!selectedPatientId){
+      alert("Seleccioná un paciente para borrar.");
+      return;
+    }
+
+    const existing = state.patients.find(x => x.id === selectedPatientId);
+    if(!existing) return;
+
+    const ok = confirm(`¿Seguro que querés borrar al paciente activo?
+
+${existing.name || "Sin nombre"} · HC: ${existing.hc || "—"}
+
+Esta acción lo elimina de la lista de pacientes.`);
+    if(!ok) return;
+
+    addLog(existing.id, "deleted_patient", structuredClone(existing));
+    state.patients = state.patients.filter(x => x.id !== selectedPatientId);
+    saveState();
+    clearForm();
+
+    if(state.patients.length){
+      const next = state.patients.find(x => !x.archived) || state.patients[0];
+      if(next) selectPatient(next.id);
+    } else {
+      renderList();
+    }
+  });
+
+  function renderHistoryLogs(logs){
+    if(!logs.length) return '<div class="muted">No hay registros.</div>';
+    const sorted = [...logs].sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Paciente</th><th>Resumen</th></tr></thead><tbody>';
+    for(const L of sorted){
+      const snap = L.snapshot || {};
+      let summary = "";
+      if(snap.text){
+        summary = `NOTA · ${snap.text.slice(0, 120)}`;
+      } else {
+        const counts = computeCounts({ actions: Array.isArray(snap.actions) ? snap.actions : [] });
+        summary = `Actuaciones: ${counts.total} · 🔴 ${counts.pending} · 🟡 ${counts.done} · 🔵 ${counts.followup} · 🟣 ${counts.various} · 🟢 ${counts.integrated}`;
+      }
+      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.name || "NOTA")} <span class="muted">${snap.hc ? `(HC: ${escapeHTML(snap.hc)})` : ""}</span></td><td>${escapeHTML(summary)}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  btnViewPatientHistory.addEventListener("click", () => {
+    if(!selectedPatientId){ alert("Seleccioná un paciente."); return; }
+    const logs = state.logs.filter(l => l.patientId === selectedPatientId);
+    historyPanel.style.display = "block";
+    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del paciente</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
+    historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  btnViewGlobalHistory.addEventListener("click", () => {
+    historyPanel.style.display = "block";
+    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial global</h3><div class="hint" style="margin-bottom:10px">Incluye cambios, duplicados, importaciones y notas.</div>${renderHistoryLogs(state.logs)}`;
+    historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  btnExport.addEventListener("click", () => {
+    const payload = { exportedAt: nowISO(), app: "rx_followup_app_v6", data: state };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `seguimiento_pacientes_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  });
+
+  btnImport.addEventListener("click", () => fileImport.click());
+
+  fileImport.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if(!file) return;
+    try {
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      const incoming = obj?.data ? obj.data : obj;
+      if(!incoming || typeof incoming !== "object") throw new Error("JSON inválido.");
+
+      const importedPatients = (Array.isArray(incoming.patients) ? incoming.patients : []).map(normalizePatient);
+      const importedLogs = Array.isArray(incoming.logs) ? incoming.logs : [];
+      const importedNotes = (Array.isArray(incoming.notes) ? incoming.notes : []).map(normalizeNote);
+      const existingHC = new Set(state.patients.map(p => (p.hc || "").trim().toLowerCase()).filter(Boolean));
+
+      for(const p of importedPatients){
+        const hcKey = (p.hc || "").trim().toLowerCase();
+        if(hcKey && existingHC.has(hcKey)){
+          p.name = p.name ? p.name + " (importado)" : "Importado";
+          p.id = uid();
+        } else if(state.patients.some(x => x.id === p.id)){
+          p.id = uid();
+        }
+        state.patients.push(p);
+      }
+
+      const existingLogIds = new Set(state.logs.map(l => l.id));
+      for(const l of importedLogs){
+        const ll = { ...l };
+        if(existingLogIds.has(ll.id)) ll.id = uid();
+        state.logs.push(ll);
+      }
+
+      for(const n of importedNotes){
+        if(state.notes.some(x => x.id === n.id)) n.id = uid();
+        state.notes.push(n);
+      }
+
+      addLog(null, "imported", { note: "Importación realizada", countPatients: importedPatients.length, countLogs: importedLogs.length, countNotes: importedNotes.length, ts: nowISO() });
+      saveState();
+      renderList();
+      alert("Importación OK.");
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo importar: " + (err?.message || String(err)));
+    } finally {
+      fileImport.value = "";
+    }
+  });
+
+  if(btnThemeToggle){
+    btnThemeToggle.addEventListener("click", toggleTheme);
+  }
+
+  btnFactoryReset.addEventListener("click", () => {
+    const ok = confirm(`¿Seguro? Esto borra los datos SOLO de este navegador en este PC.
+Recomendado: Exportar antes.`);
+    if(!ok) return;
+    localStorage.removeItem(KEY);
+    state = defaultState();
+    saveState();
+    clearForm();
+    renderList();
+  });
+
+  search.addEventListener("input", renderList);
+  filterStatus.addEventListener("change", () => {
+    severityFilter = null;
+    renderList();
+  });
+
+  if(pillRed){
+    pillRed.addEventListener("click", () => {
+      severityFilter = severityFilter === "red" ? null : "red";
+      if(severityFilter) filterStatus.value = "active";
+      renderList();
+    });
+  }
+  if(pillYellow){
+    pillYellow.addEventListener("click", () => {
+      severityFilter = severityFilter === "yellow" ? null : "yellow";
+      if(severityFilter) filterStatus.value = "active";
+      renderList();
+    });
+  }
+  if(pillBlue){
+    pillBlue.addEventListener("click", () => {
+      severityFilter = severityFilter === "blue" ? null : "blue";
+      if(severityFilter) filterStatus.value = "followup";
+      renderList();
+    });
+  }
+  if(pillPurple){
+    pillPurple.addEventListener("click", () => {
+      severityFilter = severityFilter === "purple" ? null : "purple";
+      if(severityFilter) filterStatus.value = "various";
+      renderList();
+    });
+  }
+  if(pillOrange){
+    pillOrange.addEventListener("click", () => {
+      severityFilter = severityFilter === "orange" ? null : "orange";
+      if(severityFilter) filterStatus.value = "notes";
+      renderList();
+    });
+  }
+
+  function initialPick(){
+    if(state.patients.length){
+      const p = state.patients.find(x => !x.archived) || state.patients[0];
+      selectPatient(p.id);
+    } else {
+      clearForm();
+    }
+  }
+
+  applyTheme(currentTheme);
+  renderList();
+  clearForm();
+  initialPick();
+})();
+</script>
+</body>
+</html>
