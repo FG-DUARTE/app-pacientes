@@ -401,33 +401,153 @@
   }
 
   async function loadPatientsFromDb(){
-    const { data, error } = await sb
+    const { data: patientsData, error: patientsError } = await sb
       .from("patients")
       .select("id, name, hc, phone, datos_generales, archived, created_at, updated_at")
       .order("created_at", { ascending: true });
 
-    console.log("load patients data:", data);
-    console.log("load patients error:", error);
+    console.log("load patients data:", patientsData);
+    console.log("load patients error:", patientsError);
 
-    if(error){
-      console.log("No se pudieron leer pacientes desde Supabase:", error);
+    if(patientsError){
+      console.log("No se pudieron leer pacientes desde Supabase:", patientsError);
       return;
     }
 
-    const mapped = (Array.isArray(data) ? data : []).map(row => normalizePatient({
+    const patientIds = (Array.isArray(patientsData) ? patientsData : []).map(row => row.id);
+    let actionsData = [];
+
+    if(patientIds.length){
+      const actionsResult = await sb
+        .from("patient_actions")
+        .select("id, patient_id, status, note, created_at, updated_at")
+        .in("patient_id", patientIds)
+        .order("created_at", { ascending: true });
+
+      console.log("load actions data:", actionsResult.data);
+      console.log("load actions error:", actionsResult.error);
+
+      if(!actionsResult.error && Array.isArray(actionsResult.data)){
+        actionsData = actionsResult.data;
+      }
+    }
+
+    const actionsByPatient = new Map();
+    for(const row of actionsData){
+      const arr = actionsByPatient.get(row.patient_id) || [];
+      arr.push({ status: row.status || "", note: row.note || "" });
+      actionsByPatient.set(row.patient_id, arr);
+    }
+
+    const mapped = (Array.isArray(patientsData) ? patientsData : []).map(row => normalizePatient({
       dbId: row.id,
       name: row.name,
       hc: row.hc,
       phone: row.phone,
       initialStudy: row.datos_generales,
       archived: row.archived,
-      actions: [],
+      actions: actionsByPatient.get(row.id) || [],
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
 
     state.patients = mapped;
     saveState();
+  }
+
+  async function syncPatientActionsToDb(patientDbId, actions){
+    const usedActions = (Array.isArray(actions) ? actions : []).filter(isUsedAction);
+
+    const delResult = await sb
+      .from("patient_actions")
+      .delete()
+      .eq("patient_id", patientDbId);
+
+    if(delResult.error){
+      console.log("delete actions error:", delResult.error);
+      throw delResult.error;
+    }
+
+    if(!usedActions.length) return;
+
+    const insertPayload = usedActions.map(a => ({
+      patient_id: patientDbId,
+      status: a.status,
+      note: a.note
+    }));
+
+    const insResult = await sb
+      .from("patient_actions")
+      .insert(insertPayload)
+      .select();
+
+    if(insResult.error){
+      console.log("insert actions error:", insResult.error);
+      throw insResult.error;
+    }
+  }
+
+  async function syncImportedPatientsToDb(importedPatients){
+    for(const p of importedPatients){
+      let patientDbId = p.dbId || null;
+
+      if(!patientDbId){
+        const found = await sb
+          .from("patients")
+          .select("id")
+          .eq("hc", p.hc)
+          .limit(1)
+          .maybeSingle();
+
+        if(found.error){
+          console.log("sync import find error:", found.error);
+          continue;
+        }
+
+        if(found.data?.id) patientDbId = found.data.id;
+      }
+
+      let saveResult;
+      if(patientDbId){
+        saveResult = await sb
+          .from("patients")
+          .update({
+            name: p.name,
+            hc: p.hc,
+            phone: p.phone,
+            datos_generales: p.initialStudy,
+            archived: p.archived
+          })
+          .eq("id", patientDbId)
+          .select();
+      } else {
+        saveResult = await sb
+          .from("patients")
+          .insert([{
+            name: p.name,
+            hc: p.hc,
+            phone: p.phone,
+            datos_generales: p.initialStudy,
+            archived: p.archived
+          }])
+          .select();
+      }
+
+      if(saveResult.error){
+        console.log("sync import save error:", saveResult.error);
+        continue;
+      }
+
+      const finalDbId = saveResult.data?.[0]?.id || patientDbId;
+      if(finalDbId){
+        p.dbId = finalDbId;
+        try {
+          await syncPatientActionsToDb(finalDbId, p.actions || []);
+        } catch (e) {
+          console.log("sync import actions error:", e);
+        }
+      }
+    }
   }
 
   function addLog(patientId, type, snapshot){
@@ -836,16 +956,18 @@
       return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n;
     };
     const sevScore = (p) => hasRed(p) ? 0 : hasYellow(p) ? 1 : hasBlue(p) ? 2 : hasPurple(p) ? 3 : 4;
-    const actives = filtered.filter(p => !p.archived).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b));
+    const actives = filtered.filter(p => !p.archived && (p.actions || []).filter(isUsedAction).length > 0).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b));
     const followups = filtered.filter(p => hasBlue(p)).sort((a, b) => hcNum(a) - hcNum(b));
     const various = filtered.filter(p => hasPurple(p)).sort((a, b) => hcNum(a) - hcNum(b));
     const archived = filtered.filter(p => p.archived).sort((a, b) => hcNum(a) - hcNum(b));
+
+    const allWithActions = filtered.filter(p => p.archived || (p.actions || []).filter(isUsedAction).length > 0);
 
     const ordered = (f === "followup") ? followups
       : (f === "various") ? various
       : (f === "archived") ? archived
       : (f === "active") ? actives
-      : [...actives, ...various, ...archived];
+      : [...allWithActions.filter(p => !p.archived).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b)), ...various, ...archived];
 
     patientList.innerHTML = "";
     ordered.forEach(p => {
@@ -1098,6 +1220,11 @@ Usalo solo para correcciones.
 
     if(Array.isArray(dbData) && dbData[0]?.id){
       p.dbId = dbData[0].id;
+      try {
+        await syncPatientActionsToDb(p.dbId, p.actions || []);
+      } catch (actionsError) {
+        alert("Paciente guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
+      }
     }
 
     const wasArchived = !!p.archived;
@@ -1259,10 +1386,12 @@ Esta acción lo elimina de la lista de pacientes.`);
         state.notes.push(n);
       }
 
+      await syncImportedPatientsToDb(importedPatients);
       addLog(null, "imported", { note: "Importación realizada", countPatients: importedPatients.length, countLogs: importedLogs.length, countNotes: importedNotes.length, ts: nowISO() });
       saveState();
+      await loadPatientsFromDb();
       renderList();
-      alert("Importación OK.");
+      alert("Importación OK. Pacientes sincronizados con Supabase.");
     } catch (err) {
       console.error(err);
       alert("No se pudo importar: " + (err?.message || String(err)));
