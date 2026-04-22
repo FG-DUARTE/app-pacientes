@@ -322,7 +322,7 @@
   console.log("window.supabase:", window.supabase);
   console.log("sb:", sb);
 
-  async function testInsert(){
+  window.testInsert = async function(){
    const { data, error } = await sb
     .from("patients")
     .insert([{ name: "Test", hc: "123" }]);
