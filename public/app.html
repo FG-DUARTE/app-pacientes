@@ -322,6 +322,14 @@
   console.log("window.supabase:", window.supabase);
   console.log("sb:", sb);
 
+  async function testInsert(){
+   const { data, error } = await sb
+    .from("patients")
+    .insert([{ name: "Test", hc: "123" }]);
+
+   console.log("data:", data);
+   console.log("error:", error);  
+
   const KEY = "rx_followup_app_v6";
   const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
 
