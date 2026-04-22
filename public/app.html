@@ -353,6 +353,7 @@
   function normalizePatient(p){
     return {
       id: p?.id || uid(),
+      dbId: p?.dbId || p?.db_id || null,
       name: String(p?.name || ""),
       hc: String(p?.hc || ""),
       phone: String(p?.phone || ""),
@@ -986,23 +987,90 @@ Usalo solo para correcciones.
 
     const errs = validatePatient(p, existing);
     if(errs.length){
-      aalert("No se pudo guardar:\n- " + errs.join("\n- "));
+      alert("No se pudo guardar:
+- " + errs.join("
+- "));
       return;
     }
 
-    const { data: dbData, error: dbError } = await sb.from("patients").insert([{
-      name: p.name,
-      hc: p.hc,
-      phone: p.phone,
-      datos_generales: p.initialStudy,
-      archived: p.archived
-    }]).select();
+    let dbData = null;
+    let dbError = null;
+
+    if(existing){
+      let targetDbId = existing.dbId || null;
+
+      if(!targetDbId){
+        const { data: foundRow, error: foundError } = await sb
+          .from("patients")
+          .select("id")
+          .eq("hc", p.hc)
+          .limit(1)
+          .maybeSingle();
+
+        if(foundError){
+          console.log("find dbError:", foundError);
+          alert("Falló la búsqueda previa en Supabase: " + foundError.message);
+          return;
+        }
+
+        if(foundRow?.id) targetDbId = foundRow.id;
+      }
+
+      if(targetDbId){
+        const updateResult = await sb
+          .from("patients")
+          .update({
+            name: p.name,
+            hc: p.hc,
+            phone: p.phone,
+            datos_generales: p.initialStudy,
+            archived: p.archived
+          })
+          .eq("id", targetDbId)
+          .select();
+
+        dbData = updateResult.data;
+        dbError = updateResult.error;
+      } else {
+        const insertResult = await sb
+          .from("patients")
+          .insert([{
+            name: p.name,
+            hc: p.hc,
+            phone: p.phone,
+            datos_generales: p.initialStudy,
+            archived: p.archived
+          }])
+          .select();
+
+        dbData = insertResult.data;
+        dbError = insertResult.error;
+      }
+    } else {
+      const insertResult = await sb
+        .from("patients")
+        .insert([{
+          name: p.name,
+          hc: p.hc,
+          phone: p.phone,
+          datos_generales: p.initialStudy,
+          archived: p.archived
+        }])
+        .select();
+
+      dbData = insertResult.data;
+      dbError = insertResult.error;
+    }
 
     console.log("save dbData:", dbData);
     console.log("save dbError:", dbError);
     if(dbError){
       alert("Falló el guardado en Supabase: " + dbError.message);
       return;
+    }
+
+    if(Array.isArray(dbData) && dbData[0]?.id){
+      p.dbId = dbData[0].id;
     }
 
     const wasArchived = !!p.archived;
