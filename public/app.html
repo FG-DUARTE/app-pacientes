@@ -368,6 +368,7 @@
   function normalizeNote(n){
     return {
       id: n?.id || uid(),
+      dbId: n?.dbId || n?.db_id || null,
       text: String(n?.text || ""),
       createdAt: n?.createdAt || nowISO(),
       deletedAt: n?.deletedAt || null,
@@ -546,6 +547,67 @@
         } catch (e) {
           console.log("sync import actions error:", e);
         }
+      }
+    }
+  }
+
+  async function loadNotesFromDb(){
+    const { data, error } = await sb
+      .from("notes")
+      .select("id, text, is_deleted, created_at, deleted_at")
+      .order("created_at", { ascending: false });
+
+    console.log("load notes data:", data);
+    console.log("load notes error:", error);
+
+    if(error){
+      console.log("No se pudieron leer notas desde Supabase:", error);
+      return;
+    }
+
+    state.notes = (Array.isArray(data) ? data : []).map(row => normalizeNote({
+      dbId: row.id,
+      text: row.text,
+      is_deleted: row.is_deleted,
+      createdAt: row.created_at,
+      deletedAt: row.deleted_at,
+    }));
+
+    saveState();
+  }
+
+  async function syncImportedNotesToDb(importedNotes){
+    for(const n of importedNotes){
+      let noteDbId = n.dbId || null;
+
+      const savePayload = {
+        text: n.text,
+        is_deleted: !!n.is_deleted,
+        deleted_at: n.deletedAt || null,
+        created_at: n.createdAt || nowISO()
+      };
+
+      let saveResult;
+      if(noteDbId){
+        saveResult = await sb
+          .from("notes")
+          .update(savePayload)
+          .eq("id", noteDbId)
+          .select();
+      } else {
+        saveResult = await sb
+          .from("notes")
+          .insert([savePayload])
+          .select();
+      }
+
+      if(saveResult.error){
+        console.log("sync import notes error:", saveResult.error);
+        continue;
+      }
+
+      if(saveResult.data?.[0]?.id){
+        n.dbId = saveResult.data[0].id;
       }
     }
   }
@@ -870,9 +932,25 @@
     });
 
     noteList.querySelectorAll("[data-note-del]").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const note = state.notes.find(x => x.id === btn.getAttribute("data-note-del"));
         if(!note) return;
+
+        if(note.dbId){
+          const { error } = await sb
+            .from("notes")
+            .update({
+              is_deleted: true,
+              deleted_at: nowISO()
+            })
+            .eq("id", note.dbId);
+
+          if(error){
+            alert("Falló el borrado de la nota en Supabase: " + error.message);
+            return;
+          }
+        }
+
         note.is_deleted = true;
         note.deletedAt = nowISO();
         addLog(null, "note_deleted", structuredClone(note));
@@ -1121,6 +1199,23 @@ Usalo solo para correcciones.
     const draft = (noteDraft.value || "").trim();
     if(draft){
       const note = normalizeNote({ text: draft, createdAt: nowISO(), is_deleted: false });
+
+      const { data: noteData, error: noteError } = await sb
+        .from("notes")
+        .insert([{
+          text: note.text,
+          is_deleted: false,
+          created_at: note.createdAt,
+          deleted_at: null
+        }])
+        .select();
+
+      if(noteError){
+        alert("Falló el guardado de la nota en Supabase: " + noteError.message);
+        return;
+      }
+
+      if(noteData?.[0]?.id) note.dbId = noteData[0].id;
       state.notes.push(note);
       addLog(null, "note_created", structuredClone(note));
       noteDraft.value = "";
@@ -1426,11 +1521,13 @@ Esta acción lo elimina de la lista de pacientes.`);
       }
 
       await syncImportedPatientsToDb(importedPatients);
+      await syncImportedNotesToDb(importedNotes);
       addLog(null, "imported", { note: "Importación realizada", countPatients: importedPatients.length, countLogs: importedLogs.length, countNotes: importedNotes.length, ts: nowISO() });
       saveState();
       await loadPatientsFromDb();
+      await loadNotesFromDb();
       renderList();
-      alert("Importación OK. Pacientes sincronizados con Supabase.");
+      alert("Importación OK. Pacientes y notas sincronizados con Supabase.");
     } catch (err) {
       console.error(err);
       alert("No se pudo importar: " + (err?.message || String(err)));
@@ -1508,6 +1605,7 @@ Recomendado: Exportar antes.`);
   async function boot(){
     applyTheme(currentTheme);
     await loadPatientsFromDb();
+    await loadNotesFromDb();
     renderList();
     clearForm();
     initialPick();
