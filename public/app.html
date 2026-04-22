@@ -612,8 +612,63 @@
     }
   }
 
+  async function loadLogsFromDb(){
+    const { data, error } = await sb
+      .from("logs")
+      .select("id, patient_id, user_id, type, snapshot, created_at")
+      .order("created_at", { ascending: false });
+
+    console.log("load logs data:", data);
+    console.log("load logs error:", error);
+
+    if(error){
+      console.log("No se pudieron leer logs desde Supabase:", error);
+      return;
+    }
+
+    state.logs = (Array.isArray(data) ? data : []).map(row => ({
+      id: row.id || uid(),
+      patientId: row.patient_id || null,
+      ts: row.created_at || nowISO(),
+      type: row.type || "—",
+      snapshot: row.snapshot || {}
+    }));
+
+    saveState();
+  }
+
+  async function syncImportedLogsToDb(importedLogs){
+    for(const log of importedLogs){
+      const saveResult = await sb
+        .from("logs")
+        .insert([{
+          patient_id: log.patientId || null,
+          user_id: null,
+          type: log.type || "—",
+          snapshot: log.snapshot || {},
+          created_at: log.ts || nowISO()
+        }])
+        .select();
+
+      if(saveResult.error){
+        console.log("sync import logs error:", saveResult.error);
+      }
+    }
+  }
+
   function addLog(patientId, type, snapshot){
-    state.logs.push({ id: uid(), patientId, ts: nowISO(), type, snapshot });
+    const newLog = { id: uid(), patientId, ts: nowISO(), type, snapshot };
+    state.logs.push(newLog);
+
+    sb.from("logs").insert([{
+      patient_id: patientId || null,
+      user_id: null,
+      type,
+      snapshot: snapshot || {},
+      created_at: newLog.ts
+    }]).then(({ error }) => {
+      if(error) console.log("save log error:", error);
+    });
   }
 
   const el = (id) => document.getElementById(id);
@@ -1522,12 +1577,14 @@ Esta acción lo elimina de la lista de pacientes.`);
 
       await syncImportedPatientsToDb(importedPatients);
       await syncImportedNotesToDb(importedNotes);
+      await syncImportedLogsToDb(importedLogs);
       addLog(null, "imported", { note: "Importación realizada", countPatients: importedPatients.length, countLogs: importedLogs.length, countNotes: importedNotes.length, ts: nowISO() });
       saveState();
       await loadPatientsFromDb();
       await loadNotesFromDb();
+      await loadLogsFromDb();
       renderList();
-      alert("Importación OK. Pacientes y notas sincronizados con Supabase.");
+      alert("Importación OK. Pacientes, notas y logs sincronizados con Supabase.");
     } catch (err) {
       console.error(err);
       alert("No se pudo importar: " + (err?.message || String(err)));
@@ -1606,6 +1663,7 @@ Recomendado: Exportar antes.`);
     applyTheme(currentTheme);
     await loadPatientsFromDb();
     await loadNotesFromDb();
+    await loadLogsFromDb();
     renderList();
     clearForm();
     initialPick();
