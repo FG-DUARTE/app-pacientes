@@ -983,6 +983,11 @@ Usalo solo para correcciones.
     }
 
     const p = readFormToPatient(existing);
+      sb.from("patients").insert([{
+      name: p.name,
+      hc: p.hc
+      }]);
+      
     const errs = validatePatient(p, existing);
     if(errs.length){
       alert("No se pudo guardar:\n- " + errs.join("\n- "));
