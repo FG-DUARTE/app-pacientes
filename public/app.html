@@ -313,13 +313,14 @@
 
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer>
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
   const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
-  console.log("supabase ok", sb);
+  console.log("window.supabase:", window.supabase);
+  console.log("sb:", sb);
 
   const KEY = "rx_followup_app_v6";
   const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
