@@ -987,11 +987,9 @@ Usalo solo para correcciones.
 
     const errs = validatePatient(p, existing);
     if(errs.length){
-      alert("No se pudo guardar:
-- " + errs.join("
-- "));
-      return;
-    }
+  alert("No se pudo guardar:\n- " + errs.join("\n- "));
+  return;
+  }
 
     let dbData = null;
     let dbError = null;
