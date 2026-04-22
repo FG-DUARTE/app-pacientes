@@ -330,7 +330,7 @@
     console.log("data:", data);
     console.log("error:", error);
   }
-
+  
   const KEY = "rx_followup_app_v6";
   const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
 
@@ -964,7 +964,7 @@ Usalo solo para correcciones.
 
   btnNew.addEventListener("click", clearForm);
 
-  btnSave.addEventListener("click", () => {
+  btnSave.addEventListener("click", async () => {
     const draft = (noteDraft.value || "").trim();
     if(draft){
       const note = normalizeNote({ text: draft, createdAt: nowISO(), is_deleted: false });
@@ -983,14 +983,25 @@ Usalo solo para correcciones.
     }
 
     const p = readFormToPatient(existing);
-      sb.from("patients").insert([{
-      name: p.name,
-      hc: p.hc
-      }]);
-      
+
     const errs = validatePatient(p, existing);
     if(errs.length){
-      alert("No se pudo guardar:\n- " + errs.join("\n- "));
+      aalert("No se pudo guardar:\n- " + errs.join("\n- "));
+      return;
+    }
+
+    const { data: dbData, error: dbError } = await sb.from("patients").insert([{
+      name: p.name,
+      hc: p.hc,
+      phone: p.phone,
+      datos_generales: p.initialStudy,
+      archived: p.archived
+    }]).select();
+
+    console.log("save dbData:", dbData);
+    console.log("save dbError:", dbError);
+    if(dbError){
+      alert("Falló el guardado en Supabase: " + dbError.message);
       return;
     }
 
