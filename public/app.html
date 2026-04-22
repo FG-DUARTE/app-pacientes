@@ -169,7 +169,31 @@
   <h1>Seguimiento de pacientes (actuaciones / estudios pendientes)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
   <div class="sub">Todo queda en este PC (localStorage). Exportá/Importá en JSON para backup o migración.</div>
-  <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
+  <div class="row" style="gap:8px; align-items:center;">
+    <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
+    <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
+    <button class="btn small ghost" id="btnLogout" style="display:none">Cerrar sesión</button>
+  </div>
+</div>
+<div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
+  <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
+  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios pacientes, actuaciones, notas e historial.</div>
+  <div class="split">
+    <div>
+      <label>Email</label>
+      <input id="authEmail" type="email" placeholder="tuemail@dominio.com" />
+    </div>
+    <div>
+      <label>Contraseña</label>
+      <input id="authPassword" type="password" placeholder="Contraseña" />
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn primary" id="btnLogin">Entrar</button>
+    <button class="btn" id="btnRegister">Crear cuenta</button>
+    <button class="btn ghost" id="btnRecover">Recuperar clave</button>
+  </div>
+  <div class="hint" id="authHint" style="margin-top:10px;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
 </div>
 
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
@@ -182,7 +206,7 @@
   </div>
 </header>
 
-<div class="wrap">
+<div class="wrap" id="appWrap">
   <div class="grid">
 
     <!-- LEFT -->
@@ -401,10 +425,122 @@
     localStorage.setItem(KEY, JSON.stringify(state));
   }
 
+  function setAuthMessage(msg){
+    if(authHint) authHint.textContent = msg || "";
+  }
+
+  function updateAuthUI(){
+    const logged = !!currentUser;
+    if(authCard) authCard.style.display = logged ? "none" : "block";
+    if(appWrap) appWrap.style.display = logged ? "block" : "none";
+    if(btnLogout) btnLogout.style.display = logged ? "inline-flex" : "none";
+    if(authStatusText) authStatusText.textContent = logged ? (currentUser.email || "Usuario autenticado") : "No autenticado";
+  }
+
+  async function restoreSession(){
+    const { data, error } = await sb.auth.getSession();
+    console.log("restore session data:", data);
+    console.log("restore session error:", error);
+    currentSession = data?.session || null;
+    currentUser = currentSession?.user || null;
+    updateAuthUI();
+  }
+
+  async function handleLogin(){
+    const email = (authEmail?.value || "").trim();
+    const password = authPassword?.value || "";
+    if(!email || !password){
+      setAuthMessage("Completa email y contraseña.");
+      return;
+    }
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    console.log("login data:", data);
+    console.log("login error:", error);
+
+    if(error){
+      setAuthMessage("Falló el login: " + error.message);
+      return;
+    }
+
+    currentSession = data?.session || null;
+    currentUser = data?.user || currentSession?.user || null;
+    setAuthMessage("Login correcto.");
+    updateAuthUI();
+    await loadPatientsFromDb();
+    await loadNotesFromDb();
+    await loadLogsFromDb();
+    renderList();
+    clearForm();
+    initialPick();
+  }
+
+  async function handleRegister(){
+    const email = (authEmail?.value || "").trim();
+    const password = authPassword?.value || "";
+    if(!email || !password){
+      setAuthMessage("Completa email y contraseña para crear la cuenta.");
+      return;
+    }
+
+    const { data, error } = await sb.auth.signUp({ email, password });
+    console.log("register data:", data);
+    console.log("register error:", error);
+
+    if(error){
+      setAuthMessage("Falló el alta: " + error.message);
+      return;
+    }
+
+    setAuthMessage("Cuenta creada. Si tu proyecto exige confirmación por email, revisa tu correo.");
+  }
+
+  async function handleRecover(){
+    const email = (authEmail?.value || "").trim();
+    if(!email){
+      setAuthMessage("Escribe tu email para recuperar la clave.");
+      return;
+    }
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+
+    if(error){
+      setAuthMessage("Falló la recuperación: " + error.message);
+      return;
+    }
+
+    setAuthMessage("Email de recuperación enviado.");
+  }
+
+  async function handleLogout(){
+    const { error } = await sb.auth.signOut();
+    if(error){
+      alert("Falló el cierre de sesión: " + error.message);
+      return;
+    }
+    currentSession = null;
+    currentUser = null;
+    state = defaultState();
+    saveState();
+    updateAuthUI();
+    renderList();
+    clearForm();
+    setAuthMessage("Sesión cerrada.");
+  }
+
   async function loadPatientsFromDb(){
+    if(!currentUser){
+      state.patients = [];
+      saveState();
+      return;
+    }
+
     const { data: patientsData, error: patientsError } = await sb
       .from("patients")
-      .select("id, name, hc, phone, datos_generales, archived, created_at, updated_at")
+      .select("id, user_id, name, hc, phone, datos_generales, archived, created_at, updated_at")
+      .eq("user_id", currentUser.id)
       .order("created_at", { ascending: true });
 
     console.log("load patients data:", patientsData);
@@ -496,6 +632,7 @@
         const found = await sb
           .from("patients")
           .select("id")
+          .eq("user_id", currentUser?.id)
           .eq("hc", p.hc)
           .limit(1)
           .maybeSingle();
@@ -513,6 +650,8 @@
         saveResult = await sb
           .from("patients")
           .update({
+            user_id: currentUser?.id,
+            user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
             phone: p.phone,
@@ -525,6 +664,8 @@
         saveResult = await sb
           .from("patients")
           .insert([{
+            user_id: currentUser?.id,
+            user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
             phone: p.phone,
@@ -552,9 +693,16 @@
   }
 
   async function loadNotesFromDb(){
+    if(!currentUser){
+      state.notes = [];
+      saveState();
+      return;
+    }
+
     const { data, error } = await sb
       .from("notes")
-      .select("id, text, is_deleted, created_at, deleted_at")
+      .select("id, user_id, text, is_deleted, created_at, deleted_at")
+      .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false });
 
     console.log("load notes data:", data);
@@ -581,6 +729,7 @@
       let noteDbId = n.dbId || null;
 
       const savePayload = {
+        user_id: currentUser?.id,
         text: n.text,
         is_deleted: !!n.is_deleted,
         deleted_at: n.deletedAt || null,
@@ -613,9 +762,16 @@
   }
 
   async function loadLogsFromDb(){
+    if(!currentUser){
+      state.logs = [];
+      saveState();
+      return;
+    }
+
     const { data, error } = await sb
       .from("logs")
       .select("id, patient_id, user_id, type, snapshot, created_at")
+      .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false });
 
     console.log("load logs data:", data);
@@ -643,7 +799,7 @@
         .from("logs")
         .insert([{
           patient_id: log.patientId || null,
-          user_id: null,
+          user_id: currentUser?.id || null,
           type: log.type || "—",
           snapshot: log.snapshot || {},
           created_at: log.ts || nowISO()
@@ -660,9 +816,16 @@
     const newLog = { id: uid(), patientId, ts: nowISO(), type, snapshot };
     state.logs.push(newLog);
 
+    let dbPatientId = patientId || null;
+    if(dbPatientId){
+      const foundPatient = state.patients.find(x => x.id === dbPatientId || x.dbId === dbPatientId);
+      if(foundPatient?.dbId) dbPatientId = foundPatient.dbId;
+      else if(typeof dbPatientId === "string" && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dbPatientId)) dbPatientId = null;
+    }
+
     sb.from("logs").insert([{
-      patient_id: patientId || null,
-      user_id: null,
+      patient_id: dbPatientId,
+      user_id: currentUser?.id || null,
       type,
       snapshot: snapshot || {},
       created_at: newLog.ts
@@ -676,6 +839,17 @@
   const patientList = el("patientList");
   const noteList = el("noteList");
   const noteDraft = el("noteDraft");
+  const appWrap = el("appWrap");
+  const authCard = el("authCard");
+  const authEmail = el("authEmail");
+  const authPassword = el("authPassword");
+  const btnLogin = el("btnLogin");
+  const btnRegister = el("btnRegister");
+  const btnRecover = el("btnRecover");
+  const btnLogout = el("btnLogout");
+  const authHint = el("authHint");
+  const authStatusText = el("authStatusText");
+
   const countPatients = el("countPatients");
   const countLogs = el("countLogs");
   const selectedName = el("selectedName");
@@ -718,6 +892,8 @@
   let hcUnlocked = false;
   let severityFilter = null; // red | yellow | blue | purple | orange | null
   let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
+  let currentSession = null;
+  let currentUser = null;
 
   let toastTimer = null;
   function applyTheme(theme){
@@ -1258,6 +1434,7 @@ Usalo solo para correcciones.
       const { data: noteData, error: noteError } = await sb
         .from("notes")
         .insert([{
+          user_id: currentUser?.id,
           text: note.text,
           is_deleted: false,
           created_at: note.createdAt,
@@ -1302,6 +1479,7 @@ Usalo solo para correcciones.
         const { data: foundRow, error: foundError } = await sb
           .from("patients")
           .select("id")
+          .eq("user_id", currentUser?.id)
           .eq("hc", p.hc)
           .limit(1)
           .maybeSingle();
@@ -1319,6 +1497,7 @@ Usalo solo para correcciones.
         const updateResult = await sb
           .from("patients")
           .update({
+            user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
             phone: p.phone,
@@ -1334,6 +1513,7 @@ Usalo solo para correcciones.
         const insertResult = await sb
           .from("patients")
           .insert([{
+            user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
             phone: p.phone,
@@ -1444,6 +1624,7 @@ Esta acción lo elimina de la lista de pacientes.`);
       const found = await sb
         .from("patients")
         .select("id")
+        .eq("user_id", currentUser?.id)
         .eq("hc", existing.hc)
         .limit(1)
         .maybeSingle();
@@ -1661,13 +1842,42 @@ Recomendado: Exportar antes.`);
 
   async function boot(){
     applyTheme(currentTheme);
-    await loadPatientsFromDb();
-    await loadNotesFromDb();
-    await loadLogsFromDb();
+    updateAuthUI();
+    await restoreSession();
+    if(currentUser){
+      await loadPatientsFromDb();
+      await loadNotesFromDb();
+      await loadLogsFromDb();
+      renderList();
+      clearForm();
+      initialPick();
+    } else {
+      renderList();
+      clearForm();
+    }
+  }
+
+  if(btnLogin) btnLogin.addEventListener("click", handleLogin);
+  if(btnRegister) btnRegister.addEventListener("click", handleRegister);
+  if(btnRecover) btnRecover.addEventListener("click", handleRecover);
+  if(btnLogout) btnLogout.addEventListener("click", handleLogout);
+
+  sb.auth.onAuthStateChange(async (_event, session) => {
+    currentSession = session || null;
+    currentUser = session?.user || null;
+    updateAuthUI();
+    if(currentUser){
+      await loadPatientsFromDb();
+      await loadNotesFromDb();
+      await loadLogsFromDb();
+    } else {
+      state = defaultState();
+      saveState();
+    }
     renderList();
     clearForm();
     initialPick();
-  }
+  });
 
   boot();
 })();
