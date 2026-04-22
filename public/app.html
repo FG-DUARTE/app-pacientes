@@ -400,6 +400,36 @@
     localStorage.setItem(KEY, JSON.stringify(state));
   }
 
+  async function loadPatientsFromDb(){
+    const { data, error } = await sb
+      .from("patients")
+      .select("id, name, hc, phone, datos_generales, archived, created_at, updated_at")
+      .order("created_at", { ascending: true });
+
+    console.log("load patients data:", data);
+    console.log("load patients error:", error);
+
+    if(error){
+      console.log("No se pudieron leer pacientes desde Supabase:", error);
+      return;
+    }
+
+    const mapped = (Array.isArray(data) ? data : []).map(row => normalizePatient({
+      dbId: row.id,
+      name: row.name,
+      hc: row.hc,
+      phone: row.phone,
+      initialStudy: row.datos_generales,
+      archived: row.archived,
+      actions: [],
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+
+    state.patients = mapped;
+    saveState();
+  }
+
   function addLog(patientId, type, snapshot){
     state.logs.push({ id: uid(), patientId, ts: nowISO(), type, snapshot });
   }
@@ -989,8 +1019,7 @@ Usalo solo para correcciones.
     if(errs.length){
   alert("No se pudo guardar:\n- " + errs.join("\n- "));
   return;
-  }
-
+}
     let dbData = null;
     let dbError = null;
 
@@ -1308,10 +1337,15 @@ Recomendado: Exportar antes.`);
     }
   }
 
-  applyTheme(currentTheme);
-  renderList();
-  clearForm();
-  initialPick();
+  async function boot(){
+    applyTheme(currentTheme);
+    await loadPatientsFromDb();
+    renderList();
+    clearForm();
+    initialPick();
+  }
+
+  boot();
 })();
 </script>
 </body>
