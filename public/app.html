@@ -314,7 +314,7 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script >
+<script>
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
   const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
@@ -323,12 +323,12 @@
   console.log("sb:", sb);
 
   window.testInsert = async function(){
-   const { data, error } = await sb
-    .from("patients")
-    .insert([{ name: "Test", hc: "123" }]);
+    const { data, error } = await sb
+      .from("patients")
+      .insert([{ name: "Test", hc: "123" }]);
 
-   console.log("data:", data);
-   console.log("error:", error);  
+    console.log("data:", data);
+    console.log("error:", error);
   }
 
   const KEY = "rx_followup_app_v6";
