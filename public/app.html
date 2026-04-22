@@ -1273,7 +1273,7 @@ Usalo solo para correcciones.
     renderList();
   });
 
-  btnDeletePatient.addEventListener("click", () => {
+  btnDeletePatient.addEventListener("click", async () => {
     if(!selectedPatientId){
       alert("Seleccioná un paciente para borrar.");
       return;
@@ -1288,6 +1288,45 @@ ${existing.name || "Sin nombre"} · HC: ${existing.hc || "—"}
 
 Esta acción lo elimina de la lista de pacientes.`);
     if(!ok) return;
+
+    let targetDbId = existing.dbId || null;
+    if(!targetDbId && existing.hc){
+      const found = await sb
+        .from("patients")
+        .select("id")
+        .eq("hc", existing.hc)
+        .limit(1)
+        .maybeSingle();
+
+      if(found.error){
+        alert("Falló la búsqueda del paciente en Supabase: " + found.error.message);
+        return;
+      }
+
+      if(found.data?.id) targetDbId = found.data.id;
+    }
+
+    if(targetDbId){
+      const delActions = await sb
+        .from("patient_actions")
+        .delete()
+        .eq("patient_id", targetDbId);
+
+      if(delActions.error){
+        alert("Falló el borrado de actuaciones en Supabase: " + delActions.error.message);
+        return;
+      }
+
+      const delPatient = await sb
+        .from("patients")
+        .delete()
+        .eq("id", targetDbId);
+
+      if(delPatient.error){
+        alert("Falló el borrado del paciente en Supabase: " + delPatient.error.message);
+        return;
+      }
+    }
 
     addLog(existing.id, "deleted_patient", structuredClone(existing));
     state.patients = state.patients.filter(x => x.id !== selectedPatientId);
