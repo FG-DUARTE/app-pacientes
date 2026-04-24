@@ -520,16 +520,28 @@
   }
 
     async function handleLogout(){
-    await sb.auth.signOut();
-  
-    localStorage.clear();
-    sessionStorage.clear();
-  
+    try {
+      await sb.auth.signOut({ scope: "local" });
+    } catch (e) {
+      console.log("logout error ignorado:", e);
+    }
+
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      console.log("storage clear error ignorado:", e);
+    }
+
     currentSession = null;
     currentUser = null;
     state = defaultState();
-  
-    location.reload(); // 🔴 clave
+    saveState();
+    updateAuthUI();
+    renderList();
+    clearForm();
+
+    window.location.href = window.location.origin + window.location.pathname + "?logout=" + Date.now();
   }
 
   async function loadPatientsFromDb(){
@@ -1270,13 +1282,16 @@
     const various = filtered.filter(p => hasPurple(p)).sort((a, b) => hcNum(a) - hcNum(b));
     const archived = filtered.filter(p => p.archived).sort((a, b) => hcNum(a) - hcNum(b));
 
-    const allWithActions = filtered.filter(p => p.archived || (p.actions || []).filter(isUsedAction).length > 0);
+    const allPatients = filtered.sort((a, b) => {
+      if(a.archived !== b.archived) return a.archived ? 1 : -1;
+      return sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b);
+    });
 
     const ordered = (f === "followup") ? followups
       : (f === "various") ? various
       : (f === "archived") ? archived
       : (f === "active") ? actives
-      : [...allWithActions.filter(p => !p.archived).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b)), ...various, ...archived];
+      : allPatients;
 
     patientList.innerHTML = "";
     ordered.forEach(p => {
@@ -1861,7 +1876,10 @@ Recomendado: Exportar antes.`);
   if(btnLogin) btnLogin.addEventListener("click", handleLogin);
   if(btnRegister) btnRegister.addEventListener("click", handleRegister);
   if(btnRecover) btnRecover.addEventListener("click", handleRecover);
-  if(btnLogout) btnLogout.addEventListener("click", handleLogout);
+  if(btnLogout) btnLogout.addEventListener("click", (e) => {
+    e.preventDefault();
+    handleLogout();
+  });
 
   sb.auth.onAuthStateChange(async (_event, session) => {
     currentSession = session || null;
