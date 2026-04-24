@@ -128,7 +128,7 @@
     .item.archived{opacity:.7;}
     .muted{color:var(--muted); font-size:12px;}
     .title{font-weight:800; font-size:14px; margin:0;}
-    .hc{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
+    .identifier{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
     .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
     .badge{
       display:inline-flex; align-items:center; gap:6px;
@@ -308,10 +308,10 @@
       <div>
         <label>Identificación</label>
         <input id="f_name" placeholder="escribe aquí ...... " />
-        <input id="f_hc" type="hidden" />
+        <input id="f_identifier" type="hidden" />
         <input id="f_phone" type="hidden" />
         <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
-        <div class="mini" id="hcHelp" style="display:none"></div>
+        <div class="mini" id="identifierHelp" style="display:none"></div>
       </div>
 
       <div style="margin-top:10px">
@@ -388,7 +388,7 @@
       id: p?.id || uid(),
       dbId: p?.dbId || p?.db_id || null,
       name: String(p?.name || ""),
-      hc: String(p?.hc || ""),
+      identifier: String(p?.identifier || ""),
       phone: String(p?.phone || ""),
       initialStudy: String(p?.initialStudy || ""),
       archived: !!p?.archived,
@@ -660,7 +660,7 @@
 
     const { data: patientsData, error: patientsError } = await sb
       .from("patients")
-      .select("id, user_id, name, hc, phone, datos_generales, archived, created_at, updated_at")
+      .select("id, user_id, name, identifier, phone, datos_generales, archived, created_at, updated_at")
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: true });
 
@@ -700,7 +700,7 @@
     const mapped = (Array.isArray(patientsData) ? patientsData : []).map(row => normalizePatient({
       dbId: row.id,
       name: row.name,
-      hc: row.hc,
+      identifier: row.identifier,
       phone: row.phone,
       initialStudy: row.datos_generales,
       archived: row.archived,
@@ -754,7 +754,7 @@
           .from("patients")
           .select("id")
           .eq("user_id", currentUser?.id)
-          .eq("hc", p.hc)
+          .eq("identifier", p.identifier)
           .limit(1)
           .maybeSingle();
 
@@ -773,7 +773,7 @@
           .update({
             user_id: currentUser?.id,
             name: p.name,
-            hc: p.hc,
+            identifier: p.identifier,
             phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
@@ -786,7 +786,7 @@
           .insert([{
             user_id: currentUser?.id,
             name: p.name,
-            hc: p.hc,
+            identifier: p.identifier,
             phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
@@ -985,7 +985,7 @@
   const historyPanel = el("historyPanel");
 
   const f_name = el("f_name");
-  const f_hc = el("f_hc");
+  const f_identifier = el("f_identifier");
   const f_phone = el("f_phone");
   const f_initial = el("f_initial");
   const f_archived = el("f_archived");
@@ -1017,7 +1017,7 @@
 
   let state = loadState();
   let selectedPatientId = null;
-  let hcUnlocked = false;
+  let identifierUnlocked = false;
   let severityFilter = null; // red | yellow | blue | purple | orange | null
   let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
   let currentSession = null;
@@ -1114,10 +1114,10 @@
 
   function sortPatients(){
     state.patients.sort((a, b) => {
-      const na = Number(a.hc);
-      const nb = Number(b.hc);
+      const na = Number(a.identifier);
+      const nb = Number(b.identifier);
       if(!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-      return (a.hc || "").localeCompare(b.hc || "", "es", { sensitivity: "base" });
+      return (a.identifier || "").localeCompare(b.identifier || "", "es", { sensitivity: "base" });
     });
   }
 
@@ -1194,8 +1194,8 @@
     if(!q) return true;
     const qq = normTxt(q);
     if(!qq) return true;
-    if(normTxt(p.hc).includes(qq)) return true;
-    if(normTxt(p.hc).includes(qq)) return true;
+    if(normTxt(p.identifier).includes(qq)) return true;
+    if(normTxt(p.identifier).includes(qq)) return true;
     if(normTxt(p.phone).includes(qq)) return true;
     if(normTxt(p.initialStudy).includes(qq)) return true;
     for(const a of (Array.isArray(p.actions) ? p.actions : [])){
@@ -1410,19 +1410,19 @@
       return true;
     });
 
-    const hcNum = (x) => {
-      const n = Number(x?.hc);
+    const identifierNum = (x) => {
+      const n = Number(x?.identifier);
       return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n;
     };
     const sevScore = (p) => hasRed(p) ? 0 : hasYellow(p) ? 1 : hasBlue(p) ? 2 : hasPurple(p) ? 3 : 4;
-    const actives = filtered.filter(p => !p.archived && (p.actions || []).filter(isUsedAction).length > 0).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b));
-    const followups = filtered.filter(p => hasBlue(p)).sort((a, b) => hcNum(a) - hcNum(b));
-    const various = filtered.filter(p => hasPurple(p)).sort((a, b) => hcNum(a) - hcNum(b));
-    const archived = filtered.filter(p => p.archived).sort((a, b) => hcNum(a) - hcNum(b));
+    const actives = filtered.filter(p => !p.archived && (p.actions || []).filter(isUsedAction).length > 0).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : identifierNum(a) - identifierNum(b));
+    const followups = filtered.filter(p => hasBlue(p)).sort((a, b) => identifierNum(a) - identifierNum(b));
+    const various = filtered.filter(p => hasPurple(p)).sort((a, b) => identifierNum(a) - identifierNum(b));
+    const archived = filtered.filter(p => p.archived).sort((a, b) => identifierNum(a) - identifierNum(b));
 
     const allPatients = filtered.sort((a, b) => {
       if(a.archived !== b.archived) return a.archived ? 1 : -1;
-      return sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : hcNum(a) - hcNum(b);
+      return sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : identifierNum(a) - identifierNum(b);
     });
 
     const ordered = (f === "followup") ? followups
@@ -1440,7 +1440,7 @@
       const integratedDot = patientAllIntegrated(p) ? "ok" : "off";
       const arch = p.archived ? '<span class="badge"><span class="dot danger"></span>Archivado</span>' : "";
       it.innerHTML = `
-        <p class="title">${escapeHTML(p.hc || "—")}</p>
+        <p class="title">${escapeHTML(p.identifier || "—")}</p>
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
@@ -1465,35 +1465,35 @@
 
   function lockHCIfNeeded(){
     if(!selectedPatientId){
-      f_hc.disabled = false;
-      hcUnlocked = false;
+      f_identifier.disabled = false;
+      identifierUnlocked = false;
       btnUnlockHC.textContent = "Editar";
       btnUnlockHC.disabled = true;
-      el("hcHelp").textContent = "La HC se puede editar al crear. Luego queda bloqueada.";
+      el("identifierHelp").textContent = "La HC se puede editar al crear. Luego queda bloqueada.";
       return;
     }
-    if(hcUnlocked){
-      f_hc.disabled = false;
+    if(identifierUnlocked){
+      f_identifier.disabled = false;
       btnUnlockHC.textContent = "Bloquear";
       btnUnlockHC.disabled = false;
-      el("hcHelp").textContent = "Modo edición de HC ACTIVADO (usalo solo para correcciones).";
+      el("identifierHelp").textContent = "Modo edición de HC ACTIVADO (usalo solo para correcciones).";
     } else {
-      f_hc.disabled = true;
+      f_identifier.disabled = true;
       btnUnlockHC.textContent = "Editar";
       btnUnlockHC.disabled = false;
-      el("hcHelp").textContent = "HC bloqueada tras el primer guardado. Podés desbloquear para corregir.";
+      el("identifierHelp").textContent = "HC bloqueada tras el primer guardado. Podés desbloquear para corregir.";
     }
   }
 
   function clearForm(){
     selectedPatientId = null;
-    hcUnlocked = false;
+    identifierUnlocked = false;
     selectedName.textContent = "—";
     lastUpdated.textContent = "—";
     historyPanel.style.display = "none";
     historyPanel.innerHTML = "";
     f_name.value = "";
-    f_hc.value = "";
+    f_identifier.value = "";
     f_phone.value = "";
     f_initial.value = "";
     f_archived.value = "no";
@@ -1506,11 +1506,11 @@
     const p = state.patients.find(x => x.id === id);
     if(!p) return;
     selectedPatientId = id;
-    hcUnlocked = false;
-    selectedName.textContent = p.hc || "—";
+    identifierUnlocked = false;
+    selectedName.textContent = p.identifier || "—";
     lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
-    f_name.value = p.hc || "";
-    f_hc.value = p.hc || "";
+    f_name.value = p.identifier || "";
+    f_identifier.value = p.identifier || "";
     f_phone.value = p.phone || "";
     f_initial.value = p.initialStudy || "";
     f_archived.value = p.archived ? "yes" : "no";
@@ -1532,8 +1532,8 @@
 
   function readFormToPatient(existing){
     const p = normalizePatient(existing || {});
-    p.hc = (f_name.value || "").trim();
-    p.name = p.hc;
+    p.identifier = (f_name.value || "").trim();
+    p.name = p.identifier;
     p.phone = "";
     p.initialStudy = (f_initial.value || "").trim();
     p.archived = (f_archived.value === "yes");
@@ -1545,11 +1545,11 @@
 
   function validatePatient(p, existing){
     const errs = [];
-    if(!p.hc) errs.push("Falta identificación.");
+    if(!p.identifier) errs.push("Falta identificación.");
 
-    const idNorm = String(p.hc || "").trim().toLowerCase();
+    const idNorm = String(p.identifier || "").trim().toLowerCase();
     if(idNorm){
-      const duplicate = state.patients.find(x => String(x.hc || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
+      const duplicate = state.patients.find(x => String(x.identifier || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
       if(duplicate){
         errs.push("Ya existe un registro con esa identificación.");
       }
@@ -1560,14 +1560,14 @@
 
   btnUnlockHC.addEventListener("click", () => {
     if(!selectedPatientId) return;
-    if(!hcUnlocked){
+    if(!identifierUnlocked){
       const ok = confirm(`Vas a habilitar la edición de la HC.
 Usalo solo para correcciones.
 ¿Continuar?`);
       if(!ok) return;
-      hcUnlocked = true;
+      identifierUnlocked = true;
     } else {
-      hcUnlocked = false;
+      identifierUnlocked = false;
     }
     lockHCIfNeeded();
   });
@@ -1602,7 +1602,7 @@ Usalo solo para correcciones.
     }
 
     const existing = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
-    const shouldSavePatient = (f_name.value || "").trim() || (f_hc.value || "").trim() || (f_phone.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
+    const shouldSavePatient = (f_name.value || "").trim() || (f_identifier.value || "").trim() || (f_phone.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
     if(!shouldSavePatient){
       saveState();
       renderList();
@@ -1628,7 +1628,7 @@ Usalo solo para correcciones.
           .from("patients")
           .select("id")
           .eq("user_id", currentUser?.id)
-          .eq("hc", p.hc)
+          .eq("identifier", p.identifier)
           .limit(1)
           .maybeSingle();
 
@@ -1647,7 +1647,7 @@ Usalo solo para correcciones.
           .update({
             user_id: currentUser?.id,
             name: p.name,
-            hc: p.hc,
+            identifier: p.identifier,
             phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
@@ -1663,7 +1663,7 @@ Usalo solo para correcciones.
           .insert([{
             user_id: currentUser?.id,
             name: p.name,
-            hc: p.hc,
+            identifier: p.identifier,
             phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
@@ -1679,7 +1679,7 @@ Usalo solo para correcciones.
         .insert([{
           user_id: currentUser?.id,
           name: p.name,
-          hc: p.hc,
+          identifier: p.identifier,
           phone: p.phone,
           datos_generales: p.initialStudy,
           archived: p.archived
@@ -1716,7 +1716,7 @@ Usalo solo para correcciones.
       Object.assign(existing, p);
       addLog(existing.id, "updated", structuredClone(existing));
       saveState();
-      hcUnlocked = false;
+      identifierUnlocked = false;
       selectPatient(existing.id);
       if(willAutoArchive){
         showToast("Registro archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
@@ -1763,18 +1763,18 @@ Usalo solo para correcciones.
 
     const ok = confirm(`¿Seguro que querés borrar al registro activo?
 
-${existing.name || "Sin nombre"} · HC: ${existing.hc || "—"}
+${existing.name || "Sin nombre"} · HC: ${existing.identifier || "—"}
 
 Esta acción lo elimina de la lista de registros.`);
     if(!ok) return;
 
     let targetDbId = existing.dbId || null;
-    if(!targetDbId && existing.hc){
+    if(!targetDbId && existing.identifier){
       const found = await sb
         .from("patients")
         .select("id")
         .eq("user_id", currentUser?.id)
-        .eq("hc", existing.hc)
+        .eq("identifier", existing.identifier)
         .limit(1)
         .maybeSingle();
 
@@ -1834,7 +1834,7 @@ Esta acción lo elimina de la lista de registros.`);
         const counts = computeCounts({ actions: Array.isArray(snap.actions) ? snap.actions : [] });
         summary = `Actuaciones: ${counts.total} · 🔴 ${counts.pending} · 🟡 ${counts.done} · 🔵 ${counts.followup} · 🟣 ${counts.various} · 🟢 ${counts.integrated}`;
       }
-      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.name || "NOTA")} <span class="muted">${snap.hc ? `(HC: ${escapeHTML(snap.hc)})` : ""}</span></td><td>${escapeHTML(summary)}</td></tr>`;
+      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.name || "NOTA")} <span class="muted">${snap.identifier ? `(HC: ${escapeHTML(snap.identifier)})` : ""}</span></td><td>${escapeHTML(summary)}</td></tr>`;
     }
     html += '</tbody></table>';
     return html;
