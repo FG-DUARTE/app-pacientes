@@ -840,7 +840,9 @@
       snapshot: snapshot || {},
       created_at: newLog.ts
     }]).then(({ error }) => {
-      if(error) 
+      if(error) {
+        // Error de log no bloqueante
+      }
     });
   }
 
