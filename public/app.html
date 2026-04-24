@@ -194,8 +194,8 @@
   <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios campos, actuaciones, notas e historial.</div>
   <div class="split" id="registerFields" style="display:none">
     <div>
-      <label>Identificación</label>
-      <input id="authIdentificación" type="text" placeholder="Identificación" />
+      <label>Nombre</label>
+      <input id="authNombre" type="text" placeholder="Nombre" />
     </div>
     <div>
       <label>Apellido</label>
@@ -235,7 +235,7 @@
   </div>
 </header>
 
-<div class="wrap" id="appWrap">
+<div class="wrap" id="appWrap" style="display:none">
   <div class="grid">
 
     <!-- LEFT -->
@@ -261,7 +261,7 @@
       </div>
 
       <div class="hint" style="margin-top:8px">
-        La búsqueda <span class="kbd">NO</span> usa el nombre. Busca en HC/teléfono y también motivos de actuaciones. Si buscás, aparecen archivados y también los casos En seguimiento o Varios aunque no se muestren en “Activos”.
+        La búsqueda usa identificación, datos generales y motivos de actuaciones. Si buscás, aparecen archivados y también los casos En seguimiento o Varios aunque no se muestren en “Activos”.
       </div>
 
       <div class="sep"></div>
@@ -305,37 +305,25 @@
 
       <div class="sep"></div>
 
-      <div class="split">
-        <div>
-          <label>Identificación</label>
-          <input id="f_name" placeholder="Apellido, Identificación" />
-        </div>
-        <div>
-          <label>Identificación</label>
-          <div class="inline">
-            <input id="f_hc" placeholder="Historia clínica" />
-            <button class="btn small" id="btnUnlockHC" title="Permite editar HC para correcciones puntuales">Editar</button>
-          </div>
-          <div class="mini" id="hcHelp">La HC queda bloqueada tras el primer guardado.</div>
-        </div>
+      <div>
+        <label>Identificación</label>
+        <input id="f_name" placeholder="xxxxxxxx" />
+        <input id="f_hc" type="hidden" />
+        <input id="f_phone" type="hidden" />
+        <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
+        <div class="mini" id="hcHelp" style="display:none"></div>
       </div>
 
-      <div class="split">
-        <div>
-          <label>Identificación</label>
-          <input id="f_phone" placeholder="+34 ..." />
-        </div>
-        <div>
-          <label>Estado del campo</label>
-          <select id="f_archived">
-            <option value="no">Activo</option>
-            <option value="yes">Archivado</option>
-          </select>
-        </div>
+      <div style="margin-top:10px">
+        <label>Estado del campo</label>
+        <select id="f_archived">
+          <option value="no">Activo</option>
+          <option value="yes">Archivado</option>
+        </select>
       </div>
 
-      <label>Datos generales / de interés del campo
-      <textarea id="f_initial" placeholder="Ej: alergias / antecedentes / deatos de interes ...  "></textarea>
+      <label>Datos generales / de interés</label>
+      <textarea id="f_initial" placeholder="xxxxxxxx"></textarea>
 
       <div class="sep"></div>
 
@@ -563,7 +551,7 @@
       return;
     }
 
-    const nombre = (authIdentificación?.value || "").trim();
+    const nombre = (authNombre?.value || "").trim();
     const apellido = (authApellido?.value || "").trim();
     const email = (authEmail?.value || "").trim();
     const password = authPassword?.value || "";
@@ -964,7 +952,7 @@
   const appWrap = el("appWrap");
   const authCard = el("authCard");
   const registerFields = el("registerFields");
-  const authIdentificación = el("authIdentificación");
+  const authNombre = el("authNombre");
   const authApellido = el("authApellido");
   const authEmail = el("authEmail");
   const authPassword = el("authPassword");
@@ -1195,6 +1183,7 @@
     if(!q) return true;
     const qq = normTxt(q);
     if(!qq) return true;
+    if(normTxt(p.name).includes(qq)) return true;
     if(normTxt(p.hc).includes(qq)) return true;
     if(normTxt(p.phone).includes(qq)) return true;
     if(normTxt(p.initialStudy).includes(qq)) return true;
@@ -1258,7 +1247,7 @@
           <button class="btn small danger" data-role="remove" title="Eliminar esta actuación">Eliminar</button>
         </div>
         <label>Motivo / texto libre</label>
-        <textarea placeholder="Ej: Pedir RM con contraste por ..."></textarea>
+        <textarea placeholder="xxxxxxxx"></textarea>
       `;
       const sel = block.querySelector("select");
       const ta = block.querySelector("textarea");
@@ -1441,7 +1430,7 @@
       const arch = p.archived ? '<span class="badge"><span class="dot danger"></span>Archivado</span>' : "";
       it.innerHTML = `
         <p class="title">${escapeHTML(p.name || "—")}</p>
-        <div class="muted">HC: <span class="hc">${escapeHTML(p.hc || "—")}</span> · Tel: ${escapeHTML(p.phone || "—")}</div>
+        <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
           <span class="badge"><span class="dot ${integratedDot}"></span>Todo integrado</span>
@@ -1533,8 +1522,8 @@
   function readFormToPatient(existing){
     const p = normalizePatient(existing || {});
     p.name = (f_name.value || "").trim();
-    p.hc = (f_hc.value || "").trim();
-    p.phone = (f_phone.value || "").trim();
+    p.hc = p.name;
+    p.phone = "";
     p.initialStudy = (f_initial.value || "").trim();
     p.archived = (f_archived.value === "yes");
     p.actions = autocorrectActions(getActionsFromDOM());
@@ -1545,18 +1534,13 @@
 
   function validatePatient(p, existing){
     const errs = [];
-    if(!p.name) errs.push("Falta Identificación.");
-    if(!p.hc) errs.push("Falta Identificación.");
+    if(!p.name) errs.push("Falta identificación.");
 
-    if(existing && !hcUnlocked && (p.hc !== (existing.hc || ""))) {
-      errs.push("HC está bloqueada. Si querés corregirla, usá el botón 'Editar' al lado de HC.");
-    }
-
-    const hcNorm = String(p.hc || "").trim();
-    if(hcNorm){
-      const duplicate = state.patients.find(x => String(x.hc || "").trim() === hcNorm && (!existing || x.id !== existing.id));
+    const idNorm = String(p.name || "").trim().toLowerCase();
+    if(idNorm){
+      const duplicate = state.patients.find(x => String(x.name || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
       if(duplicate){
-        errs.push("Ya existe un campo con esa HC.");
+        errs.push("Ya existe un campo con esa identificación.");
       }
     }
 
@@ -1859,74 +1843,15 @@ Esta acción lo elimina de la lista de campos.`);
     historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  btnExport.addEventListener("click", () => {
-    const payload = { exportedAt: nowISO(), app: "rx_followup_app_v6", data: state };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `seguimiento_campos_${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  });
-
-  btnImport.addEventListener("click", () => fileImport.click());
-
-  fileImport.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if(!file) return;
-    try {
-      const text = await file.text();
-      const obj = JSON.parse(text);
-      const incoming = obj?.data ? obj.data : obj;
-      if(!incoming || typeof incoming !== "object") throw new Error("JSON inválido.");
-
-      const importedPatients = (Array.isArray(incoming.patients) ? incoming.patients : []).map(normalizePatient);
-      const importedLogs = Array.isArray(incoming.logs) ? incoming.logs : [];
-      const importedNotes = (Array.isArray(incoming.notes) ? incoming.notes : []).map(normalizeNote);
-      const existingHC = new Set(state.patients.map(p => (p.hc || "").trim().toLowerCase()).filter(Boolean));
-
-      for(const p of importedPatients){
-        const hcKey = (p.hc || "").trim().toLowerCase();
-        if(hcKey && existingHC.has(hcKey)){
-          p.name = p.name ? p.name + " (importado)" : "Importado";
-          p.id = uid();
-        } else if(state.patients.some(x => x.id === p.id)){
-          p.id = uid();
-        }
-        state.patients.push(p);
-      }
-
-      const existingLogIds = new Set(state.logs.map(l => l.id));
-      for(const l of importedLogs){
-        const ll = { ...l };
-        if(existingLogIds.has(ll.id)) ll.id = uid();
-        state.logs.push(ll);
-      }
-
-      for(const n of importedNotes){
-        if(state.notes.some(x => x.id === n.id)) n.id = uid();
-        state.notes.push(n);
-      }
-
-      await syncImportedPatientsToDb(importedPatients);
-      await syncImportedNotesToDb(importedNotes);
-      await syncImportedLogsToDb(importedLogs);
-      addLog(null, "imported", { note: "Importación realizada", countPatients: importedPatients.length, countLogs: importedLogs.length, countNotes: importedNotes.length, ts: nowISO() });
-      saveState();
-      await loadPatientsFromDb();
-      await loadNotesFromDb();
-      await loadLogsFromDb();
-      renderList();
-      alert("Importación OK. Campos, notas y logs sincronizados con Supabase.");
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo importar: " + (err?.message || String(err)));
-    } finally {
-      fileImport.value = "";
-    }
-  });
+  if(btnExport){
+    btnExport.addEventListener("click", () => {});
+  }
+  if(btnImport && fileImport){
+    btnImport.addEventListener("click", () => fileImport.click());
+  }
+  if(fileImport){
+    fileImport.addEventListener("change", async (e) => {});
+  }
 
   if(btnThemeToggle){
     btnThemeToggle.addEventListener("click", toggleTheme);
