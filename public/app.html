@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SEGUIMIENTO DE CAMPOS (actuaciones / estudios pendientes)</title>
+  <title>BASE DE REGISTROS (actuaciones / seguimientos)</title>
   <style>
     :root{
       --bg:#f8fafc;
@@ -179,7 +179,7 @@
 </head>
 <body>
 <header>
-  <h1>SEGUIMIENTO DE CAMPOS (actuaciones / estudios pendientes)</h1>
+  <h1>BASE DE REGISTROS (actuaciones / seguimientos)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
   <div class="sub"></div>
   <div class="row" style="gap:8px; align-items:center;">
@@ -191,7 +191,7 @@
 </div>
 <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
   <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
-  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios campos, actuaciones, notas e historial.</div>
+  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios registros, actuaciones, notas e historial.</div>
   <div class="split" id="registerFields" style="display:none">
     <div>
       <label>Nombre</label>
@@ -226,10 +226,10 @@
 </div>
 
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
-    <div class="pill clickable" id="pillRed" title="Ver campos con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillYellow" title="Ver campos con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillBlue" title="Ver campos en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillPurple" title="Ver campos VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillRed" title="Ver registros con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
     <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
   </div>
@@ -241,7 +241,7 @@
     <!-- LEFT -->
     <section class="card">
       <div class="row">
-        <div class="pill">Campos: <span id="countPatients" class="kbd">0</span></div>
+        <div class="pill">Registros: <span id="countPatients" class="kbd">0</span></div>
         <div class="pill">Historial: <span id="countLogs" class="kbd">0</span></div>
         <button class="btn small right" id="btnNew">+ Nuevo</button>
       </div>
@@ -296,9 +296,9 @@
     <!-- RIGHT -->
     <section class="card">
       <div class="row">
-        <div class="pill">Campo seleccionado: <span id="selectedName" class="kbd">—</span></div>
+        <div class="pill">Registro seleccionado: <span id="selectedName" class="kbd">—</span></div>
         <div class="right row" style="gap:8px">
-          <button class="btn danger" id="btnDeletePatient">Borrar campo</button>
+          <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
         </div>
       </div>
@@ -307,7 +307,7 @@
 
       <div>
         <label>Identificación</label>
-        <input id="f_name" placeholder="xxxxxxxx" />
+        <input id="f_name" placeholder="escribe aqui ..........." />
         <input id="f_hc" type="hidden" />
         <input id="f_phone" type="hidden" />
         <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
@@ -315,15 +315,15 @@
       </div>
 
       <div style="margin-top:10px">
-        <label>Estado del campo</label>
+        <label>Estado</label>
         <select id="f_archived">
           <option value="no">Activo</option>
           <option value="yes">Archivado</option>
         </select>
       </div>
 
-      <label>Datos generales / de interés</label>
-      <textarea id="f_initial" placeholder="xxxxxxxx"></textarea>
+      <label>Datos generales</label>
+      <textarea id="f_initial" placeholder="escribe aqui ..........."></textarea>
 
       <div class="sep"></div>
 
@@ -341,7 +341,7 @@
       <div class="sep"></div>
 
       <div class="row">
-        <button class="btn" id="btnViewPatientHistory">Ver historial de este campo</button>
+        <button class="btn" id="btnViewPatientHistory">Ver historial de este registro</button>
         <div class="right muted" id="lastUpdated">—</div>
       </div>
 
@@ -1246,8 +1246,8 @@
           </div>
           <button class="btn small danger" data-role="remove" title="Eliminar esta actuación">Eliminar</button>
         </div>
-        <label>Motivo / texto libre</label>
-        <textarea placeholder="xxxxxxxx"></textarea>
+        <label>Motivo</label>
+        <textarea placeholder="escribe aqui ..........."></textarea>
       `;
       const sel = block.querySelector("select");
       const ta = block.querySelector("textarea");
@@ -1540,7 +1540,7 @@
     if(idNorm){
       const duplicate = state.patients.find(x => String(x.name || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
       if(duplicate){
-        errs.push("Ya existe un campo con esa identificación.");
+        errs.push("Ya existe un registro con esa identificación.");
       }
     }
 
@@ -1691,7 +1691,7 @@ Usalo solo para correcciones.
       try {
         await syncPatientActionsToDb(p.dbId, p.actions || []);
       } catch (actionsError) {
-        alert("Campo guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
+        alert("Registro guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
       }
     }
 
@@ -1708,7 +1708,7 @@ Usalo solo para correcciones.
       hcUnlocked = false;
       selectPatient(existing.id);
       if(willAutoArchive){
-        showToast("Campo archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+        showToast("Registro archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
           const px = state.patients.find(x => x.id === existing.id);
           if(!px) return;
           px.archived = false;
@@ -1726,7 +1726,7 @@ Usalo solo para correcciones.
       saveState();
       selectPatient(p.id);
       if(willAutoArchive){
-        showToast("Campo archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+        showToast("Registro archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
           const px = state.patients.find(x => x.id === p.id);
           if(!px) return;
           px.archived = false;
@@ -1743,18 +1743,18 @@ Usalo solo para correcciones.
 
   btnDeletePatient.addEventListener("click", async () => {
     if(!selectedPatientId){
-      alert("Seleccioná un campo para borrar.");
+      alert("Seleccioná un registro para borrar.");
       return;
     }
 
     const existing = state.patients.find(x => x.id === selectedPatientId);
     if(!existing) return;
 
-    const ok = confirm(`¿Seguro que querés borrar al campo activo?
+    const ok = confirm(`¿Seguro que querés borrar al registro activo?
 
 ${existing.name || "Sin nombre"} · HC: ${existing.hc || "—"}
 
-Esta acción lo elimina de la lista de campos.`);
+Esta acción lo elimina de la lista de registros.`);
     if(!ok) return;
 
     let targetDbId = existing.dbId || null;
@@ -1768,7 +1768,7 @@ Esta acción lo elimina de la lista de campos.`);
         .maybeSingle();
 
       if(found.error){
-        alert("Falló la búsqueda del campo en Supabase: " + found.error.message);
+        alert("Falló la búsqueda del registro en Supabase: " + found.error.message);
         return;
       }
 
@@ -1792,7 +1792,7 @@ Esta acción lo elimina de la lista de campos.`);
         .eq("id", targetDbId);
 
       if(delPatient.error){
-        alert("Falló el borrado del campo en Supabase: " + delPatient.error.message);
+        alert("Falló el borrado del registro en Supabase: " + delPatient.error.message);
         return;
       }
     }
@@ -1813,7 +1813,7 @@ Esta acción lo elimina de la lista de campos.`);
   function renderHistoryLogs(logs){
     if(!logs.length) return '<div class="muted">No hay registros.</div>';
     const sorted = [...logs].sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
-    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Campo</th><th>Resumen</th></tr></thead><tbody>';
+    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Registro</th><th>Resumen</th></tr></thead><tbody>';
     for(const L of sorted){
       const snap = L.snapshot || {};
       let summary = "";
@@ -1830,10 +1830,10 @@ Esta acción lo elimina de la lista de campos.`);
   }
 
   btnViewPatientHistory.addEventListener("click", () => {
-    if(!selectedPatientId){ alert("Seleccioná un campo."); return; }
+    if(!selectedPatientId){ alert("Seleccioná un registro."); return; }
     const logs = state.logs.filter(l => l.patientId === selectedPatientId);
     historyPanel.style.display = "block";
-    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del campo</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
+    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del registro</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
     historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
