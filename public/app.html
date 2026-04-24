@@ -97,6 +97,19 @@
       border:1px solid var(--border); background:var(--panel); color:var(--muted);
       font-size:12px;
     }
+    .welcome-banner{
+      display:none;
+      margin-top:14px;
+      padding:14px 16px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(16,185,129,.08));
+      box-shadow:var(--shadow);
+      font-weight:800;
+      font-size:18px;
+      color:var(--txt);
+    }
+    .welcome-banner .mini{font-weight:500; margin-top:4px;}
     .pill.clickable{cursor:pointer; user-select:none; transition:.15s ease;}
     .pill.clickable:hover{transform: translateY(-1px); border-color:#2b3d66;}
     .pill.clickable.active-filter{box-shadow: 0 0 0 2px rgba(110,168,254,.18) inset; border-color:var(--accent); color:var(--txt);}
@@ -205,6 +218,11 @@
     <button class="btn ghost" id="btnRecover">Recuperar clave</button>
   </div>
   <div class="hint" id="authHint" style="margin-top:10px;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
+</div>
+
+  <div class="welcome-banner" id="welcomeBanner">
+  <div id="welcomeBannerText">Bienvenido</div>
+  <div class="mini">Sesión activa · Datos protegidos por usuario</div>
 </div>
 
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
@@ -443,9 +461,15 @@
     if(registerFields) registerFields.style.display = (!logged && registerMode) ? "grid" : "none";
     if(btnRegister) btnRegister.textContent = registerMode ? "Confirmar alta" : "Crear cuenta";
     if(welcomePill) welcomePill.style.display = logged ? "inline-flex" : "none";
+    const nombre = [currentProfile?.nombre, currentProfile?.apellido].filter(Boolean).join(" ").trim();
     if(welcomeText){
-      const nombre = [currentProfile?.nombre, currentProfile?.apellido].filter(Boolean).join(" ").trim();
       welcomeText.textContent = nombre ? `Bienvenido, ${nombre}` : "Bienvenido";
+    }
+    if(welcomeBanner){
+      welcomeBanner.style.display = logged ? "block" : "none";
+    }
+    if(welcomeBannerText){
+      welcomeBannerText.textContent = nombre ? `Bienvenido, ${nombre}` : "Bienvenido";
     }
   }
 
@@ -954,6 +978,8 @@
   const authStatusText = el("authStatusText");
   const welcomePill = el("welcomePill");
   const welcomeText = el("welcomeText");
+  const welcomeBanner = el("welcomeBanner");
+  const welcomeBannerText = el("welcomeBannerText");
 
   const countPatients = el("countPatients");
   const countLogs = el("countLogs");
