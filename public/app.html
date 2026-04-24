@@ -296,7 +296,7 @@
     <!-- RIGHT -->
     <section class="card">
       <div class="row">
-        <div class="pill">Registro seleccionado: <span id="selectedName" class="kbd">—</span></div>
+        <div class="pill">Registro seleccionado: <span id="selectedIdentifier" class="kbd">—</span></div>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
@@ -307,9 +307,8 @@
 
       <div>
         <label>Identificación</label>
-        <input id="f_name" placeholder="escribe aquí ...... " />
+        <input id="f_identifier_input" placeholder="escribe aquí ...... " />
         <input id="f_identifier" type="hidden" />
-        <input id="f_phone" type="hidden" />
         <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
         <div class="mini" id="identifierHelp" style="display:none"></div>
       </div>
@@ -972,13 +971,12 @@
 
   const countPatients = el("countPatients");
   const countLogs = el("countLogs");
-  const selectedName = el("selectedName");
+  const selectedIdentifier = el("selectedIdentifier");
   const lastUpdated = el("lastUpdated");
   const historyPanel = el("historyPanel");
 
-  const f_name = el("f_name");
+  const f_identifier_input = el("f_identifier_input");
   const f_identifier = el("f_identifier");
-  const f_phone = el("f_phone");
   const f_initial = el("f_initial");
   const f_archived = el("f_archived");
   const btnUnlockHC = el("btnUnlockHC");
@@ -1187,8 +1185,6 @@
     const qq = normTxt(q);
     if(!qq) return true;
     if(normTxt(p.identifier).includes(qq)) return true;
-    if(normTxt(p.identifier).includes(qq)) return true;
-    if(normTxt(p.phone).includes(qq)) return true;
     if(normTxt(p.initialStudy).includes(qq)) return true;
     for(const a of (Array.isArray(p.actions) ? p.actions : [])){
       if(normTxt(a?.note).includes(qq)) return true;
@@ -1480,13 +1476,12 @@
   function clearForm(){
     selectedPatientId = null;
     identifierUnlocked = false;
-    selectedName.textContent = "—";
+    selectedIdentifier.textContent = "—";
     lastUpdated.textContent = "—";
     historyPanel.style.display = "none";
     historyPanel.innerHTML = "";
-    f_name.value = "";
+    f_identifier_input.value = "";
     f_identifier.value = "";
-    f_phone.value = "";
     f_initial.value = "";
     f_archived.value = "no";
     renderActions([]);
@@ -1499,11 +1494,10 @@
     if(!p) return;
     selectedPatientId = id;
     identifierUnlocked = false;
-    selectedName.textContent = p.identifier || "—";
+    selectedIdentifier.textContent = p.identifier || "—";
     lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
-    f_name.value = p.identifier || "";
+    f_identifier_input.value = p.identifier || "";
     f_identifier.value = p.identifier || "";
-    f_phone.value = "";
     f_initial.value = p.initialStudy || "";
     f_archived.value = p.archived ? "yes" : "no";
     renderActions(p.actions || []);
@@ -1524,7 +1518,7 @@
 
   function readFormToPatient(existing){
     const p = normalizePatient(existing || {});
-    p.identifier = (f_name.value || "").trim();
+    p.identifier = (f_identifier_input.value || "").trim();
     
     p.initialStudy = (f_initial.value || "").trim();
     p.archived = (f_archived.value === "yes");
@@ -1593,7 +1587,7 @@ Usalo solo para correcciones.
     }
 
     const existing = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
-    const shouldSavePatient = (f_name.value || "").trim() || (f_identifier.value || "").trim() || (f_phone.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
+    const shouldSavePatient = (f_identifier_input.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
     if(!shouldSavePatient){
       saveState();
       renderList();
@@ -1838,16 +1832,6 @@ Esta acción lo elimina de la lista de registros.`);
     historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial global</h3><div class="hint" style="margin-bottom:10px">Incluye cambios, duplicados, importaciones y notas.</div>${renderHistoryLogs(state.logs)}`;
     historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-
-  if(btnExport){
-    btnExport.addEventListener("click", () => {});
-  }
-  if(btnImport && fileImport){
-    btnImport.addEventListener("click", () => fileImport.click());
-  }
-  if(fileImport){
-    fileImport.addEventListener("change", async (e) => {});
-  }
 
   if(btnThemeToggle){
     btnThemeToggle.addEventListener("click", toggleTheme);
