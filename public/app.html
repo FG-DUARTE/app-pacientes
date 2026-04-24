@@ -171,6 +171,7 @@
   <div class="sub">Datos guardados en la nube. Exportar/Importar JSON queda como copia local o migración manual.</div>
   <div class="row" style="gap:8px; align-items:center;">
     <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
+    <span class="pill" id="welcomePill" style="display:none"><span class="dot ok"></span><span id="welcomeText">Bienvenido</span></span>
     <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
     <button class="btn small ghost" id="btnLogout" style="display:none">Cerrar sesión</button>
   </div>
@@ -178,6 +179,16 @@
 <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
   <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
   <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios pacientes, actuaciones, notas e historial.</div>
+  <div class="split">
+    <div>
+      <label>Nombre</label>
+      <input id="authNombre" type="text" placeholder="Nombre" />
+    </div>
+    <div>
+      <label>Apellido</label>
+      <input id="authApellido" type="text" placeholder="Apellido" />
+    </div>
+  </div>
   <div class="split">
     <div>
       <label>Email</label>
@@ -429,6 +440,45 @@
     if(appWrap) appWrap.style.display = logged ? "block" : "none";
     if(btnLogout) btnLogout.style.display = logged ? "inline-flex" : "none";
     if(authStatusText) authStatusText.textContent = logged ? (currentUser.email || "Usuario autenticado") : "No autenticado";
+    if(welcomePill) welcomePill.style.display = logged ? "inline-flex" : "none";
+    if(welcomeText){
+      const nombre = [currentProfile?.nombre, currentProfile?.apellido].filter(Boolean).join(" ").trim();
+      welcomeText.textContent = nombre ? `Bienvenido, ${nombre}` : "Bienvenido";
+    }
+  }
+
+  async function loadProfileFromDb(){
+    if(!currentUser){
+      currentProfile = null;
+      updateAuthUI();
+      return;
+    }
+
+    const { data, error } = await sb
+      .from("profiles")
+      .select("user_id, nombre, apellido")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if(error){
+      currentProfile = null;
+      updateAuthUI();
+      return;
+    }
+
+    currentProfile = data || null;
+    updateAuthUI();
+  }
+
+  async function saveProfileToDb(userId, nombre, apellido){
+    if(!userId) return;
+    await sb
+      .from("profiles")
+      .upsert({
+        user_id: userId,
+        nombre: nombre || "",
+        apellido: apellido || ""
+      }, { onConflict: "user_id" });
   }
 
   async function restoreSession(){
@@ -437,6 +487,7 @@
     
     currentSession = data?.session || null;
     currentUser = currentSession?.user || null;
+    await loadProfileFromDb();
     updateAuthUI();
   }
 
@@ -459,6 +510,7 @@
 
     currentSession = data?.session || null;
     currentUser = data?.user || currentSession?.user || null;
+    await loadProfileFromDb();
     setAuthMessage("Login correcto.");
     updateAuthUI();
     await loadPatientsFromDb();
@@ -470,20 +522,32 @@
   }
 
   async function handleRegister(){
+    const nombre = (authNombre?.value || "").trim();
+    const apellido = (authApellido?.value || "").trim();
     const email = (authEmail?.value || "").trim();
     const password = authPassword?.value || "";
-    if(!email || !password){
-      setAuthMessage("Completa email y contraseña para crear la cuenta.");
+    if(!nombre || !apellido || !email || !password){
+      setAuthMessage("Completa nombre, apellido, email y contraseña para crear la cuenta.");
       return;
     }
 
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { nombre, apellido }
+      }
+    });
     
     
 
     if(error){
       setAuthMessage("Falló el alta: " + error.message);
       return;
+    }
+
+    if(data?.user?.id){
+      await saveProfileToDb(data.user.id, nombre, apellido);
     }
 
     setAuthMessage("Cuenta creada. Si tu proyecto exige confirmación por email, revisa tu correo.");
@@ -534,6 +598,7 @@
 
     currentSession = null;
     currentUser = null;
+    currentProfile = null;
     state = defaultState();
     saveState();
     updateAuthUI();
@@ -854,6 +919,8 @@
   const noteDraft = el("noteDraft");
   const appWrap = el("appWrap");
   const authCard = el("authCard");
+  const authNombre = el("authNombre");
+  const authApellido = el("authApellido");
   const authEmail = el("authEmail");
   const authPassword = el("authPassword");
   const btnLogin = el("btnLogin");
@@ -862,6 +929,8 @@
   const btnLogout = el("btnLogout");
   const authHint = el("authHint");
   const authStatusText = el("authStatusText");
+  const welcomePill = el("welcomePill");
+  const welcomeText = el("welcomeText");
 
   const countPatients = el("countPatients");
   const countLogs = el("countLogs");
@@ -907,6 +976,7 @@
   let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
   let currentSession = null;
   let currentUser = null;
+  let currentProfile = null;
 
   // 🔒 Timeout por inactividad (15 min)
   const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
@@ -1896,6 +1966,7 @@ Recomendado: Exportar antes.`);
     updateAuthUI();
     await restoreSession();
     if(currentUser){
+      await loadProfileFromDb();
       setupInactivityListeners();
       resetInactivityTimer();
       await loadPatientsFromDb();
@@ -1932,12 +2003,14 @@ Recomendado: Exportar antes.`);
     if(inactivityTimer) clearTimeout(inactivityTimer);
     currentSession = session || null;
     currentUser = session?.user || null;
+    await loadProfileFromDb();
     updateAuthUI();
     if(currentUser){
       await loadPatientsFromDb();
       await loadNotesFromDb();
       await loadLogsFromDb();
     } else {
+      currentProfile = null;
       state = defaultState();
       saveState();
     }
