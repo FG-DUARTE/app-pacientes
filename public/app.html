@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BASE DE REGISTROS (actuaciones / seguimientos)</title>
+  <title>BASE DE REGISTROS (actuaciones)</title>
   <style>
     :root{
       --bg:#f8fafc;
@@ -179,8 +179,7 @@
 </head>
 <body>
 <header>
-  <h1>BASE DE REGISTROS (actuaciones / seguimientos)</h1>
-  <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
+  <h1>ass="row" style="justify-content:space-between; align-items:center; gap:12px;">
   <div class="sub"></div>
   <div class="row" style="gap:8px; align-items:center;">
     <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
@@ -222,10 +221,10 @@
 
   <div class="welcome-banner" id="welcomeBanner">
   <div id="welcomeBannerText">Bienvenido</div>
-  <div class="mini">Sesión activa · Datos protegidos por usuario</div>
+  <div class="mini"></div>
 </div>
 
-  <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
+  <div class=:wrap">
     <div class="pill clickable" id="pillRed" title="Ver registros con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
     <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
     <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
@@ -307,7 +306,7 @@
 
       <div>
         <label>Identificación</label>
-        <input id="f_name" placeholder="escribe aqui ..........." />
+        <input id="f_name" placeholder="---------------" />
         <input id="f_hc" type="hidden" />
         <input id="f_phone" type="hidden" />
         <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
