@@ -179,7 +179,8 @@
 </head>
 <body>
 <header>
-  <h1>ass="row" style="justify-content:space-between; align-items:center; gap:12px;">
+  <h1>BASE DE REGISTROS (actuaciones)</h1>
+  <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
   <div class="sub"></div>
   <div class="row" style="gap:8px; align-items:center;">
     <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
@@ -224,7 +225,7 @@
   <div class="mini"></div>
 </div>
 
-  <div class=:wrap">
+  <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
     <div class="pill clickable" id="pillRed" title="Ver registros con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
     <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
     <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
@@ -326,7 +327,7 @@
 
       <div class="sep"></div>
 
-      <h3 style="margin:0 0 8px; font-size:14px">Actuaciones (dinámicas)</h3>
+      <h3 style="margin:0 0 8px; font-size:14px">Actuaciones</h3>
       <div class="hint" style="margin-bottom:10px">
         Estados: 🔴 Pendiente (no integrado) · 🟡 Realizado (falta integrar) · 🔵 En seguimiento · 🟣 Varios · 🟢 Integrado/Completado. 
       </div>
@@ -604,39 +605,50 @@
   }
 
     async function handleLogout(){
-    try {
-      // 🔴 backup automático antes de cerrar sesión
-      const payload = { exportedAt: nowISO(), app: "rx_followup_app_v6", data: state };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `backup_auto_${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(a.href);
-    } catch(e){}
+    if(inactivityTimer) clearTimeout(inactivityTimer);
 
     try {
-      await sb.auth.signOut({ scope: "local" });
-    } catch (e) {}
+      await sb.auth.signOut({ scope: "global" });
+    } catch (e) {
+      // Si Supabase no responde, igual forzamos cierre local.
+    }
 
     try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {}
+      localStorage.removeItem(KEY);
+      LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
+      Object.keys(localStorage).forEach(k => {
+        if(k.toLowerCase().includes("supabase") || k.toLowerCase().includes("auth")) localStorage.removeItem(k);
+      });
+      Object.keys(sessionStorage).forEach(k => {
+        if(k.toLowerCase().includes("supabase") || k.toLowerCase().includes("auth")) sessionStorage.removeItem(k);
+      });
+    } catch (e) {
+      // Limpieza local no crítica.
+    }
 
     currentSession = null;
     currentUser = null;
     currentProfile = null;
     registerMode = false;
+    selectedPatientId = null;
+    severityFilter = null;
     state = defaultState();
-    saveState();
+
+    if(authEmail) authEmail.value = "";
+    if(authPassword) authPassword.value = "";
+    if(authNombre) authNombre.value = "";
+    if(authApellido) authApellido.value = "";
+
     updateAuthUI();
     renderList();
     clearForm();
 
-    window.location.href = window.location.origin + window.location.pathname + "?logout=" + Date.now();
+    const logoutUrl = window.location.origin + "/?logout=" + Date.now();
+    if(window.parent && window.parent !== window){
+      window.parent.location.href = logoutUrl;
+    } else {
+      window.location.href = logoutUrl;
+    }
   }
 
   async function loadPatientsFromDb(){
