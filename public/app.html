@@ -387,9 +387,7 @@
     return {
       id: p?.id || uid(),
       dbId: p?.dbId || p?.db_id || null,
-      name: String(p?.name || ""),
       identifier: String(p?.identifier || ""),
-      phone: String(p?.phone || ""),
       initialStudy: String(p?.initialStudy || ""),
       archived: !!p?.archived,
       actions: normalizeActions(p?.actions),
@@ -660,7 +658,7 @@
 
     const { data: patientsData, error: patientsError } = await sb
       .from("patients")
-      .select("id, user_id, name, identifier, phone, datos_generales, archived, created_at, updated_at")
+      .select("id, user_id, identifier, datos_generales, archived, created_at, updated_at")
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: true });
 
@@ -699,9 +697,7 @@
 
     const mapped = (Array.isArray(patientsData) ? patientsData : []).map(row => normalizePatient({
       dbId: row.id,
-      name: row.name,
       identifier: row.identifier,
-      phone: row.phone,
       initialStudy: row.datos_generales,
       archived: row.archived,
       actions: actionsByPatient.get(row.id) || [],
@@ -772,9 +768,7 @@
           .from("patients")
           .update({
             user_id: currentUser?.id,
-            name: p.name,
             identifier: p.identifier,
-            phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
           })
@@ -785,9 +779,7 @@
           .from("patients")
           .insert([{
             user_id: currentUser?.id,
-            name: p.name,
             identifier: p.identifier,
-            phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
           }])
@@ -1511,7 +1503,7 @@
     lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
     f_name.value = p.identifier || "";
     f_identifier.value = p.identifier || "";
-    f_phone.value = p.phone || "";
+    f_phone.value = "";
     f_initial.value = p.initialStudy || "";
     f_archived.value = p.archived ? "yes" : "no";
     renderActions(p.actions || []);
@@ -1533,8 +1525,7 @@
   function readFormToPatient(existing){
     const p = normalizePatient(existing || {});
     p.identifier = (f_name.value || "").trim();
-    p.name = p.identifier;
-    p.phone = "";
+    
     p.initialStudy = (f_initial.value || "").trim();
     p.archived = (f_archived.value === "yes");
     p.actions = autocorrectActions(getActionsFromDOM());
@@ -1646,9 +1637,7 @@ Usalo solo para correcciones.
           .from("patients")
           .update({
             user_id: currentUser?.id,
-            name: p.name,
             identifier: p.identifier,
-            phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
           })
@@ -1662,9 +1651,7 @@ Usalo solo para correcciones.
           .from("patients")
           .insert([{
             user_id: currentUser?.id,
-            name: p.name,
             identifier: p.identifier,
-            phone: p.phone,
             datos_generales: p.initialStudy,
             archived: p.archived
           }])
@@ -1678,9 +1665,7 @@ Usalo solo para correcciones.
         .from("patients")
         .insert([{
           user_id: currentUser?.id,
-          name: p.name,
           identifier: p.identifier,
-          phone: p.phone,
           datos_generales: p.initialStudy,
           archived: p.archived
         }])
@@ -1763,7 +1748,7 @@ Usalo solo para correcciones.
 
     const ok = confirm(`¿Seguro que querés borrar al registro activo?
 
-${existing.name || "Sin nombre"} · HC: ${existing.identifier || "—"}
+${existing.identifier || "Sin identificación"}
 
 Esta acción lo elimina de la lista de registros.`);
     if(!ok) return;
@@ -1834,7 +1819,7 @@ Esta acción lo elimina de la lista de registros.`);
         const counts = computeCounts({ actions: Array.isArray(snap.actions) ? snap.actions : [] });
         summary = `Actuaciones: ${counts.total} · 🔴 ${counts.pending} · 🟡 ${counts.done} · 🔵 ${counts.followup} · 🟣 ${counts.various} · 🟢 ${counts.integrated}`;
       }
-      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.name || "NOTA")} <span class="muted">${snap.identifier ? `(HC: ${escapeHTML(snap.identifier)})` : ""}</span></td><td>${escapeHTML(summary)}</td></tr>`;
+      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.identifier || "NOTA")}</td><td>${escapeHTML(summary)}</td></tr>`;
     }
     html += '</tbody></table>';
     return html;
