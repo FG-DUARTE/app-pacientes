@@ -179,7 +179,7 @@
 <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
   <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
   <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios pacientes, actuaciones, notas e historial.</div>
-  <div class="split">
+  <div class="split" id="registerFields" style="display:none">
     <div>
       <label>Nombre</label>
       <input id="authNombre" type="text" placeholder="Nombre" />
@@ -440,6 +440,8 @@
     if(appWrap) appWrap.style.display = logged ? "block" : "none";
     if(btnLogout) btnLogout.style.display = logged ? "inline-flex" : "none";
     if(authStatusText) authStatusText.textContent = logged ? (currentUser.email || "Usuario autenticado") : "No autenticado";
+    if(registerFields) registerFields.style.display = (!logged && registerMode) ? "grid" : "none";
+    if(btnRegister) btnRegister.textContent = registerMode ? "Confirmar alta" : "Crear cuenta";
     if(welcomePill) welcomePill.style.display = logged ? "inline-flex" : "none";
     if(welcomeText){
       const nombre = [currentProfile?.nombre, currentProfile?.apellido].filter(Boolean).join(" ").trim();
@@ -467,6 +469,16 @@
     }
 
     currentProfile = data || null;
+
+    if(!currentProfile && currentUser?.user_metadata){
+      const nombre = currentUser.user_metadata.nombre || "";
+      const apellido = currentUser.user_metadata.apellido || "";
+      if(nombre || apellido){
+        currentProfile = { user_id: currentUser.id, nombre, apellido };
+        await saveProfileToDb(currentUser.id, nombre, apellido);
+      }
+    }
+
     updateAuthUI();
   }
 
@@ -522,6 +534,13 @@
   }
 
   async function handleRegister(){
+    if(!registerMode){
+      registerMode = true;
+      updateAuthUI();
+      setAuthMessage("Completa nombre y apellido y vuelve a pulsar Confirmar alta.");
+      return;
+    }
+
     const nombre = (authNombre?.value || "").trim();
     const apellido = (authApellido?.value || "").trim();
     const email = (authEmail?.value || "").trim();
@@ -550,6 +569,8 @@
       await saveProfileToDb(data.user.id, nombre, apellido);
     }
 
+    registerMode = false;
+    updateAuthUI();
     setAuthMessage("Cuenta creada. Si tu proyecto exige confirmación por email, revisa tu correo.");
   }
 
@@ -599,6 +620,7 @@
     currentSession = null;
     currentUser = null;
     currentProfile = null;
+    registerMode = false;
     state = defaultState();
     saveState();
     updateAuthUI();
@@ -919,6 +941,7 @@
   const noteDraft = el("noteDraft");
   const appWrap = el("appWrap");
   const authCard = el("authCard");
+  const registerFields = el("registerFields");
   const authNombre = el("authNombre");
   const authApellido = el("authApellido");
   const authEmail = el("authEmail");
@@ -977,6 +1000,7 @@
   let currentSession = null;
   let currentUser = null;
   let currentProfile = null;
+  let registerMode = false;
 
   // 🔒 Timeout por inactividad (15 min)
   const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
