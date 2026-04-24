@@ -348,18 +348,7 @@
     autoRefreshToken: false
   }
 });
-  console.log("window.supabase:", window.supabase);
-  console.log("sb:", sb);
-
-  window.testInsert = async function(){
-    const { data, error } = await sb
-      .from("patients")
-      .insert([{ name: "Test", hc: "123" }]);
-
-    console.log("data:", data);
-    console.log("error:", error);
-  }
-  
+    
   const KEY = "rx_followup_app_v6";
   const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
 
@@ -444,8 +433,8 @@
 
   async function restoreSession(){
     const { data, error } = await sb.auth.getSession();
-    console.log("restore session data:", data);
-    console.log("restore session error:", error);
+    
+    
     currentSession = data?.session || null;
     currentUser = currentSession?.user || null;
     updateAuthUI();
@@ -460,8 +449,8 @@
     }
 
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    console.log("login data:", data);
-    console.log("login error:", error);
+    
+    
 
     if(error){
       setAuthMessage("Falló el login: " + error.message);
@@ -489,8 +478,8 @@
     }
 
     const { data, error } = await sb.auth.signUp({ email, password });
-    console.log("register data:", data);
-    console.log("register error:", error);
+    
+    
 
     if(error){
       setAuthMessage("Falló el alta: " + error.message);
@@ -516,22 +505,31 @@
       return;
     }
 
-    setAuthMessage("Email de recuperación enviado.");
+    setAuthMessage("Revisa tu email. Al abrir el link podrás establecer nueva contraseña.");
   }
 
     async function handleLogout(){
     try {
+      // 🔴 backup automático antes de cerrar sesión
+      const payload = { exportedAt: nowISO(), app: "rx_followup_app_v6", data: state };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `backup_auto_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    } catch(e){}
+
+    try {
       await sb.auth.signOut({ scope: "local" });
-    } catch (e) {
-      console.log("logout error ignorado:", e);
-    }
+    } catch (e) {}
 
     try {
       localStorage.clear();
       sessionStorage.clear();
-    } catch (e) {
-      console.log("storage clear error ignorado:", e);
-    }
+    } catch (e) {}
 
     currentSession = null;
     currentUser = null;
@@ -557,11 +555,11 @@
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: true });
 
-    console.log("load patients data:", patientsData);
-    console.log("load patients error:", patientsError);
+    
+    
 
     if(patientsError){
-      console.log("No se pudieron leer pacientes desde Supabase:", patientsError);
+      
       return;
     }
 
@@ -575,8 +573,8 @@
         .in("patient_id", patientIds)
         .order("created_at", { ascending: true });
 
-      console.log("load actions data:", actionsResult.data);
-      console.log("load actions error:", actionsResult.error);
+      
+      
 
       if(!actionsResult.error && Array.isArray(actionsResult.data)){
         actionsData = actionsResult.data;
@@ -615,7 +613,7 @@
       .eq("patient_id", patientDbId);
 
     if(delResult.error){
-      console.log("delete actions error:", delResult.error);
+      
       throw delResult.error;
     }
 
@@ -633,7 +631,7 @@
       .select();
 
     if(insResult.error){
-      console.log("insert actions error:", insResult.error);
+      
       throw insResult.error;
     }
   }
@@ -652,7 +650,7 @@
           .maybeSingle();
 
         if(found.error){
-          console.log("sync import find error:", found.error);
+          
           continue;
         }
 
@@ -688,7 +686,7 @@
       }
 
       if(saveResult.error){
-        console.log("sync import save error:", saveResult.error);
+        
         continue;
       }
 
@@ -698,7 +696,7 @@
         try {
           await syncPatientActionsToDb(finalDbId, p.actions || []);
         } catch (e) {
-          console.log("sync import actions error:", e);
+          
         }
       }
     }
@@ -717,11 +715,11 @@
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false });
 
-    console.log("load notes data:", data);
-    console.log("load notes error:", error);
+    
+    
 
     if(error){
-      console.log("No se pudieron leer notas desde Supabase:", error);
+      
       return;
     }
 
@@ -763,7 +761,7 @@
       }
 
       if(saveResult.error){
-        console.log("sync import notes error:", saveResult.error);
+        
         continue;
       }
 
@@ -786,11 +784,11 @@
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false });
 
-    console.log("load logs data:", data);
-    console.log("load logs error:", error);
+    
+    
 
     if(error){
-      console.log("No se pudieron leer logs desde Supabase:", error);
+      
       return;
     }
 
@@ -819,7 +817,7 @@
         .select();
 
       if(saveResult.error){
-        console.log("sync import logs error:", saveResult.error);
+        
       }
     }
   }
@@ -842,7 +840,7 @@
       snapshot: snapshot || {},
       created_at: newLog.ts
     }]).then(({ error }) => {
-      if(error) console.log("save log error:", error);
+      if(error) 
     });
   }
 
@@ -906,6 +904,25 @@
   let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
   let currentSession = null;
   let currentUser = null;
+
+  // 🔒 Timeout por inactividad (15 min)
+  const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
+  let inactivityTimer = null;
+
+  function resetInactivityTimer(){
+    if(!currentUser) return;
+    if(inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      alert("Sesión cerrada por inactividad (15 min).");
+      handleLogout();
+    }, INACTIVITY_LIMIT_MS);
+  }
+
+  function setupInactivityListeners(){
+    ["click","mousemove","keydown","scroll","touchstart"].forEach(evt => {
+      window.addEventListener(evt, resetInactivityTimer);
+    });
+  }
 
   let toastTimer = null;
   function applyTheme(theme){
@@ -1500,7 +1517,7 @@ Usalo solo para correcciones.
           .maybeSingle();
 
         if(foundError){
-          console.log("find dbError:", foundError);
+          
           alert("Falló la búsqueda previa en Supabase: " + foundError.message);
           return;
         }
@@ -1557,8 +1574,8 @@ Usalo solo para correcciones.
       dbError = insertResult.error;
     }
 
-    console.log("save dbData:", dbData);
-    console.log("save dbError:", dbError);
+    
+    
     if(dbError){
       alert("Falló el guardado en Supabase: " + dbError.message);
       return;
@@ -1857,10 +1874,27 @@ Recomendado: Exportar antes.`);
   }
 
   async function boot(){
+    // 🔴 detectar recuperación de contraseña
+    const hash = window.location.hash;
+    if(hash && hash.includes("type=recovery")){
+      const newPass = prompt("Introduce tu nueva contraseña:");
+      if(newPass){
+        const { error } = await sb.auth.updateUser({ password: newPass });
+        if(error){
+          alert("Error al cambiar contraseña: " + error.message);
+        } else {
+          alert("Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
+          window.location.href = window.location.origin;
+          return;
+        }
+      }
+    }
     applyTheme(currentTheme);
     updateAuthUI();
     await restoreSession();
     if(currentUser){
+      setupInactivityListeners();
+      resetInactivityTimer();
       await loadPatientsFromDb();
       await loadNotesFromDb();
       await loadLogsFromDb();
@@ -1882,6 +1916,7 @@ Recomendado: Exportar antes.`);
   });
 
   sb.auth.onAuthStateChange(async (_event, session) => {
+    if(inactivityTimer) clearTimeout(inactivityTimer);
     currentSession = session || null;
     currentUser = session?.user || null;
     updateAuthUI();
