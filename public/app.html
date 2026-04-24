@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Seguimiento de Pacientes - Actuaciones Pendientes</title>
+  <title>SEGUIMIENTO DE PACIENTES (actuaciones / estudios pendientes)</title>
   <style>
     :root{
       --bg:#f8fafc;
@@ -166,9 +166,9 @@
 </head>
 <body>
 <header>
-  <h1>Seguimiento de pacientes (actuaciones / estudios pendientes)</h1>
+  <h1>SEGUIMIENTO DE PACIENTES (actuaciones / estudios pendientes)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
-  <div class="sub">Todo queda en este PC (localStorage). Exportá/Importá en JSON para backup o migración.</div>
+  <div class="sub">Datos guardados en la nube. Exportar/Importar JSON queda como copia local o migración manual.</div>
   <div class="row" style="gap:8px; align-items:center;">
     <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
     <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
@@ -232,7 +232,7 @@
       </div>
 
       <div class="hint" style="margin-top:8px">
-        La búsqueda <span class="kbd">NO</span> usa el nombre. Busca en HC/teléfono y también en <span class="kbd">Estudio inicial</span> y <span class="kbd">motivos</span> de actuaciones. Si buscás, aparecen archivados y también los casos <span class="kbd">En seguimiento</span> o <span class="kbd">Varios</span> aunque no se muestren en “Activos”.
+        La búsqueda <span class="kbd">NO</span> usa el nombre. Busca en HC/teléfono y también motivos de actuaciones. Si buscás, aparecen archivados y también los casos En seguimiento o Varios aunque no se muestren en “Activos”.
       </div>
 
       <div class="sep"></div>
@@ -259,10 +259,10 @@
 
       <div class="row">
         <button class="btn ghost" id="btnViewGlobalHistory">Ver historial global</button>
-        <button class="btn danger" id="btnFactoryReset" title="Borra SOLO del navegador de este PC">Reset local</button>
+        <button class="btn danger" id="btnFactoryReset" title="Borra SOLO la copia local de este navegador, no Supabase">Reset local</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        <span class="kbd">Reset local</span> borra datos solo de este navegador. Antes hacé exportación si querés conservar.
+        <span class="kbd">Reset local</span> solo borra la copia local del navegador. No borra Supabase.
       </div>
     </section>
 
@@ -1911,6 +1911,16 @@ Recomendado: Exportar antes.`);
   }
 
   if(btnLogin) btnLogin.addEventListener("click", handleLogin);
+  [authEmail, authPassword].forEach(input => {
+    if(input){
+      input.addEventListener("keydown", (e) => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          handleLogin();
+        }
+      });
+    }
+  });
   if(btnRegister) btnRegister.addEventListener("click", handleRegister);
   if(btnRecover) btnRecover.addEventListener("click", handleRecover);
   if(btnLogout) btnLogout.addEventListener("click", (e) => {
