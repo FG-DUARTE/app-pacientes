@@ -521,14 +521,14 @@
 
     async function handleLogout(){
     await sb.auth.signOut();
-
+  
     localStorage.clear();
     sessionStorage.clear();
-
+  
     currentSession = null;
     currentUser = null;
     state = defaultState();
-
+  
     location.reload(); // 🔴 clave
   }
 
@@ -653,7 +653,6 @@
           .from("patients")
           .update({
             user_id: currentUser?.id,
-            user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
             phone: p.phone,
@@ -666,7 +665,6 @@
         saveResult = await sb
           .from("patients")
           .insert([{
-            user_id: currentUser?.id,
             user_id: currentUser?.id,
             name: p.name,
             hc: p.hc,
@@ -801,7 +799,7 @@
         .from("logs")
         .insert([{
           patient_id: log.patientId || null,
-          user_id: currentUser?.id || null,
+          user_id: currentUser?.id,
           type: log.type || "—",
           snapshot: log.snapshot || {},
           created_at: log.ts || nowISO()
@@ -1531,6 +1529,7 @@ Usalo solo para correcciones.
       const insertResult = await sb
         .from("patients")
         .insert([{
+          user_id: currentUser?.id,
           name: p.name,
           hc: p.hc,
           phone: p.phone,
