@@ -1194,7 +1194,7 @@
     if(!q) return true;
     const qq = normTxt(q);
     if(!qq) return true;
-    if(normTxt(p.name).includes(qq)) return true;
+    if(normTxt(p.hc).includes(qq)) return true;
     if(normTxt(p.hc).includes(qq)) return true;
     if(normTxt(p.phone).includes(qq)) return true;
     if(normTxt(p.initialStudy).includes(qq)) return true;
@@ -1440,7 +1440,7 @@
       const integratedDot = patientAllIntegrated(p) ? "ok" : "off";
       const arch = p.archived ? '<span class="badge"><span class="dot danger"></span>Archivado</span>' : "";
       it.innerHTML = `
-        <p class="title">${escapeHTML(p.name || "—")}</p>
+        <p class="title">${escapeHTML(p.hc || "—")}</p>
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
@@ -1507,9 +1507,9 @@
     if(!p) return;
     selectedPatientId = id;
     hcUnlocked = false;
-    selectedName.textContent = p.name || "—";
+    selectedName.textContent = p.hc || "—";
     lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
-    f_name.value = p.name || "";
+    f_name.value = p.hc || "";
     f_hc.value = p.hc || "";
     f_phone.value = p.phone || "";
     f_initial.value = p.initialStudy || "";
@@ -1532,8 +1532,8 @@
 
   function readFormToPatient(existing){
     const p = normalizePatient(existing || {});
-    p.name = (f_name.value || "").trim();
-    p.hc = p.name;
+    p.hc = (f_name.value || "").trim();
+    p.name = p.hc;
     p.phone = "";
     p.initialStudy = (f_initial.value || "").trim();
     p.archived = (f_archived.value === "yes");
@@ -1545,11 +1545,11 @@
 
   function validatePatient(p, existing){
     const errs = [];
-    if(!p.name) errs.push("Falta identificación.");
+    if(!p.hc) errs.push("Falta identificación.");
 
-    const idNorm = String(p.name || "").trim().toLowerCase();
+    const idNorm = String(p.hc || "").trim().toLowerCase();
     if(idNorm){
-      const duplicate = state.patients.find(x => String(x.name || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
+      const duplicate = state.patients.find(x => String(x.hc || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
       if(duplicate){
         errs.push("Ya existe un registro con esa identificación.");
       }
