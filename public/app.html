@@ -497,7 +497,8 @@
     }
 
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin
+      // Enviamos directamente a app.html porque la app real vive dentro de ese HTML
+      redirectTo: window.location.origin + "/app.html"
     });
 
     if(error){
@@ -1877,7 +1878,7 @@ Recomendado: Exportar antes.`);
 
   async function boot(){
     // 🔴 detectar recuperación de contraseña
-    const hash = window.location.hash;
+    const hash = window.location.hash || (window.parent && window.parent !== window ? window.parent.location.hash : "");
     if(hash && hash.includes("type=recovery")){
       const newPass = prompt("Introduce tu nueva contraseña:");
       if(newPass){
@@ -1886,7 +1887,7 @@ Recomendado: Exportar antes.`);
           alert("Error al cambiar contraseña: " + error.message);
         } else {
           alert("Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
-          window.location.href = window.location.origin;
+          window.location.href = window.location.origin + "/app.html";
           return;
         }
       }
