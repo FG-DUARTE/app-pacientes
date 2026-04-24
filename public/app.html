@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SEGUIMIENTO DE PACIENTES (actuaciones / estudios pendientes)</title>
+  <title>SEGUIMIENTO DE CAMPOS (actuaciones / estudios pendientes)</title>
   <style>
     :root{
       --bg:#f8fafc;
@@ -179,9 +179,9 @@
 </head>
 <body>
 <header>
-  <h1>SEGUIMIENTO DE PACIENTES (actuaciones / estudios pendientes)</h1>
+  <h1>SEGUIMIENTO DE CAMPOS (actuaciones / estudios pendientes)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
-  <div class="sub">Datos guardados en la nube. Exportar/Importar JSON queda como copia local o migración manual.</div>
+  <div class="sub"></div>
   <div class="row" style="gap:8px; align-items:center;">
     <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
     <span class="pill" id="welcomePill" style="display:none"><span class="dot ok"></span><span id="welcomeText">Bienvenido</span></span>
@@ -191,11 +191,11 @@
 </div>
 <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
   <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
-  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios pacientes, actuaciones, notas e historial.</div>
+  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios campos, actuaciones, notas e historial.</div>
   <div class="split" id="registerFields" style="display:none">
     <div>
-      <label>Nombre</label>
-      <input id="authNombre" type="text" placeholder="Nombre" />
+      <label>Identificación</label>
+      <input id="authIdentificación" type="text" placeholder="Identificación" />
     </div>
     <div>
       <label>Apellido</label>
@@ -226,10 +226,10 @@
 </div>
 
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
-    <div class="pill clickable" id="pillRed" title="Ver pacientes con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillYellow" title="Ver pacientes con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillBlue" title="Ver pacientes en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillPurple" title="Ver pacientes VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillRed" title="Ver campos con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillYellow" title="Ver campos con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillBlue" title="Ver campos en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillPurple" title="Ver campos VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
     <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
   </div>
@@ -241,7 +241,7 @@
     <!-- LEFT -->
     <section class="card">
       <div class="row">
-        <div class="pill">Pacientes: <span id="countPatients" class="kbd">0</span></div>
+        <div class="pill">Campos: <span id="countPatients" class="kbd">0</span></div>
         <div class="pill">Historial: <span id="countLogs" class="kbd">0</span></div>
         <button class="btn small right" id="btnNew">+ Nuevo</button>
       </div>
@@ -249,7 +249,7 @@
       <div class="sep"></div>
 
       <div class="search">
-        <input id="search" placeholder="Buscar por HC, teléfono o texto (estudio inicial / motivos)" />
+        <input id="search" placeholder="Buscar por identificación o texto (motivos / datos)" />
         <select id="filterStatus" style="max-width:190px">
           <option value="active">Activos</option>
           <option value="followup">En seguimiento</option>
@@ -271,7 +271,7 @@
       <div class="sep"></div>
 
       <h3 style="margin:0 0 8px; font-size:14px">🟠 Notas</h3>
-      <div class="hint" style="margin-bottom:8px">Notas rápidas sin HC ni nombre. Quedan en memoria para búsqueda aunque se borren de la vista.</div>
+      <div class="hint" style="margin-bottom:8px"></div>
       <textarea id="noteDraft" placeholder="Nueva nota..."></textarea>
       <div class="mini" style="margin-top:6px">Se guarda con el botón Guardar / Actualizar.</div>
       <div class="list" id="noteList" style="margin-top:10px; max-height:26vh"></div>
@@ -279,9 +279,7 @@
       <div class="sep"></div>
 
       <div class="row">
-        <button class="btn" id="btnExport">Exportar JSON</button>
-        <button class="btn" id="btnImport">Importar JSON</button>
-        <input type="file" id="fileImport" accept="application/json" style="display:none" />
+        
       </div>
 
       <div class="sep"></div>
@@ -298,9 +296,9 @@
     <!-- RIGHT -->
     <section class="card">
       <div class="row">
-        <div class="pill">Paciente seleccionado: <span id="selectedName" class="kbd">—</span></div>
+        <div class="pill">Campo seleccionado: <span id="selectedName" class="kbd">—</span></div>
         <div class="right row" style="gap:8px">
-          <button class="btn danger" id="btnDeletePatient">Borrar paciente</button>
+          <button class="btn danger" id="btnDeletePatient">Borrar campo</button>
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
         </div>
       </div>
@@ -309,11 +307,11 @@
 
       <div class="split">
         <div>
-          <label>Nombre</label>
-          <input id="f_name" placeholder="Apellido, Nombre" />
+          <label>Identificación</label>
+          <input id="f_name" placeholder="Apellido, Identificación" />
         </div>
         <div>
-          <label>Nº HC</label>
+          <label>Identificación</label>
           <div class="inline">
             <input id="f_hc" placeholder="Historia clínica" />
             <button class="btn small" id="btnUnlockHC" title="Permite editar HC para correcciones puntuales">Editar</button>
@@ -324,11 +322,11 @@
 
       <div class="split">
         <div>
-          <label>Teléfono</label>
+          <label>Identificación</label>
           <input id="f_phone" placeholder="+34 ..." />
         </div>
         <div>
-          <label>Estado del paciente</label>
+          <label>Estado del campo</label>
           <select id="f_archived">
             <option value="no">Activo</option>
             <option value="yes">Archivado</option>
@@ -336,7 +334,7 @@
         </div>
       </div>
 
-      <label>Datos generales / de interés del paciente
+      <label>Datos generales / de interés del campo
       <textarea id="f_initial" placeholder="Ej: alergias / antecedentes / deatos de interes ...  "></textarea>
 
       <div class="sep"></div>
@@ -355,7 +353,7 @@
       <div class="sep"></div>
 
       <div class="row">
-        <button class="btn" id="btnViewPatientHistory">Ver historial de este paciente</button>
+        <button class="btn" id="btnViewPatientHistory">Ver historial de este campo</button>
         <div class="right muted" id="lastUpdated">—</div>
       </div>
 
@@ -565,7 +563,7 @@
       return;
     }
 
-    const nombre = (authNombre?.value || "").trim();
+    const nombre = (authIdentificación?.value || "").trim();
     const apellido = (authApellido?.value || "").trim();
     const email = (authEmail?.value || "").trim();
     const password = authPassword?.value || "";
@@ -966,7 +964,7 @@
   const appWrap = el("appWrap");
   const authCard = el("authCard");
   const registerFields = el("registerFields");
-  const authNombre = el("authNombre");
+  const authIdentificación = el("authIdentificación");
   const authApellido = el("authApellido");
   const authEmail = el("authEmail");
   const authPassword = el("authPassword");
@@ -1547,8 +1545,8 @@
 
   function validatePatient(p, existing){
     const errs = [];
-    if(!p.name) errs.push("Falta Nombre.");
-    if(!p.hc) errs.push("Falta Nº HC.");
+    if(!p.name) errs.push("Falta Identificación.");
+    if(!p.hc) errs.push("Falta Identificación.");
 
     if(existing && !hcUnlocked && (p.hc !== (existing.hc || ""))) {
       errs.push("HC está bloqueada. Si querés corregirla, usá el botón 'Editar' al lado de HC.");
@@ -1558,7 +1556,7 @@
     if(hcNorm){
       const duplicate = state.patients.find(x => String(x.hc || "").trim() === hcNorm && (!existing || x.id !== existing.id));
       if(duplicate){
-        errs.push("Ya existe un paciente con esa HC.");
+        errs.push("Ya existe un campo con esa HC.");
       }
     }
 
@@ -1709,7 +1707,7 @@ Usalo solo para correcciones.
       try {
         await syncPatientActionsToDb(p.dbId, p.actions || []);
       } catch (actionsError) {
-        alert("Paciente guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
+        alert("Campo guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
       }
     }
 
@@ -1726,7 +1724,7 @@ Usalo solo para correcciones.
       hcUnlocked = false;
       selectPatient(existing.id);
       if(willAutoArchive){
-        showToast("Paciente archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+        showToast("Campo archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
           const px = state.patients.find(x => x.id === existing.id);
           if(!px) return;
           px.archived = false;
@@ -1744,7 +1742,7 @@ Usalo solo para correcciones.
       saveState();
       selectPatient(p.id);
       if(willAutoArchive){
-        showToast("Paciente archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
+        showToast("Campo archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
           const px = state.patients.find(x => x.id === p.id);
           if(!px) return;
           px.archived = false;
@@ -1761,18 +1759,18 @@ Usalo solo para correcciones.
 
   btnDeletePatient.addEventListener("click", async () => {
     if(!selectedPatientId){
-      alert("Seleccioná un paciente para borrar.");
+      alert("Seleccioná un campo para borrar.");
       return;
     }
 
     const existing = state.patients.find(x => x.id === selectedPatientId);
     if(!existing) return;
 
-    const ok = confirm(`¿Seguro que querés borrar al paciente activo?
+    const ok = confirm(`¿Seguro que querés borrar al campo activo?
 
 ${existing.name || "Sin nombre"} · HC: ${existing.hc || "—"}
 
-Esta acción lo elimina de la lista de pacientes.`);
+Esta acción lo elimina de la lista de campos.`);
     if(!ok) return;
 
     let targetDbId = existing.dbId || null;
@@ -1786,7 +1784,7 @@ Esta acción lo elimina de la lista de pacientes.`);
         .maybeSingle();
 
       if(found.error){
-        alert("Falló la búsqueda del paciente en Supabase: " + found.error.message);
+        alert("Falló la búsqueda del campo en Supabase: " + found.error.message);
         return;
       }
 
@@ -1810,7 +1808,7 @@ Esta acción lo elimina de la lista de pacientes.`);
         .eq("id", targetDbId);
 
       if(delPatient.error){
-        alert("Falló el borrado del paciente en Supabase: " + delPatient.error.message);
+        alert("Falló el borrado del campo en Supabase: " + delPatient.error.message);
         return;
       }
     }
@@ -1831,7 +1829,7 @@ Esta acción lo elimina de la lista de pacientes.`);
   function renderHistoryLogs(logs){
     if(!logs.length) return '<div class="muted">No hay registros.</div>';
     const sorted = [...logs].sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
-    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Paciente</th><th>Resumen</th></tr></thead><tbody>';
+    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Campo</th><th>Resumen</th></tr></thead><tbody>';
     for(const L of sorted){
       const snap = L.snapshot || {};
       let summary = "";
@@ -1848,10 +1846,10 @@ Esta acción lo elimina de la lista de pacientes.`);
   }
 
   btnViewPatientHistory.addEventListener("click", () => {
-    if(!selectedPatientId){ alert("Seleccioná un paciente."); return; }
+    if(!selectedPatientId){ alert("Seleccioná un campo."); return; }
     const logs = state.logs.filter(l => l.patientId === selectedPatientId);
     historyPanel.style.display = "block";
-    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del paciente</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
+    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del campo</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
     historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
@@ -1866,7 +1864,7 @@ Esta acción lo elimina de la lista de pacientes.`);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `seguimiento_pacientes_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `seguimiento_campos_${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1921,7 +1919,7 @@ Esta acción lo elimina de la lista de pacientes.`);
       await loadNotesFromDb();
       await loadLogsFromDb();
       renderList();
-      alert("Importación OK. Pacientes, notas y logs sincronizados con Supabase.");
+      alert("Importación OK. Campos, notas y logs sincronizados con Supabase.");
     } catch (err) {
       console.error(err);
       alert("No se pudo importar: " + (err?.message || String(err)));
