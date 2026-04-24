@@ -342,7 +342,12 @@
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
   const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
-  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false, // 🔴 NO mantiene sesión al cerrar navegador
+    autoRefreshToken: false
+  }
+});
   console.log("window.supabase:", window.supabase);
   console.log("sb:", sb);
 
@@ -514,20 +519,17 @@
     setAuthMessage("Email de recuperación enviado.");
   }
 
-  async function handleLogout(){
-    const { error } = await sb.auth.signOut();
-    if(error){
-      alert("Falló el cierre de sesión: " + error.message);
-      return;
-    }
+    async function handleLogout(){
+    await sb.auth.signOut();
+
+    localStorage.clear();
+    sessionStorage.clear();
+
     currentSession = null;
     currentUser = null;
     state = defaultState();
-    saveState();
-    updateAuthUI();
-    renderList();
-    clearForm();
-    setAuthMessage("Sesión cerrada.");
+
+    location.reload(); // 🔴 clave
   }
 
   async function loadPatientsFromDb(){
