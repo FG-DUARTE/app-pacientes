@@ -313,14 +313,6 @@
         <div class="mini" id="identifierHelp" style="display:none"></div>
       </div>
 
-      <div style="margin-top:10px">
-        <label>Estado</label>
-        <select id="f_archived">
-          <option value="no">Activo</option>
-          <option value="yes">Archivado</option>
-        </select>
-      </div>
-
       <label>Datos generales</label>
       <textarea id="f_initial" placeholder="escribe aqui ..........."></textarea>
 
@@ -982,7 +974,7 @@
   const f_identifier_input = el("f_identifier_input");
   const f_identifier = el("f_identifier");
   const f_initial = el("f_initial");
-  const f_archived = el("f_archived");
+  
   const btnUnlockHC = el("btnUnlockHC");
 
   const search = el("search");
@@ -1487,7 +1479,7 @@
     f_identifier_input.value = "";
     f_identifier.value = "";
     f_initial.value = "";
-    f_archived.value = "no";
+    
     renderActions([]);
     lockHCIfNeeded();
     renderList();
@@ -1503,7 +1495,7 @@
     f_identifier_input.value = p.identifier || "";
     f_identifier.value = p.identifier || "";
     f_initial.value = p.initialStudy || "";
-    f_archived.value = p.archived ? "yes" : "no";
+    
     renderActions(p.actions || []);
     historyPanel.style.display = "none";
     historyPanel.innerHTML = "";
@@ -1525,7 +1517,7 @@
     p.identifier = (f_identifier_input.value || "").trim();
     
     p.initialStudy = (f_initial.value || "").trim();
-    p.archived = (f_archived.value === "yes");
+    p.archived = existing ? !!existing.archived : false;
     p.actions = autocorrectActions(getActionsFromDOM());
     if(!existing) p.createdAt = nowISO();
     p.updatedAt = nowISO();
