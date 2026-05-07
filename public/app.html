@@ -855,16 +855,41 @@
     }
   }
 
-  async function uploadScanFileNow(identifier){
-    if(!scanPendingFile) return null;
-    try {
-      const url = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1);
-      scanPendingFile = null;
-      return url;
-    } catch(err){
-      console.warn("Error subiendo foto de escaneo al bucket:", err);
-      return null;
-    }
+  // Auto-guarda registro + actuación pendiente + foto directamente en Supabase
+  async function autoSaveWithPhoto(identifier, fotoUrl){
+    // Insertar registro nuevo
+    const ins = await sb.from("patients").insert([{
+      user_id: currentUser?.id,
+      identifier: identifier,
+      datos_generales: "",
+      archived: false
+    }]).select();
+    if(ins.error){ alert("Error al crear registro: "+ins.error.message); return null; }
+    const patientDbId = ins.data?.[0]?.id || null;
+    if(!patientDbId) return null;
+
+    // Insertar actuación 🔴 Pendiente con foto
+    await sb.from("patient_actions").insert([{
+      patient_id: patientDbId,
+      status: "pending",
+      note: "",
+      foto1_url: fotoUrl || null,
+      foto2_url: null
+    }]);
+
+    // Actualizar state local
+    const newP = normalizePatient({
+      dbId: patientDbId,
+      identifier,
+      initialStudy: "",
+      archived: false,
+      actions: [{ status:"pending", note:"", foto1_url: fotoUrl||null, foto2_url: null }]
+    });
+    newP.id = uid();
+    state.patients.push(newP);
+    addLog(newP.id, "scan_created", structuredClone(newP));
+    saveState();
+    return newP.id; // local id
   }
 
   function confirmScanIdentifier(identifier){
@@ -872,7 +897,6 @@
     if(!identifier){ alert("Escribí un identificador."); return; }
     scanFoundIdentifier = identifier;
 
-    // Search existing
     const existing = state.patients.find(p =>
       String(p.identifier||"").trim().toLowerCase() === identifier.toLowerCase()
     );
@@ -890,31 +914,56 @@
       btnOpen.textContent = "Abrir registro";
       btnOpen.addEventListener("click", async () => {
         btnOpen.disabled = true;
-        btnOpen.textContent = "Subiendo foto...";
-        const url = await uploadScanFileNow(identifier);
-        pendingScanFile = url; // URL string lista para adjuntar al guardar
+        btnOpen.textContent = "Guardando...";
+        // Subir foto y añadir actuación pendiente al registro existente
+        let fotoUrl = null;
+        if(scanPendingFile){
+          try { fotoUrl = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1); } catch(e){}
+          scanPendingFile = null;
+        }
+        if(fotoUrl && existing.dbId){
+          await sb.from("patient_actions").insert([{
+            patient_id: existing.dbId,
+            status: "pending",
+            note: "",
+            foto1_url: fotoUrl,
+            foto2_url: null
+          }]);
+          existing.actions = existing.actions || [];
+          existing.actions.push({ status:"pending", note:"", foto1_url: fotoUrl, foto2_url: null });
+          existing.updatedAt = nowISO();
+          addLog(existing.id, "scan_photo_added", { identifier, fotoUrl });
+          saveState();
+        }
         closeScanModal();
+        await loadPatientsFromDb();
         selectPatient(existing.id);
-        if(url) showToast("Imagen subida. Se adjuntará al guardar.", "", null, 4000);
+        renderList();
+        showToast("✅ Nueva actuación 🔴 con foto añadida al registro.", "", null, 4000);
       });
       matchActions.appendChild(btnOpen);
     } else {
-      matchText.textContent = `ℹ️ No existe un registro con identificador "${identifier}". ¿Querés crear uno?`;
+      matchText.textContent = `ℹ️ No existe un registro con "${identifier}". ¿Querés crear uno?`;
       const btnCreate = document.createElement("button");
       btnCreate.className = "btn success small";
-      btnCreate.textContent = "Crear nuevo registro";
+      btnCreate.textContent = "Crear registro";
       btnCreate.addEventListener("click", async () => {
         btnCreate.disabled = true;
-        btnCreate.textContent = "Subiendo foto...";
-        const url = await uploadScanFileNow(identifier);
-        pendingScanFile = url; // URL string lista
+        btnCreate.textContent = "Guardando...";
+        let fotoUrl = null;
+        if(scanPendingFile){
+          try { fotoUrl = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1); } catch(e){}
+          scanPendingFile = null;
+        }
+        const localId = await autoSaveWithPhoto(identifier, fotoUrl);
         closeScanModal();
-        clearForm();
-        f_identifier_input.value = identifier;
-        f_identifier.value = identifier;
-        selectedIdentifier.textContent = identifier;
-        document.getElementById("f_initial").focus();
-        if(url) showToast("Imagen subida. Se adjuntará al guardar.", "", null, 4000);
+        await loadPatientsFromDb();
+        const created = state.patients.find(p =>
+          String(p.identifier||"").trim().toLowerCase() === identifier.toLowerCase()
+        );
+        if(created) selectPatient(created.id);
+        renderList();
+        showToast("✅ Registro creado con actuación 🔴 Pendiente y foto guardada.", "", null, 4000);
       });
       matchActions.appendChild(btnCreate);
     }
@@ -1587,18 +1636,7 @@
 
     if(dbError){ alert("Falló el guardado en Supabase: "+dbError.message); return; }
 
-    // pendingScanFile ahora es una URL string ya subida al bucket
-    if(pendingScanFile && typeof pendingScanFile === "string"){
-      const scanUrl = pendingScanFile;
-      pendingScanFile = null;
-      if(p.actions && p.actions.length > 0){
-        if(!p.actions[0].foto1_url) p.actions[0].foto1_url = scanUrl;
-        else if(!p.actions[0].foto2_url) p.actions[0].foto2_url = scanUrl;
-      } else {
-        // Sin actuaciones: crear una entrada vacía solo para alojar la foto
-        p.actions = [{ status: "", note: "", foto1_url: scanUrl, foto2_url: null }];
-      }
-    }
+    // pendingScanFile ya no se usa — la foto se guarda automáticamente desde el modal
 
     if(Array.isArray(dbData)&&dbData[0]?.id){
       p.dbId=dbData[0].id;
