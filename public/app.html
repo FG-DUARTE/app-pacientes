@@ -300,7 +300,7 @@
     </div>
 
     <div class="scan-zone" id="scanZone">
-      <input type="file" id="scanFileInput" accept="image/*" capture="environment" />
+      <input type="file" id="scanFileInput" accept="image/*" />
       <div style="font-size:32px">📄</div>
       <div style="font-weight:700; margin-top:8px">Toca para subir imagen o sacar foto</div>
       <div class="hint" style="margin-top:4px">JPG, PNG, HEIC · Máx 10 MB</div>
@@ -1256,7 +1256,7 @@
     uploadWrap.innerHTML = `
       <span style="font-size:20px">📷</span>
       <span>Foto ${slotNum}</span>
-      <input type="file" accept="image/*" capture="environment" />
+      <input type="file" accept="image/*" />
     `;
     container.appendChild(uploadWrap);
 
@@ -1277,7 +1277,7 @@
         uploadWrap.innerHTML = `
           <span style="font-size:20px">📷</span>
           <span>Foto ${slotNum}</span>
-          <input type="file" accept="image/*" capture="environment" />
+          <input type="file" accept="image/*" />
         `;
       }
     });
