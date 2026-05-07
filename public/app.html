@@ -1,3 +1,6 @@
+TML
+Copiar
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -54,61 +57,22 @@
     .wrap{max-width:1200px; margin:0 auto; padding:12px 18px 40px;}
     .grid{display:grid; gap:12px; grid-template-columns: 380px 1fr;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
-    }
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;}
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     label{font-size:12px; color:var(--muted); display:block; margin:8px 0 4px;}
-    input, textarea, select{
-      width:100%;
-      box-sizing:border-box;
-      background:var(--panel);
-      border:1px solid var(--border);
-      color:var(--txt);
-      border-radius:12px;
-      padding:10px 10px;
-      outline:none;
-    }
+    input, textarea, select{width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--border);color:var(--txt);border-radius:12px;padding:10px 10px;outline:none;}
     input:disabled{opacity:.75; cursor:not-allowed;}
     textarea{min-height:70px; resize:vertical;}
-    .btn{
-      border:1px solid var(--border);
-      background:var(--panel);
-      color:var(--txt);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition:.15s ease;
-      font-weight:600;
-      font-size:13px;
-    }
+    .btn{border:1px solid var(--border);background:var(--panel);color:var(--txt);padding:10px 12px;border-radius:12px;cursor:pointer;transition:.15s ease;font-weight:600;font-size:13px;}
     .btn:hover{transform: translateY(-1px); border-color:#2b3d66;}
-    .btn.primary{background: linear-gradient(180deg, #2b6cff, #1c4ed8); border-color:#2b6cff;}
-    .btn.danger{background: linear-gradient(180deg, #ff5a5a, #d81c1c); border-color:#ff5a5a;}
+    .btn.primary{background: linear-gradient(180deg, #2b6cff, #1c4ed8); border-color:#2b6cff; color:#fff;}
+    .btn.danger{background: linear-gradient(180deg, #ff5a5a, #d81c1c); border-color:#ff5a5a; color:#fff;}
+    .btn.success{background: linear-gradient(180deg, #10b981, #059669); border-color:#10b981; color:#fff;}
     .btn.ghost{background:transparent;}
     .btn.small{padding:8px 10px; font-size:12px; border-radius:10px;}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px; border-radius:999px;
-      border:1px solid var(--border); background:var(--panel); color:var(--muted);
-      font-size:12px;
-    }
-    .welcome-banner{
-      display:none;
-      margin-top:14px;
-      padding:14px 16px;
-      border:1px solid var(--border);
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(16,185,129,.08));
-      box-shadow:var(--shadow);
-      font-weight:800;
-      font-size:18px;
-      color:var(--txt);
-    }
+    .btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+    .pill{display:inline-flex; align-items:center; gap:8px;padding:7px 10px; border-radius:999px;border:1px solid var(--border); background:var(--panel); color:var(--muted);font-size:12px;}
+    .welcome-banner{display:none;margin-top:14px;padding:14px 16px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(16,185,129,.08));box-shadow:var(--shadow);font-weight:800;font-size:18px;color:var(--txt);}
     .welcome-banner .mini{font-weight:500; margin-top:4px;}
     .pill.clickable{cursor:pointer; user-select:none; transition:.15s ease;}
     .pill.clickable:hover{transform: translateY(-1px); border-color:#2b3d66;}
@@ -116,13 +80,7 @@
     .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
     .sep{height:1px;background:var(--border); margin:12px 0;}
     .list{display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow:auto; padding-right:4px;}
-    .item{
-      border:1px solid var(--border);
-      background:var(--panel);
-      border-radius:14px;
-      padding:10px;
-      cursor:pointer;
-    }
+    .item{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:10px;cursor:pointer;}
     .item:hover{border-color:#2b3d66;}
     .item.active{border-color: var(--accent); box-shadow: 0 0 0 2px rgba(110,168,254,.15) inset;}
     .item.archived{opacity:.7;}
@@ -130,11 +88,7 @@
     .title{font-weight:800; font-size:14px; margin:0;}
     .identifier{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
     .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
-    .badge{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:5px 8px; border-radius:999px; font-size:12px;
-      background:var(--panel); border:1px solid var(--border);
-    }
+    .badge{display:inline-flex; align-items:center; gap:6px;padding:5px 8px; border-radius:999px; font-size:12px;background:var(--panel); border:1px solid var(--border);}
     .dot{width:10px;height:10px;border-radius:50%;}
     .dot.off{background:var(--off);}
     .dot.warn{background:var(--warn);}
@@ -144,20 +98,8 @@
     .dot.ok{background:var(--ok);}
     .dot.danger{background:var(--danger);}
     .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:var(--accent);}
-.table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  border-radius:14px;
-  border:1px solid var(--border);
-  background:var(--panel);
-}
-    .table th, .table td{
-      padding:10px;
-      border-bottom:1px solid var(--border);
-      vertical-align:top;
-      font-size:13px;
-    }
+    .table{width:100%;border-collapse:separate;border-spacing:0;border-radius:14px;border:1px solid var(--border);background:var(--panel);}
+    .table th, .table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px;}
     .table th{color:var(--muted); text-align:left; background:var(--panel);}
     .table tr:last-child td{border-bottom:none;}
     .right{margin-left:auto;}
@@ -165,66 +107,275 @@
     .search{display:flex; gap:8px;}
     .inline{display:flex; gap:8px; align-items:center;}
     .mini{font-size:12px; color:var(--muted);}
-    #historyPanel{
-  max-height: 50vh;
-  overflow-y: auto;
-}
-    #historyPanel thead th{
-  position: sticky;
-  top: 0;
-  background: var(--panel);
-  z-index: 2;
-}
+    #historyPanel{max-height: 50vh;overflow-y: auto;}
+    #historyPanel thead th{position: sticky;top: 0;background: var(--panel);z-index: 2;}
+ 
+    /* === SCAN MODAL === */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .modal-overlay.open{display:flex;}
+    .modal-box{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+      width:100%;
+      max-width:560px;
+      max-height:90vh;
+      overflow-y:auto;
+    }
+    .modal-title{font-size:16px; font-weight:800; margin:0 0 12px;}
+    .scan-zone{
+      border:2px dashed var(--border);
+      border-radius:14px;
+      padding:24px;
+      text-align:center;
+      cursor:pointer;
+      transition:.15s ease;
+      position:relative;
+    }
+    .scan-zone:hover{border-color:var(--accent);}
+    .scan-zone input[type=file]{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+      width:100%;
+      height:100%;
+    }
+    .scan-preview{
+      max-width:100%;
+      max-height:220px;
+      border-radius:10px;
+      margin:10px auto;
+      display:block;
+      border:1px solid var(--border);
+    }
+    .ocr-result-box{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      margin-top:10px;
+    }
+    .ocr-found{
+      font-size:22px;
+      font-weight:900;
+      color:var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .progress-bar-wrap{
+      background:var(--border);
+      border-radius:999px;
+      height:6px;
+      margin:8px 0;
+      overflow:hidden;
+    }
+    .progress-bar{
+      height:6px;
+      background:var(--accent);
+      border-radius:999px;
+      transition:width .3s ease;
+      width:0%;
+    }
+ 
+    /* === PHOTO THUMBS in actions === */
+    .photo-thumbs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .photo-thumb-wrap{
+      position:relative;
+      width:80px;
+      height:80px;
+    }
+    .photo-thumb{
+      width:80px;
+      height:80px;
+      object-fit:cover;
+      border-radius:10px;
+      border:1px solid var(--border);
+      cursor:pointer;
+    }
+    .photo-thumb-del{
+      position:absolute;
+      top:-6px;
+      right:-6px;
+      background:var(--danger);
+      color:#fff;
+      border:none;
+      border-radius:50%;
+      width:20px;
+      height:20px;
+      font-size:12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      line-height:1;
+    }
+    .photo-upload-btn{
+      width:80px;
+      height:80px;
+      border:2px dashed var(--border);
+      border-radius:10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:11px;
+      color:var(--muted);
+      gap:4px;
+      transition:.15s ease;
+      position:relative;
+      background:var(--panel);
+    }
+    .photo-upload-btn:hover{border-color:var(--accent); color:var(--accent);}
+    .photo-upload-btn input[type=file]{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+      width:100%;
+      height:100%;
+    }
+ 
+    /* lightbox */
+    .lightbox{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.85);
+      z-index:2000;
+      align-items:center;
+      justify-content:center;
+    }
+    .lightbox.open{display:flex;}
+    .lightbox img{max-width:95vw; max-height:90vh; border-radius:12px;}
+    .lightbox-close{
+      position:fixed;
+      top:16px;
+      right:16px;
+      background:rgba(255,255,255,.15);
+      color:#fff;
+      border:none;
+      border-radius:50%;
+      width:36px;
+      height:36px;
+      font-size:20px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
   </style>
 </head>
 <body>
+ 
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">×</button>
+  <img id="lightboxImg" src="" alt="foto" />
+</div>
+ 
+<!-- SCAN MODAL -->
+<div class="modal-overlay" id="scanModal">
+  <div class="modal-box">
+    <div class="row" style="margin-bottom:12px">
+      <div class="modal-title">📷 Escanear documento</div>
+      <button class="btn small ghost right" id="btnCloseScanModal">× Cerrar</button>
+    </div>
+    <div class="hint" style="margin-bottom:12px">
+      Subí una imagen o sacá una foto del documento. Se intentará extraer el identificador (NHC, HC, Historia Clínica...) automáticamente.
+    </div>
+ 
+    <div class="scan-zone" id="scanZone">
+      <input type="file" id="scanFileInput" accept="image/*" capture="environment" />
+      <div style="font-size:32px">📄</div>
+      <div style="font-weight:700; margin-top:8px">Toca para subir imagen o sacar foto</div>
+      <div class="hint" style="margin-top:4px">JPG, PNG, HEIC · Máx 10 MB</div>
+    </div>
+ 
+    <img id="scanPreview" class="scan-preview" style="display:none" alt="preview" />
+ 
+    <div id="ocrProgress" style="display:none; margin-top:10px">
+      <div class="hint">Leyendo documento...</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="ocrProgressBar"></div></div>
+      <div class="mini" id="ocrProgressText">Iniciando...</div>
+    </div>
+ 
+    <div id="ocrResultBox" class="ocr-result-box" style="display:none">
+      <div class="hint" style="margin-bottom:6px">Identificador encontrado:</div>
+      <div class="ocr-found" id="ocrFoundNumber">—</div>
+      <div class="hint" style="margin-top:6px" id="ocrFoundContext"></div>
+      <div class="row" style="margin-top:10px; gap:8px; flex-wrap:wrap">
+        <input id="ocrManualInput" placeholder="Corrección manual si hace falta" style="flex:1; min-width:140px" />
+        <button class="btn primary small" id="btnOcrConfirm">Confirmar identificador</button>
+      </div>
+    </div>
+ 
+    <div id="ocrNotFound" style="display:none; margin-top:10px">
+      <div class="hint" style="color:var(--warn)">⚠️ No se encontró un identificador automáticamente.</div>
+      <div class="row" style="margin-top:8px; gap:8px">
+        <input id="ocrManualInputAlt" placeholder="Escribí el identificador manualmente" style="flex:1" />
+        <button class="btn primary small" id="btnOcrConfirmAlt">Confirmar</button>
+      </div>
+    </div>
+ 
+    <div id="scanMatchResult" style="display:none; margin-top:14px">
+      <div class="sep"></div>
+      <div class="hint" style="margin-bottom:8px" id="scanMatchText"></div>
+      <div class="row" style="gap:8px; flex-wrap:wrap" id="scanMatchActions"></div>
+    </div>
+  </div>
+</div>
+ 
 <header>
   <h1>BASE DE REGISTROS (actuaciones)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
-  <div class="sub"></div>
-  <div class="row" style="gap:8px; align-items:center;">
-    <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
-    <span class="pill" id="welcomePill" style="display:none"><span class="dot ok"></span><span id="welcomeText">Bienvenido</span></span>
-    <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
-    <button class="btn small ghost" id="btnLogout" style="display:none">Cerrar sesión</button>
-  </div>
-</div>
-<div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;" autocomplete="off">
-  <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
-  <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios registros, actuaciones, notas e historial.</div>
-  <div class="split" id="registerFields" style="display:none">
-    <div>
-      <label>Nombre</label>
-      <input id="authNombre" type="text" placeholder="Nombre" autocomplete="off" />
-    </div>
-    <div>
-      <label>Apellido</label>
-      <input id="authApellido" type="text" placeholder="Apellido" autocomplete="off" />
+    <div class="sub"></div>
+    <div class="row" style="gap:8px; align-items:center;">
+      <span class="pill" id="authStatusPill"><span class="dot off"></span><span id="authStatusText">No autenticado</span></span>
+      <span class="pill" id="welcomePill" style="display:none"><span class="dot ok"></span><span id="welcomeText">Bienvenido</span></span>
+      <button class="btn small" id="btnThemeToggle" title="Cambiar modo día/noche">🌙 Modo noche</button>
+      <button class="btn small ghost" id="btnLogout" style="display:none">Cerrar sesión</button>
     </div>
   </div>
-  <div class="split">
-    <div>
-      <label>Email</label>
-      <input id="authEmail" type="email" placeholder="tuemail@dominio.com" autocomplete="off" value="" />
+  <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;" autocomplete="off">
+    <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
+    <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios registros, actuaciones, notas e historial.</div>
+    <div class="split" id="registerFields" style="display:none">
+      <div><label>Nombre</label><input id="authNombre" type="text" placeholder="Nombre" autocomplete="off" /></div>
+      <div><label>Apellido</label><input id="authApellido" type="text" placeholder="Apellido" autocomplete="off" /></div>
     </div>
-    <div>
-      <label>Contraseña</label>
-      <input id="authPassword" type="password" placeholder="Contraseña" autocomplete="new-password" value="" />
+    <div class="split">
+      <div><label>Email</label><input id="authEmail" type="email" placeholder="tuemail@dominio.com" autocomplete="off" value="" /></div>
+      <div><label>Contraseña</label><input id="authPassword" type="password" placeholder="Contraseña" autocomplete="new-password" value="" /></div>
     </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn primary" id="btnLogin">Entrar</button>
+      <button class="btn" id="btnRegister">Crear cuenta</button>
+      <button class="btn ghost" id="btnRecover">Recuperar clave</button>
+    </div>
+    <div class="hint" id="authHint" style="margin-top:10px;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
   </div>
-  <div class="row" style="margin-top:10px;">
-    <button class="btn primary" id="btnLogin">Entrar</button>
-    <button class="btn" id="btnRegister">Crear cuenta</button>
-    <button class="btn ghost" id="btnRecover">Recuperar clave</button>
-  </div>
-  <div class="hint" id="authHint" style="margin-top:10px;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
-</div>
-
   <div class="welcome-banner" id="welcomeBanner">
-  <div id="welcomeBannerText">Bienvenido</div>
-  <div class="mini"></div>
-</div>
-
+    <div id="welcomeBannerText">Bienvenido</div>
+    <div class="mini"></div>
+  </div>
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
     <div class="pill clickable" id="pillRed" title="Ver registros con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
     <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
@@ -232,12 +383,12 @@
     <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
     <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
+    <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
 </header>
-
+ 
 <div class="wrap" id="appWrap" style="display:none">
   <div class="grid">
-
     <!-- LEFT -->
     <section class="card">
       <div class="row">
@@ -245,9 +396,7 @@
         <div class="pill">Historial: <span id="countLogs" class="kbd">0</span></div>
         <button class="btn small right" id="btnNew">+ Nuevo</button>
       </div>
-
       <div class="sep"></div>
-
       <div class="search">
         <input id="search" placeholder="Buscar por identificación o texto (motivos / datos)" />
         <select id="filterStatus" style="max-width:190px">
@@ -259,40 +408,26 @@
           <option value="all">Todos</option>
         </select>
       </div>
-
       <div class="hint" style="margin-top:8px">
-        La búsqueda usa identificación, datos generales y motivos de actuaciones. Si buscás, aparecen archivados y también los casos En seguimiento o Varios aunque no se muestren en “Activos”.
+        La búsqueda usa identificación, datos generales y motivos de actuaciones.
       </div>
-
       <div class="sep"></div>
-
       <div class="list" id="patientList"></div>
-
       <div class="sep"></div>
-
       <h3 style="margin:0 0 8px; font-size:14px">🟠 Notas</h3>
-      <div class="hint" style="margin-bottom:8px"></div>
       <textarea id="noteDraft" placeholder="Nueva nota..."></textarea>
       <div class="mini" style="margin-top:6px">Se guarda con el botón Guardar / Actualizar.</div>
       <div class="list" id="noteList" style="margin-top:10px; max-height:26vh"></div>
-
       <div class="sep"></div>
-
-      <div class="row">
-        
-      </div>
-
-      <div class="sep"></div>
-
       <div class="row">
         <button class="btn ghost" id="btnViewGlobalHistory">Ver historial global</button>
-        <button class="btn danger" id="btnFactoryReset" title="Borra SOLO la copia local de este navegador, no Supabase">Reset local</button>
+        <button class="btn danger" id="btnFactoryReset" title="Borra SOLO la copia local de este navegador">Reset local</button>
       </div>
       <div class="hint" style="margin-top:8px">
         <span class="kbd">Reset local</span> solo borra la copia local del navegador. No borra Supabase.
       </div>
     </section>
-
+ 
     <!-- RIGHT -->
     <section class="card">
       <div class="row">
@@ -302,229 +437,169 @@
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
         </div>
       </div>
-
       <div class="sep"></div>
-
       <div>
         <label>Identificación</label>
-        <input id="f_identifier_input" placeholder="escribe aquí ...... " />
+        <input id="f_identifier_input" placeholder="escribe aquí ......" />
         <input id="f_identifier" type="hidden" />
         <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
         <div class="mini" id="identifierHelp" style="display:none"></div>
       </div>
-
       <label>Datos generales</label>
       <textarea id="f_initial" placeholder="escribe aqui ..........."></textarea>
-
       <div class="sep"></div>
-
       <h3 style="margin:0 0 8px; font-size:14px">Actuaciones</h3>
       <div class="hint" style="margin-bottom:10px">
-        Estados: 🔴 Pendiente (no integrado) · 🟡 Realizado (falta integrar) · 🔵 En seguimiento · 🟣 Varios · 🟢 Integrado/Completado. 
+        Estados: 🔴 Pendiente · 🟡 Realizado · 🔵 En seguimiento · 🟣 Varios · 🟢 Integrado/Completado.
       </div>
-
       <div id="actionsWrap"></div>
       <div class="row" style="margin-top:8px">
         <button class="btn" id="btnAddAction">+ Añadir actuación</button>
         <div class="right muted" id="actionsCount">0 actuaciones</div>
       </div>
-
       <div class="sep"></div>
-
       <div class="row">
         <button class="btn" id="btnViewPatientHistory">Ver historial de este registro</button>
         <div class="right muted" id="lastUpdated">—</div>
       </div>
-
       <div class="sep"></div>
-
       <div id="historyPanel" style="display:none"></div>
     </section>
-
   </div>
 </div>
+ 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
   const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false, // 🔴 NO mantiene sesión al cerrar navegador
-    autoRefreshToken: false
-  }
-});
-    
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+ 
+  const STORAGE_BUCKET = "archivos";
   const KEY = "rx_followup_app_v6";
-  const LEGACY_KEYS = ["rx_followup_app_v5", "rx_followup_app_v4", "rx_followup_app_v3", "rx_followup_app_v2", "rx_followup_app_v1"];
-
+  const LEGACY_KEYS = ["rx_followup_app_v5","rx_followup_app_v4","rx_followup_app_v3","rx_followup_app_v2","rx_followup_app_v1"];
   const nowISO = () => new Date().toISOString();
   const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
-
-  function defaultState(){
-    return { patients: [], logs: [], notes: [] };
-  }
-
+ 
+  function defaultState(){ return { patients: [], logs: [], notes: [] }; }
+ 
   function isUsedAction(a){
-    return !!(a && (String(a.status || "") !== "" || String(a.note || "").trim() !== ""));
+    return !!(a && (String(a.status||"")!=="" || String(a.note||"").trim()!==""));
   }
-
+ 
   function normalizeActions(actions){
     const arr = Array.isArray(actions) ? actions : [];
-    return arr.map(a => ({ status: String(a?.status || ""), note: String(a?.note || "") })).filter(isUsedAction);
+    return arr.map(a => ({
+      status: String(a?.status||""),
+      note: String(a?.note||""),
+      foto1_url: a?.foto1_url || null,
+      foto2_url: a?.foto2_url || null
+    })).filter(isUsedAction);
   }
-
+ 
   function normalizePatient(p){
     return {
-      id: p?.id || uid(),
-      dbId: p?.dbId || p?.db_id || null,
-      identifier: String(p?.identifier || ""),
-      initialStudy: String(p?.initialStudy || ""),
+      id: p?.id||uid(),
+      dbId: p?.dbId||p?.db_id||null,
+      identifier: String(p?.identifier||""),
+      initialStudy: String(p?.initialStudy||""),
       archived: !!p?.archived,
       actions: normalizeActions(p?.actions),
-      createdAt: p?.createdAt || nowISO(),
-      updatedAt: p?.updatedAt || nowISO(),
+      createdAt: p?.createdAt||nowISO(),
+      updatedAt: p?.updatedAt||nowISO(),
     };
   }
-
+ 
   function normalizeNote(n){
     return {
-      id: n?.id || uid(),
-      dbId: n?.dbId || n?.db_id || null,
-      text: String(n?.text || ""),
-      createdAt: n?.createdAt || nowISO(),
-      deletedAt: n?.deletedAt || null,
+      id: n?.id||uid(),
+      dbId: n?.dbId||n?.db_id||null,
+      text: String(n?.text||""),
+      createdAt: n?.createdAt||nowISO(),
+      deletedAt: n?.deletedAt||null,
       is_deleted: !!n?.is_deleted,
     };
   }
-
+ 
   function loadState(){
     try {
-      for(const key of [KEY, ...LEGACY_KEYS]){
+      for(const key of [KEY,...LEGACY_KEYS]){
         const raw = localStorage.getItem(key);
         if(!raw) continue;
         const st = JSON.parse(raw);
         const migrated = {
-          patients: (Array.isArray(st?.patients) ? st.patients : []).map(normalizePatient),
-          logs: Array.isArray(st?.logs) ? st.logs : [],
-          notes: (Array.isArray(st?.notes) ? st.notes : []).map(normalizeNote)
+          patients: (Array.isArray(st?.patients)?st.patients:[]).map(normalizePatient),
+          logs: Array.isArray(st?.logs)?st.logs:[],
+          notes: (Array.isArray(st?.notes)?st.notes:[]).map(normalizeNote)
         };
-        if(key !== KEY) localStorage.setItem(KEY, JSON.stringify(migrated));
+        if(key!==KEY) localStorage.setItem(KEY,JSON.stringify(migrated));
         return migrated;
       }
       return defaultState();
-    } catch (e) {
-      console.warn("loadState error", e);
-      return defaultState();
-    }
+    } catch(e){ return defaultState(); }
   }
-
-  function saveState(){
-    localStorage.setItem(KEY, JSON.stringify(state));
-  }
-
-  function setAuthMessage(msg){
-    if(authHint) authHint.textContent = msg || "";
-  }
-
+ 
+  function saveState(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+ 
+  // ─── AUTH HELPERS ───
+  function setAuthMessage(msg){ if(authHint) authHint.textContent=msg||""; }
+ 
   function updateAuthUI(){
     const logged = !!currentUser;
-    if(authCard) authCard.style.display = logged ? "none" : "block";
-    if(appWrap) appWrap.style.display = logged ? "block" : "none";
-    if(btnLogout) btnLogout.style.display = logged ? "inline-flex" : "none";
-    if(authStatusText) authStatusText.textContent = logged ? (currentUser.email || "Usuario autenticado") : "No autenticado";
-    if(registerFields) registerFields.style.display = (!logged && registerMode) ? "grid" : "none";
-    if(btnRegister) btnRegister.textContent = registerMode ? "Confirmar alta" : "Crear cuenta";
-    if(welcomePill) welcomePill.style.display = logged ? "inline-flex" : "none";
-    const nombre = [currentProfile?.nombre, currentProfile?.apellido].filter(Boolean).join(" ").trim();
-    if(welcomeText){
-      welcomeText.textContent = nombre ? `Bienvenido, ${nombre}` : "Bienvenido";
-    }
-    if(welcomeBanner){
-      welcomeBanner.style.display = logged ? "block" : "none";
-    }
-    if(welcomeBannerText){
-      welcomeBannerText.textContent = nombre ? `Bienvenido, ${nombre}` : "Bienvenido";
-    }
+    if(authCard) authCard.style.display = logged?"none":"block";
+    if(appWrap) appWrap.style.display = logged?"block":"none";
+    if(btnLogout) btnLogout.style.display = logged?"inline-flex":"none";
+    if(authStatusText) authStatusText.textContent = logged?(currentUser.email||"Usuario autenticado"):"No autenticado";
+    if(registerFields) registerFields.style.display = (!logged&&registerMode)?"grid":"none";
+    if(btnRegister) btnRegister.textContent = registerMode?"Confirmar alta":"Crear cuenta";
+    if(welcomePill) welcomePill.style.display = logged?"inline-flex":"none";
+    const nombre = [currentProfile?.nombre,currentProfile?.apellido].filter(Boolean).join(" ").trim();
+    if(welcomeText) welcomeText.textContent = nombre?`Bienvenido, ${nombre}`:"Bienvenido";
+    if(welcomeBanner) welcomeBanner.style.display = logged?"block":"none";
+    if(welcomeBannerText) welcomeBannerText.textContent = nombre?`Bienvenido, ${nombre}`:"Bienvenido";
+    if(btnOpenScanModal) btnOpenScanModal.style.display = logged?"inline-flex":"none";
   }
-
+ 
   async function loadProfileFromDb(){
-    if(!currentUser){
-      currentProfile = null;
-      updateAuthUI();
-      return;
-    }
-
-    const { data, error } = await sb
-      .from("profiles")
-      .select("user_id, nombre, apellido")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
-
-    if(error){
-      currentProfile = null;
-      updateAuthUI();
-      return;
-    }
-
-    currentProfile = data || null;
-
-    if(!currentProfile && currentUser?.user_metadata){
-      const nombre = currentUser.user_metadata.nombre || "";
-      const apellido = currentUser.user_metadata.apellido || "";
-      if(nombre || apellido){
-        currentProfile = { user_id: currentUser.id, nombre, apellido };
-        await saveProfileToDb(currentUser.id, nombre, apellido);
+    if(!currentUser){ currentProfile=null; updateAuthUI(); return; }
+    const {data,error} = await sb.from("profiles").select("user_id,nombre,apellido").eq("user_id",currentUser.id).maybeSingle();
+    if(error){ currentProfile=null; updateAuthUI(); return; }
+    currentProfile = data||null;
+    if(!currentProfile&&currentUser?.user_metadata){
+      const nombre=currentUser.user_metadata.nombre||"";
+      const apellido=currentUser.user_metadata.apellido||"";
+      if(nombre||apellido){
+        currentProfile={user_id:currentUser.id,nombre,apellido};
+        await saveProfileToDb(currentUser.id,nombre,apellido);
       }
     }
-
     updateAuthUI();
   }
-
-  async function saveProfileToDb(userId, nombre, apellido){
+ 
+  async function saveProfileToDb(userId,nombre,apellido){
     if(!userId) return;
-    await sb
-      .from("profiles")
-      .upsert({
-        user_id: userId,
-        nombre: nombre || "",
-        apellido: apellido || ""
-      }, { onConflict: "user_id" });
+    await sb.from("profiles").upsert({user_id:userId,nombre:nombre||"",apellido:apellido||""},{onConflict:"user_id"});
   }
-
+ 
   async function restoreSession(){
-    const { data, error } = await sb.auth.getSession();
-    
-    
-    currentSession = data?.session || null;
-    currentUser = currentSession?.user || null;
+    const {data} = await sb.auth.getSession();
+    currentSession = data?.session||null;
+    currentUser = currentSession?.user||null;
     await loadProfileFromDb();
     updateAuthUI();
   }
-
-  function clearAuthFields(){
-    clearAuthFields();
-  }
-
+ 
   async function handleLogin(){
-    const email = (authEmail?.value || "").trim();
-    const password = authPassword?.value || "";
-    if(!email || !password){
-      setAuthMessage("Completa email y contraseña.");
-      return;
-    }
-
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    
-    
-
-    if(error){
-      setAuthMessage("Falló el login: " + error.message);
-      return;
-    }
-
-    currentSession = data?.session || null;
-    currentUser = data?.user || currentSession?.user || null;
+    const email=(authEmail?.value||"").trim();
+    const password=authPassword?.value||"";
+    if(!email||!password){ setAuthMessage("Completa email y contraseña."); return; }
+    const {data,error} = await sb.auth.signInWithPassword({email,password});
+    if(error){ setAuthMessage("Falló el login: "+error.message); return; }
+    currentSession=data?.session||null;
+    currentUser=data?.user||currentSession?.user||null;
     await loadProfileFromDb();
     setAuthMessage("Login correcto.");
     updateAuthUI();
@@ -535,415 +610,311 @@
     clearForm();
     initialPick();
   }
-
+ 
   async function handleRegister(){
-    if(!registerMode){
-      registerMode = true;
-      updateAuthUI();
-      setAuthMessage("Completa nombre y apellido y vuelve a pulsar Confirmar alta.");
-      return;
-    }
-
-    const nombre = (authNombre?.value || "").trim();
-    const apellido = (authApellido?.value || "").trim();
-    const email = (authEmail?.value || "").trim();
-    const password = authPassword?.value || "";
-    if(!nombre || !apellido || !email || !password){
-      setAuthMessage("Completa nombre, apellido, email y contraseña para crear la cuenta.");
-      return;
-    }
-
-    const { data, error } = await sb.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { nombre, apellido }
-      }
-    });
-    
-    
-
-    if(error){
-      setAuthMessage("Falló el alta: " + error.message);
-      return;
-    }
-
-    if(data?.user?.id){
-      await saveProfileToDb(data.user.id, nombre, apellido);
-    }
-
-    registerMode = false;
-    updateAuthUI();
-    setAuthMessage("Cuenta creada. Si tu proyecto exige confirmación por email, revisa tu correo.");
+    if(!registerMode){ registerMode=true; updateAuthUI(); setAuthMessage("Completa nombre y apellido y vuelve a pulsar Confirmar alta."); return; }
+    const nombre=(authNombre?.value||"").trim();
+    const apellido=(authApellido?.value||"").trim();
+    const email=(authEmail?.value||"").trim();
+    const password=authPassword?.value||"";
+    if(!nombre||!apellido||!email||!password){ setAuthMessage("Completa nombre, apellido, email y contraseña."); return; }
+    const {data,error} = await sb.auth.signUp({email,password,options:{data:{nombre,apellido}}});
+    if(error){ setAuthMessage("Falló el alta: "+error.message); return; }
+    if(data?.user?.id) await saveProfileToDb(data.user.id,nombre,apellido);
+    registerMode=false; updateAuthUI();
+    setAuthMessage("Cuenta creada. Revisa tu correo si se requiere confirmación.");
   }
-
+ 
   async function handleRecover(){
-    const email = (authEmail?.value || "").trim();
-    if(!email){
-      setAuthMessage("Escribe tu email para recuperar la clave.");
-      return;
-    }
-
-    const { error } = await sb.auth.resetPasswordForEmail(email, {
-      // Enviamos directamente a app.html porque la app real vive dentro de ese HTML
-      redirectTo: window.location.origin + "/app.html"
-    });
-
-    if(error){
-      setAuthMessage("Falló la recuperación: " + error.message);
-      return;
-    }
-
-    setAuthMessage("Revisa tu email. Al abrir el link podrás establecer nueva contraseña.");
+    const email=(authEmail?.value||"").trim();
+    if(!email){ setAuthMessage("Escribe tu email."); return; }
+    const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/app.html"});
+    if(error){ setAuthMessage("Falló la recuperación: "+error.message); return; }
+    setAuthMessage("Revisa tu email para establecer nueva contraseña.");
   }
-
-    async function handleLogout(){
+ 
+  async function handleLogout(){
     if(inactivityTimer) clearTimeout(inactivityTimer);
-
-    try {
-      await sb.auth.signOut({ scope: "global" });
-    } catch (e) {
-      // Si Supabase no responde, igual forzamos cierre local.
-    }
-
+    try { await sb.auth.signOut({scope:"global"}); } catch(e){}
     try {
       localStorage.removeItem(KEY);
-      LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
-      Object.keys(localStorage).forEach(k => {
-        if(k.toLowerCase().includes("supabase") || k.toLowerCase().includes("auth")) localStorage.removeItem(k);
-      });
-      Object.keys(sessionStorage).forEach(k => {
-        if(k.toLowerCase().includes("supabase") || k.toLowerCase().includes("auth")) sessionStorage.removeItem(k);
-      });
-    } catch (e) {
-      // Limpieza local no crítica.
-    }
-
-    currentSession = null;
-    currentUser = null;
-    currentProfile = null;
-    registerMode = false;
-    selectedPatientId = null;
-    severityFilter = null;
-    state = defaultState();
-
-    if(authEmail) authEmail.value = "";
-    if(authPassword) authPassword.value = "";
-    if(authNombre) authNombre.value = "";
-    if(authApellido) authApellido.value = "";
-
-    updateAuthUI();
-    renderList();
-    clearForm();
-
-    const logoutUrl = window.location.origin + "/?logout=" + Date.now();
-    if(window.parent && window.parent !== window){
-      window.parent.location.href = logoutUrl;
-    } else {
-      window.location.href = logoutUrl;
-    }
+      LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+      Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
+      Object.keys(sessionStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) sessionStorage.removeItem(k); });
+    } catch(e){}
+    currentSession=null; currentUser=null; currentProfile=null;
+    registerMode=false; selectedPatientId=null; severityFilter=null;
+    state=defaultState();
+    if(authEmail) authEmail.value="";
+    if(authPassword) authPassword.value="";
+    if(authNombre) authNombre.value="";
+    if(authApellido) authApellido.value="";
+    updateAuthUI(); renderList(); clearForm();
+    const logoutUrl=window.location.origin+"/?logout="+Date.now();
+    if(window.parent&&window.parent!==window) window.parent.location.href=logoutUrl;
+    else window.location.href=logoutUrl;
   }
-
+ 
+  // ─── DB LOADERS ───
   async function loadPatientsFromDb(){
-    if(!currentUser){
-      state.patients = [];
-      saveState();
-      return;
-    }
-
-    const { data: patientsData, error: patientsError } = await sb
-      .from("patients")
-      .select("id, user_id, identifier, datos_generales, archived, created_at, updated_at")
-      .eq("user_id", currentUser.id)
-      .order("created_at", { ascending: true });
-
-    
-    
-
-    if(patientsError){
-      
-      return;
-    }
-
-    const patientIds = (Array.isArray(patientsData) ? patientsData : []).map(row => row.id);
-    let actionsData = [];
-
+    if(!currentUser){ state.patients=[]; saveState(); return; }
+    const {data:patientsData,error:patientsError} = await sb.from("patients")
+      .select("id,user_id,identifier,datos_generales,archived,created_at,updated_at")
+      .eq("user_id",currentUser.id).order("created_at",{ascending:true});
+    if(patientsError) return;
+    const patientIds=(Array.isArray(patientsData)?patientsData:[]).map(r=>r.id);
+    let actionsData=[];
     if(patientIds.length){
-      const actionsResult = await sb
-        .from("patient_actions")
-        .select("id, patient_id, status, note, created_at, updated_at")
-        .in("patient_id", patientIds)
-        .order("created_at", { ascending: true });
-
-      
-      
-
-      if(!actionsResult.error && Array.isArray(actionsResult.data)){
-        actionsData = actionsResult.data;
-      }
+      const ar = await sb.from("patient_actions")
+        .select("id,patient_id,status,note,foto1_url,foto2_url,created_at,updated_at")
+        .in("patient_id",patientIds).order("created_at",{ascending:true});
+      if(!ar.error&&Array.isArray(ar.data)) actionsData=ar.data;
     }
-
-    const actionsByPatient = new Map();
+    const actionsByPatient=new Map();
     for(const row of actionsData){
-      const arr = actionsByPatient.get(row.patient_id) || [];
-      arr.push({ status: row.status || "", note: row.note || "" });
-      actionsByPatient.set(row.patient_id, arr);
+      const arr=actionsByPatient.get(row.patient_id)||[];
+      arr.push({status:row.status||"",note:row.note||"",foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null});
+      actionsByPatient.set(row.patient_id,arr);
     }
-
-    const mapped = (Array.isArray(patientsData) ? patientsData : []).map(row => normalizePatient({
-      dbId: row.id,
-      identifier: row.identifier,
-      initialStudy: row.datos_generales,
-      archived: row.archived,
-      actions: actionsByPatient.get(row.id) || [],
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+    state.patients=(Array.isArray(patientsData)?patientsData:[]).map(row=>normalizePatient({
+      dbId:row.id,identifier:row.identifier,initialStudy:row.datos_generales,
+      archived:row.archived,actions:actionsByPatient.get(row.id)||[],
+      createdAt:row.created_at,updatedAt:row.updated_at
     }));
-
-    state.patients = mapped;
     saveState();
   }
-
-  async function syncPatientActionsToDb(patientDbId, actions){
-    const usedActions = (Array.isArray(actions) ? actions : []).filter(isUsedAction);
-
-    const delResult = await sb
-      .from("patient_actions")
-      .delete()
-      .eq("patient_id", patientDbId);
-
-    if(delResult.error){
-      
-      throw delResult.error;
-    }
-
+ 
+  async function syncPatientActionsToDb(patientDbId,actions){
+    const usedActions=(Array.isArray(actions)?actions:[]).filter(isUsedAction);
+    const delResult=await sb.from("patient_actions").delete().eq("patient_id",patientDbId);
+    if(delResult.error) throw delResult.error;
     if(!usedActions.length) return;
-
-    const insertPayload = usedActions.map(a => ({
-      patient_id: patientDbId,
-      status: a.status,
-      note: a.note
+    const insertPayload=usedActions.map(a=>({
+      patient_id:patientDbId,status:a.status,note:a.note,
+      foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null
     }));
-
-    const insResult = await sb
-      .from("patient_actions")
-      .insert(insertPayload)
-      .select();
-
-    if(insResult.error){
-      
-      throw insResult.error;
-    }
+    const insResult=await sb.from("patient_actions").insert(insertPayload).select();
+    if(insResult.error) throw insResult.error;
   }
-
-  async function syncImportedPatientsToDb(importedPatients){
-    for(const p of importedPatients){
-      let patientDbId = p.dbId || null;
-
-      if(!patientDbId){
-        const found = await sb
-          .from("patients")
-          .select("id")
-          .eq("user_id", currentUser?.id)
-          .eq("identifier", p.identifier)
-          .limit(1)
-          .maybeSingle();
-
-        if(found.error){
-          
-          continue;
-        }
-
-        if(found.data?.id) patientDbId = found.data.id;
-      }
-
-      let saveResult;
-      if(patientDbId){
-        saveResult = await sb
-          .from("patients")
-          .update({
-            user_id: currentUser?.id,
-            identifier: p.identifier,
-            datos_generales: p.initialStudy,
-            archived: p.archived
-          })
-          .eq("id", patientDbId)
-          .select();
-      } else {
-        saveResult = await sb
-          .from("patients")
-          .insert([{
-            user_id: currentUser?.id,
-            identifier: p.identifier,
-            datos_generales: p.initialStudy,
-            archived: p.archived
-          }])
-          .select();
-      }
-
-      if(saveResult.error){
-        
-        continue;
-      }
-
-      const finalDbId = saveResult.data?.[0]?.id || patientDbId;
-      if(finalDbId){
-        p.dbId = finalDbId;
-        try {
-          await syncPatientActionsToDb(finalDbId, p.actions || []);
-        } catch (e) {
-          
-        }
-      }
-    }
-  }
-
+ 
   async function loadNotesFromDb(){
-    if(!currentUser){
-      state.notes = [];
-      saveState();
-      return;
-    }
-
-    const { data, error } = await sb
-      .from("notes")
-      .select("id, user_id, text, is_deleted, created_at, deleted_at")
-      .eq("user_id", currentUser.id)
-      .order("created_at", { ascending: false });
-
-    
-    
-
-    if(error){
-      
-      return;
-    }
-
-    state.notes = (Array.isArray(data) ? data : []).map(row => normalizeNote({
-      dbId: row.id,
-      text: row.text,
-      is_deleted: row.is_deleted,
-      createdAt: row.created_at,
-      deletedAt: row.deleted_at,
+    if(!currentUser){ state.notes=[]; saveState(); return; }
+    const {data,error}=await sb.from("notes")
+      .select("id,user_id,text,is_deleted,created_at,deleted_at")
+      .eq("user_id",currentUser.id).order("created_at",{ascending:false});
+    if(error) return;
+    state.notes=(Array.isArray(data)?data:[]).map(row=>normalizeNote({
+      dbId:row.id,text:row.text,is_deleted:row.is_deleted,
+      createdAt:row.created_at,deletedAt:row.deleted_at
     }));
-
     saveState();
   }
-
-  async function syncImportedNotesToDb(importedNotes){
-    for(const n of importedNotes){
-      let noteDbId = n.dbId || null;
-
-      const savePayload = {
-        user_id: currentUser?.id,
-        text: n.text,
-        is_deleted: !!n.is_deleted,
-        deleted_at: n.deletedAt || null,
-        created_at: n.createdAt || nowISO()
-      };
-
-      let saveResult;
-      if(noteDbId){
-        saveResult = await sb
-          .from("notes")
-          .update(savePayload)
-          .eq("id", noteDbId)
-          .select();
-      } else {
-        saveResult = await sb
-          .from("notes")
-          .insert([savePayload])
-          .select();
-      }
-
-      if(saveResult.error){
-        
-        continue;
-      }
-
-      if(saveResult.data?.[0]?.id){
-        n.dbId = saveResult.data[0].id;
-      }
-    }
-  }
-
+ 
   async function loadLogsFromDb(){
-    if(!currentUser){
-      state.logs = [];
-      saveState();
-      return;
-    }
-
-    const { data, error } = await sb
-      .from("logs")
-      .select("id, patient_id, user_id, type, snapshot, created_at")
-      .eq("user_id", currentUser.id)
-      .order("created_at", { ascending: false });
-
-    
-    
-
-    if(error){
-      
-      return;
-    }
-
-    state.logs = (Array.isArray(data) ? data : []).map(row => ({
-      id: row.id || uid(),
-      patientId: row.patient_id || null,
-      ts: row.created_at || nowISO(),
-      type: row.type || "—",
-      snapshot: row.snapshot || {}
+    if(!currentUser){ state.logs=[]; saveState(); return; }
+    const {data,error}=await sb.from("logs")
+      .select("id,patient_id,user_id,type,snapshot,created_at")
+      .eq("user_id",currentUser.id).order("created_at",{ascending:false});
+    if(error) return;
+    state.logs=(Array.isArray(data)?data:[]).map(row=>({
+      id:row.id||uid(),patientId:row.patient_id||null,
+      ts:row.created_at||nowISO(),type:row.type||"—",snapshot:row.snapshot||{}
     }));
-
     saveState();
   }
-
-  async function syncImportedLogsToDb(importedLogs){
-    for(const log of importedLogs){
-      const saveResult = await sb
-        .from("logs")
-        .insert([{
-          patient_id: log.patientId || null,
-          user_id: currentUser?.id,
-          type: log.type || "—",
-          snapshot: log.snapshot || {},
-          created_at: log.ts || nowISO()
-        }])
-        .select();
-
-      if(saveResult.error){
-        
-      }
-    }
-  }
-
-  function addLog(patientId, type, snapshot){
-    const newLog = { id: uid(), patientId, ts: nowISO(), type, snapshot };
+ 
+  function addLog(patientId,type,snapshot){
+    const newLog={id:uid(),patientId,ts:nowISO(),type,snapshot};
     state.logs.push(newLog);
-
-    let dbPatientId = patientId || null;
+    let dbPatientId=patientId||null;
     if(dbPatientId){
-      const foundPatient = state.patients.find(x => x.id === dbPatientId || x.dbId === dbPatientId);
-      if(foundPatient?.dbId) dbPatientId = foundPatient.dbId;
-      else if(typeof dbPatientId === "string" && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dbPatientId)) dbPatientId = null;
+      const found=state.patients.find(x=>x.id===dbPatientId||x.dbId===dbPatientId);
+      if(found?.dbId) dbPatientId=found.dbId;
+      else if(typeof dbPatientId==="string"&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dbPatientId)) dbPatientId=null;
     }
-
-    sb.from("logs").insert([{
-      patient_id: dbPatientId,
-      user_id: currentUser?.id || null,
-      type,
-      snapshot: snapshot || {},
-      created_at: newLog.ts
-    }]).then(({ error }) => {
-      if(error) {
-        // Error de log no bloqueante
+    sb.from("logs").insert([{patient_id:dbPatientId,user_id:currentUser?.id||null,type,snapshot:snapshot||{},created_at:newLog.ts}]).then(()=>{});
+  }
+ 
+  // ─── STORAGE HELPERS ───
+  async function uploadPhotoToStorage(file, patientIdentifier, actionIndex, slotNumber){
+    if(!currentUser) throw new Error("No autenticado");
+    const ext = file.name.split(".").pop() || "jpg";
+    const safeName = String(patientIdentifier||"sin-id").replace(/[^a-zA-Z0-9_-]/g,"_");
+    const path = `${currentUser.id}/${safeName}/accion_${actionIndex+1}/foto${slotNumber}_${Date.now()}.${ext}`;
+    const {data,error} = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {upsert:true, contentType:file.type});
+    if(error) throw error;
+    const {data:urlData} = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+    return urlData.publicUrl;
+  }
+ 
+  async function deletePhotoFromStorage(url){
+    if(!url) return;
+    try {
+      // Extract path from URL
+      const marker = `/object/public/${STORAGE_BUCKET}/`;
+      const idx = url.indexOf(marker);
+      if(idx===-1) return;
+      const path = decodeURIComponent(url.slice(idx+marker.length));
+      await sb.storage.from(STORAGE_BUCKET).remove([path]);
+    } catch(e){ console.warn("deletePhotoFromStorage error",e); }
+  }
+ 
+  // ─── OCR ───
+  let tesseractWorker = null;
+  let tesseractReady = false;
+ 
+  async function ensureTesseract(){
+    if(tesseractReady && tesseractWorker) return tesseractWorker;
+    tesseractWorker = await Tesseract.createWorker("spa", 1, {
+      logger: m => {
+        if(m.status === "recognizing text"){
+          const pct = Math.round((m.progress||0)*100);
+          const bar = document.getElementById("ocrProgressBar");
+          const txt = document.getElementById("ocrProgressText");
+          if(bar) bar.style.width = pct+"%";
+          if(txt) txt.textContent = `Leyendo... ${pct}%`;
+        }
       }
     });
+    tesseractReady = true;
+    return tesseractWorker;
   }
-
-  const el = (id) => document.getElementById(id);
-
+ 
+  function extractIdentifier(text){
+    // Patterns: NHC, HC, Historia Clínica, Nº HC, N.H.C, Num HC etc.
+    const patterns = [
+      /N\.?H\.?C\.?\s*[:\-#]?\s*([0-9]{4,12})/i,
+      /Historia\s+Cl[ií]nica\s*[:\-#]?\s*([0-9]{4,12})/i,
+      /H\.?\s*C\.?\s*[:\-#]?\s*([0-9]{4,12})/i,
+      /N[uú]m(?:ero)?\s+(?:HC|NHC|Historia)\s*[:\-#]?\s*([0-9]{4,12})/i,
+      /Exp(?:ediente)?\s*[:\-#]?\s*([0-9]{4,12})/i,
+      /Registro\s*[:\-#]?\s*([0-9]{4,12})/i,
+    ];
+    for(const pat of patterns){
+      const m = text.match(pat);
+      if(m && m[1]) return { number: m[1].trim(), context: m[0].trim() };
+    }
+    return null;
+  }
+ 
+  // pending scan state
+  let scanPendingFile = null;
+  let scanFoundIdentifier = null;
+ 
+  function openScanModal(){
+    const modal = document.getElementById("scanModal");
+    modal.classList.add("open");
+    // reset state
+    scanPendingFile = null;
+    scanFoundIdentifier = null;
+    document.getElementById("scanPreview").style.display = "none";
+    document.getElementById("ocrProgress").style.display = "none";
+    document.getElementById("ocrResultBox").style.display = "none";
+    document.getElementById("ocrNotFound").style.display = "none";
+    document.getElementById("scanMatchResult").style.display = "none";
+    document.getElementById("ocrProgressBar").style.width = "0%";
+    document.getElementById("ocrManualInput").value = "";
+    if(document.getElementById("ocrManualInputAlt")) document.getElementById("ocrManualInputAlt").value = "";
+  }
+ 
+  function closeScanModal(){
+    document.getElementById("scanModal").classList.remove("open");
+    scanPendingFile = null;
+    scanFoundIdentifier = null;
+  }
+ 
+  async function runOCR(file){
+    scanPendingFile = file;
+    const preview = document.getElementById("scanPreview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+ 
+    document.getElementById("ocrProgress").style.display = "block";
+    document.getElementById("ocrResultBox").style.display = "none";
+    document.getElementById("ocrNotFound").style.display = "none";
+    document.getElementById("scanMatchResult").style.display = "none";
+    document.getElementById("ocrProgressBar").style.width = "0%";
+    document.getElementById("ocrProgressText").textContent = "Iniciando Tesseract...";
+ 
+    try {
+      const worker = await ensureTesseract();
+      const { data: { text } } = await worker.recognize(file);
+      document.getElementById("ocrProgress").style.display = "none";
+ 
+      const found = extractIdentifier(text);
+      if(found){
+        scanFoundIdentifier = found.number;
+        document.getElementById("ocrFoundNumber").textContent = found.number;
+        document.getElementById("ocrFoundContext").textContent = `Contexto: "${found.context}"`;
+        document.getElementById("ocrManualInput").value = found.number;
+        document.getElementById("ocrResultBox").style.display = "block";
+      } else {
+        document.getElementById("ocrNotFound").style.display = "block";
+      }
+    } catch(err){
+      document.getElementById("ocrProgress").style.display = "none";
+      document.getElementById("ocrNotFound").style.display = "block";
+      console.warn("OCR error", err);
+    }
+  }
+ 
+  function confirmScanIdentifier(identifier){
+    identifier = String(identifier||"").trim();
+    if(!identifier){ alert("Escribí un identificador."); return; }
+    scanFoundIdentifier = identifier;
+ 
+    // Search existing
+    const existing = state.patients.find(p =>
+      String(p.identifier||"").trim().toLowerCase() === identifier.toLowerCase()
+    );
+ 
+    const matchResult = document.getElementById("scanMatchResult");
+    const matchText = document.getElementById("scanMatchText");
+    const matchActions = document.getElementById("scanMatchActions");
+    matchResult.style.display = "block";
+    matchActions.innerHTML = "";
+ 
+    if(existing){
+      matchText.textContent = `✅ Identificador "${identifier}" encontrado. ¿Qué querés hacer?`;
+      const btnOpen = document.createElement("button");
+      btnOpen.className = "btn primary small";
+      btnOpen.textContent = "Abrir registro";
+      btnOpen.addEventListener("click", () => {
+        closeScanModal();
+        selectPatient(existing.id);
+        // if we have a file, we'll attach it when saving
+        if(scanPendingFile) pendingScanFile = scanPendingFile;
+        scanPendingFile = null;
+      });
+      matchActions.appendChild(btnOpen);
+    } else {
+      matchText.textContent = `ℹ️ No existe un registro con identificador "${identifier}". ¿Querés crear uno?`;
+      const btnCreate = document.createElement("button");
+      btnCreate.className = "btn success small";
+      btnCreate.textContent = "Crear nuevo registro";
+      btnCreate.addEventListener("click", () => {
+        closeScanModal();
+        clearForm();
+        f_identifier_input.value = identifier;
+        f_identifier.value = identifier;
+        selectedIdentifier.textContent = identifier;
+        if(scanPendingFile) pendingScanFile = scanPendingFile;
+        scanPendingFile = null;
+        // Scroll to form
+        document.getElementById("f_initial").focus();
+      });
+      matchActions.appendChild(btnCreate);
+    }
+ 
+    const btnCancel = document.createElement("button");
+    btnCancel.className = "btn ghost small";
+    btnCancel.textContent = "Cancelar";
+    btnCancel.addEventListener("click", closeScanModal);
+    matchActions.appendChild(btnCancel);
+  }
+ 
+  // ─── DOM refs ───
+  const el = id => document.getElementById(id);
   const patientList = el("patientList");
   const noteList = el("noteList");
   const noteDraft = el("noteDraft");
@@ -964,181 +935,143 @@
   const welcomeText = el("welcomeText");
   const welcomeBanner = el("welcomeBanner");
   const welcomeBannerText = el("welcomeBannerText");
-
   const countPatients = el("countPatients");
   const countLogs = el("countLogs");
   const selectedIdentifier = el("selectedIdentifier");
   const lastUpdated = el("lastUpdated");
   const historyPanel = el("historyPanel");
-
   const f_identifier_input = el("f_identifier_input");
   const f_identifier = el("f_identifier");
   const f_initial = el("f_initial");
-  
   const btnUnlockHC = el("btnUnlockHC");
-
   const search = el("search");
   const filterStatus = el("filterStatus");
-
   const actionsWrap = el("actionsWrap");
   const btnAddAction = el("btnAddAction");
   const actionsCount = el("actionsCount");
-
   const btnNew = el("btnNew");
   const btnSave = el("btnSave");
-  const btnExport = el("btnExport");
-  const btnImport = el("btnImport");
-  const fileImport = el("fileImport");
   const btnViewPatientHistory = el("btnViewPatientHistory");
   const btnViewGlobalHistory = el("btnViewGlobalHistory");
   const btnDeletePatient = el("btnDeletePatient");
   const btnFactoryReset = el("btnFactoryReset");
   const btnThemeToggle = el("btnThemeToggle");
-
+  const btnOpenScanModal = el("btnOpenScanModal");
   const pillRed = el("pillRed");
   const pillYellow = el("pillYellow");
   const pillBlue = el("pillBlue");
   const pillPurple = el("pillPurple");
   const pillOrange = el("pillOrange");
-
+ 
   let state = loadState();
   let selectedPatientId = null;
   let identifierUnlocked = false;
-  let severityFilter = null; // red | yellow | blue | purple | orange | null
-  let currentTheme = localStorage.getItem("rx_theme_mode") || "light";
+  let severityFilter = null;
+  let currentTheme = localStorage.getItem("rx_theme_mode")||"light";
   let currentSession = null;
   let currentUser = null;
   let currentProfile = null;
   let registerMode = false;
-
-  // 🔒 Timeout por inactividad (15 min)
-  const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
+  let pendingScanFile = null; // file from scan modal to attach to first action
+ 
+  const INACTIVITY_LIMIT_MS = 15*60*1000;
   let inactivityTimer = null;
-
+ 
   function resetInactivityTimer(){
     if(!currentUser) return;
     if(inactivityTimer) clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(() => {
-      alert("Sesión cerrada por inactividad (15 min).");
-      handleLogout();
-    }, INACTIVITY_LIMIT_MS);
+    inactivityTimer = setTimeout(() => { alert("Sesión cerrada por inactividad (15 min)."); handleLogout(); }, INACTIVITY_LIMIT_MS);
   }
-
+ 
   function setupInactivityListeners(){
-    ["click","mousemove","keydown","scroll","touchstart"].forEach(evt => {
-      window.addEventListener(evt, resetInactivityTimer);
-    });
+    ["click","mousemove","keydown","scroll","touchstart"].forEach(evt => window.addEventListener(evt,resetInactivityTimer));
   }
-
+ 
   let toastTimer = null;
+ 
   function applyTheme(theme){
-    currentTheme = theme === "dark" ? "dark" : "light";
-    document.body.classList.toggle("theme-dark", currentTheme === "dark");
-    localStorage.setItem("rx_theme_mode", currentTheme);
-    if(btnThemeToggle){
-      btnThemeToggle.textContent = currentTheme === "dark" ? "☀️ Modo día" : "🌙 Modo noche";
-    }
+    currentTheme = theme==="dark"?"dark":"light";
+    document.body.classList.toggle("theme-dark",currentTheme==="dark");
+    localStorage.setItem("rx_theme_mode",currentTheme);
+    if(btnThemeToggle) btnThemeToggle.textContent = currentTheme==="dark"?"☀️ Modo día":"🌙 Modo noche";
   }
-
-  function toggleTheme(){
-    applyTheme(currentTheme === "dark" ? "light" : "dark");
-  }
-
+ 
+  function toggleTheme(){ applyTheme(currentTheme==="dark"?"light":"dark"); }
+ 
   function ensureToast(){
-    let t = document.getElementById("toast");
+    let t=document.getElementById("toast");
     if(t) return t;
-    t = document.createElement("div");
-    t.id = "toast";
-    t.style.position = "fixed";
-    t.style.left = "18px";
-    t.style.bottom = "18px";
-    t.style.zIndex = "9999";
-    t.style.maxWidth = "420px";
-    t.style.padding = "12px";
-    t.style.borderRadius = "14px";
-    t.style.border = "1px solid var(--border)";
-    t.style.background = "var(--card)";
-    t.style.color = "var(--txt)";
-    t.style.boxShadow = "var(--shadow)";
-    t.style.display = "none";
-    t.innerHTML = '<div class="row" style="gap:10px"><div style="font-weight:800" id="toastMsg"></div><div class="right"></div></div><div class="row" style="margin-top:10px; gap:10px"><button class="btn small" id="toastAction"></button><button class="btn small ghost" id="toastClose">Cerrar</button></div>';
+    t=document.createElement("div");
+    t.id="toast";
+    Object.assign(t.style,{position:"fixed",left:"18px",bottom:"18px",zIndex:"9999",maxWidth:"420px",padding:"12px",borderRadius:"14px",border:"1px solid var(--border)",background:"var(--card)",color:"var(--txt)",boxShadow:"var(--shadow)",display:"none"});
+    t.innerHTML='<div class="row" style="gap:10px"><div style="font-weight:800" id="toastMsg"></div><div class="right"></div></div><div class="row" style="margin-top:10px; gap:10px"><button class="btn small" id="toastAction"></button><button class="btn small ghost" id="toastClose">Cerrar</button></div>';
     document.body.appendChild(t);
-    t.querySelector("#toastClose").addEventListener("click", hideToast);
+    t.querySelector("#toastClose").addEventListener("click",hideToast);
     return t;
   }
-
-  function showToast(message, actionLabel, actionFn, timeoutMs = 12000){
-    const t = ensureToast();
-    t.querySelector("#toastMsg").textContent = message;
-    const oldBtn = t.querySelector("#toastAction");
-    const btn = oldBtn.cloneNode(true);
-    oldBtn.parentNode.replaceChild(btn, oldBtn);
-    btn.id = "toastAction";
-    btn.textContent = actionLabel || "";
-    btn.style.display = actionLabel ? "inline-flex" : "none";
-    if(actionLabel){
-      btn.addEventListener("click", () => {
-        try { if(actionFn) actionFn(); }
-        finally { hideToast(); }
-      });
-    }
-    t.style.display = "block";
+ 
+  function showToast(message,actionLabel,actionFn,timeoutMs=12000){
+    const t=ensureToast();
+    t.querySelector("#toastMsg").textContent=message;
+    const oldBtn=t.querySelector("#toastAction");
+    const btn=oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(btn,oldBtn);
+    btn.id="toastAction";
+    btn.textContent=actionLabel||"";
+    btn.style.display=actionLabel?"inline-flex":"none";
+    if(actionLabel) btn.addEventListener("click",()=>{ try{if(actionFn)actionFn();}finally{hideToast();} });
+    t.style.display="block";
     if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(hideToast, timeoutMs);
+    toastTimer=setTimeout(hideToast,timeoutMs);
   }
-
+ 
   function hideToast(){
-    const t = document.getElementById("toast");
-    if(t) t.style.display = "none";
+    const t=document.getElementById("toast");
+    if(t) t.style.display="none";
     if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = null;
+    toastTimer=null;
   }
-
+ 
   function escapeHTML(s){
-    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+    return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   }
-
+ 
   function sortPatients(){
-    state.patients.sort((a, b) => {
-      const na = Number(a.identifier);
-      const nb = Number(b.identifier);
-      if(!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-      return (a.identifier || "").localeCompare(b.identifier || "", "es", { sensitivity: "base" });
+    state.patients.sort((a,b)=>{
+      const na=Number(a.identifier),nb=Number(b.identifier);
+      if(!Number.isNaN(na)&&!Number.isNaN(nb)) return na-nb;
+      return (a.identifier||"").localeCompare(b.identifier||"","es",{sensitivity:"base"});
     });
   }
-
+ 
   function formatTS(iso){
-    try {
-      return new Date(iso).toLocaleString("es-ES", {
-        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
-      });
-    } catch { return iso; }
+    try { return new Date(iso).toLocaleString("es-ES",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+    catch { return iso; }
   }
-
-  function statusDotClass(status){
-    if(status === "integrated") return "ok";
-    if(status === "followup") return "info";
-    if(status === "various") return "violet";
-    if(status === "done") return "warn";
-    if(status === "pending") return "danger";
+ 
+  function statusDotClass(s){
+    if(s==="integrated") return "ok";
+    if(s==="followup") return "info";
+    if(s==="various") return "violet";
+    if(s==="done") return "warn";
+    if(s==="pending") return "danger";
     return "off";
   }
-
-  function statusLabel(status){
-    if(status === "") return "—";
-    if(status === "pending") return "Pendiente";
-    if(status === "done") return "Realizado";
-    if(status === "followup") return "En seguimiento";
-    if(status === "various") return "Varios";
-    if(status === "integrated") return "Integrado";
+ 
+  function statusLabel(s){
+    if(s==="pending") return "Pendiente";
+    if(s==="done") return "Realizado";
+    if(s==="followup") return "En seguimiento";
+    if(s==="various") return "Varios";
+    if(s==="integrated") return "Integrado";
     return "—";
   }
-
-  function hasRed(p){ return (p.actions || []).some(a => a.status === "pending"); }
-  function hasYellow(p){ return (p.actions || []).some(a => a.status === "done"); }
-  function hasBlue(p){ return (p.actions || []).some(a => a.status === "followup"); }
-  function hasPurple(p){ return (p.actions || []).some(a => a.status === "various"); }
-
+ 
+  function hasRed(p){ return (p.actions||[]).some(a=>a.status==="pending"); }
+  function hasYellow(p){ return (p.actions||[]).some(a=>a.status==="done"); }
+  function hasBlue(p){ return (p.actions||[]).some(a=>a.status==="followup"); }
+  function hasPurple(p){ return (p.actions||[]).some(a=>a.status==="various"); }
+ 
   function pendingDotBySeverity(p){
     if(hasRed(p)) return "danger";
     if(hasYellow(p)) return "warn";
@@ -1146,90 +1079,164 @@
     if(hasPurple(p)) return "violet";
     return "off";
   }
-
-  function isFollowupOnly(p){ return !p.archived && hasBlue(p) && !hasRed(p) && !hasYellow(p) && !hasPurple(p); }
-  function isVariousOnly(p){ return !p.archived && hasPurple(p) && !hasRed(p) && !hasYellow(p) && !hasBlue(p); }
-
+ 
+  function isFollowupOnly(p){ return !p.archived&&hasBlue(p)&&!hasRed(p)&&!hasYellow(p)&&!hasPurple(p); }
+  function isVariousOnly(p){ return !p.archived&&hasPurple(p)&&!hasRed(p)&&!hasYellow(p)&&!hasBlue(p); }
+ 
   function patientAllIntegrated(p){
-    const used = (p.actions || []).some(isUsedAction);
+    const used=(p.actions||[]).some(isUsedAction);
     if(!used) return false;
-    return (p.actions || []).filter(isUsedAction).every(a => a.status === "integrated");
+    return (p.actions||[]).filter(isUsedAction).every(a=>a.status==="integrated");
   }
-
-  function patientHasZeroActions(p){ return Array.isArray(p.actions) && p.actions.length === 0; }
-
+ 
+  function patientHasZeroActions(p){ return Array.isArray(p.actions)&&p.actions.length===0; }
+ 
   function computeCounts(p){
-    const counts = { pending: 0, done: 0, followup: 0, various: 0, integrated: 0, total: 0 };
-    for(const a of (p.actions || [])){
+    const c={pending:0,done:0,followup:0,various:0,integrated:0,total:0};
+    for(const a of (p.actions||[])){
       if(!isUsedAction(a)) continue;
-      counts.total += 1;
-      if(a.status === "pending") counts.pending += 1;
-      else if(a.status === "done") counts.done += 1;
-      else if(a.status === "followup") counts.followup += 1;
-      else if(a.status === "various") counts.various += 1;
-      else if(a.status === "integrated") counts.integrated += 1;
+      c.total++; c[a.status]=(c[a.status]||0)+1;
     }
-    return counts;
+    return c;
   }
-
-  function normTxt(s){
-    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
-  }
-
-  function matchesSearchAll(p, q){
+ 
+  function normTxt(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
+ 
+  function matchesSearchAll(p,q){
     if(!q) return true;
-    const qq = normTxt(q);
+    const qq=normTxt(q);
     if(!qq) return true;
     if(normTxt(p.identifier).includes(qq)) return true;
     if(normTxt(p.initialStudy).includes(qq)) return true;
-    for(const a of (Array.isArray(p.actions) ? p.actions : [])){
+    for(const a of (Array.isArray(p.actions)?p.actions:[])){
       if(normTxt(a?.note).includes(qq)) return true;
     }
     return false;
   }
-
-  function matchesNote(n, q){
+ 
+  function matchesNote(n,q){
     if(!q) return true;
     return normTxt(n.text).includes(normTxt(q));
   }
-
-  function activeNotes(){
-    return (state.notes || []).filter(n => !n.is_deleted);
-  }
-
+ 
+  function activeNotes(){ return (state.notes||[]).filter(n=>!n.is_deleted); }
+ 
   function visibleNotes(){
-    const q = (search.value || "").trim();
-    if(filterStatus.value === "notes") return (state.notes || []).filter(n => matchesNote(n, q));
-    return activeNotes().filter(n => matchesNote(n, q));
+    const q=(search.value||"").trim();
+    if(filterStatus.value==="notes") return (state.notes||[]).filter(n=>matchesNote(n,q));
+    return activeNotes().filter(n=>matchesNote(n,q));
   }
-
+ 
+  // ─── ACTIONS DOM ───
+  // Each action block stores photo URLs in data attributes
   function getActionsFromDOM(){
-    const actions = [];
-    actionsWrap.querySelectorAll(".action-block").forEach(n => {
-      actions.push({ status: String(n.querySelector("select").value || ""), note: String(n.querySelector("textarea").value || "") });
+    const actions=[];
+    actionsWrap.querySelectorAll(".action-block").forEach(n=>{
+      actions.push({
+        status: String(n.querySelector("select").value||""),
+        note: String(n.querySelector("textarea").value||""),
+        foto1_url: n.dataset.foto1||null,
+        foto2_url: n.dataset.foto2||null
+      });
     });
     return actions;
   }
-
-  function setActionsCount(n){ actionsCount.textContent = `${n} actuaciones`; }
-
+ 
+  function setActionsCount(n){ actionsCount.textContent=`${n} actuaciones`; }
+ 
+  function openLightbox(url){
+    const lb=document.getElementById("lightbox");
+    document.getElementById("lightboxImg").src=url;
+    lb.classList.add("open");
+  }
+ 
+  function closeLightbox(){
+    document.getElementById("lightbox").classList.remove("open");
+    document.getElementById("lightboxImg").src="";
+  }
+ 
+  function renderPhotoSlot(block, slotNum, url){
+    const key = `foto${slotNum}`;
+    const container = block.querySelector(`[data-photo-slot="${slotNum}"]`);
+    if(!container) return;
+ 
+    if(url){
+      container.innerHTML = `
+        <div class="photo-thumb-wrap">
+          <img class="photo-thumb" src="${escapeHTML(url)}" alt="foto ${slotNum}" />
+          <button class="photo-thumb-del" data-del-slot="${slotNum}" title="Eliminar foto">×</button>
+        </div>
+      `;
+      container.querySelector(".photo-thumb").addEventListener("click", ()=>openLightbox(url));
+      container.querySelector(`[data-del-slot]`).addEventListener("click", async ()=>{
+        if(!confirm("¿Eliminar esta foto?")) return;
+        await deletePhotoFromStorage(url);
+        block.dataset[key] = "";
+        renderPhotoSlot(block, slotNum, null);
+        renderUploadButton(block, slotNum);
+      });
+    } else {
+      container.innerHTML = "";
+      renderUploadButton(block, slotNum);
+    }
+  }
+ 
+  function renderUploadButton(block, slotNum){
+    const key = `foto${slotNum}`;
+    const container = block.querySelector(`[data-photo-slot="${slotNum}"]`);
+    if(!container) return;
+    const existingUrl = block.dataset[key]||null;
+    if(existingUrl) return; // already has photo
+ 
+    const idx = Array.from(actionsWrap.querySelectorAll(".action-block")).indexOf(block);
+    const uploadWrap = document.createElement("div");
+    uploadWrap.className = "photo-upload-btn";
+    uploadWrap.innerHTML = `
+      <span style="font-size:20px">📷</span>
+      <span>Foto ${slotNum}</span>
+      <input type="file" accept="image/*" capture="environment" />
+    `;
+    container.appendChild(uploadWrap);
+ 
+    uploadWrap.querySelector("input[type=file]").addEventListener("change", async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      if(file.size > 10*1024*1024){ alert("La imagen no puede superar 10 MB."); return; }
+ 
+      const identifier = (f_identifier_input.value||"").trim()||"sin-id";
+      uploadWrap.innerHTML = `<span style="font-size:20px">⏳</span><span>Subiendo...</span>`;
+ 
+      try {
+        const url = await uploadPhotoToStorage(file, identifier, idx, slotNum);
+        block.dataset[key] = url;
+        renderPhotoSlot(block, slotNum, url);
+      } catch(err){
+        alert("Error al subir la foto: " + err.message);
+        uploadWrap.innerHTML = `
+          <span style="font-size:20px">📷</span>
+          <span>Foto ${slotNum}</span>
+          <input type="file" accept="image/*" capture="environment" />
+        `;
+      }
+    });
+  }
+ 
   function renderActions(actions){
-    actionsWrap.innerHTML = "";
-    const display = Array.isArray(actions) && actions.length ? actions : [{ status: "", note: "" }];
-    display.forEach((a, idx) => {
-      const block = document.createElement("div");
-      block.className = "card action-block";
-      block.style.padding = "12px";
-      block.style.marginBottom = "10px";
-      block.style.boxShadow = "none";
-      block.style.background = "var(--card)";
-      block.innerHTML = `
+    actionsWrap.innerHTML="";
+    const display = Array.isArray(actions)&&actions.length ? actions : [{status:"",note:"",foto1_url:null,foto2_url:null}];
+    display.forEach((a,idx)=>{
+      const block=document.createElement("div");
+      block.className="card action-block";
+      block.style.cssText="padding:12px;margin-bottom:10px;box-shadow:none;background:var(--card);";
+      block.dataset.foto1 = a.foto1_url||"";
+      block.dataset.foto2 = a.foto2_url||"";
+      block.innerHTML=`
         <div class="row">
           <div class="pill">
             <span class="dot ${statusDotClass(a.status)}" data-role="dot"></span>
-            Actuación ${idx + 1}: <span class="kbd" data-role="lbl">${escapeHTML(statusLabel(a.status))}</span>
+            Actuación ${idx+1}: <span class="kbd" data-role="lbl">${escapeHTML(statusLabel(a.status))}</span>
           </div>
-          <div class="right" style="min-width:220px; flex:1">
+          <div class="right" style="min-width:220px;flex:1">
             <select>
               <option value="">Estado de la actuación</option>
               <option value="pending">🔴 Pendiente</option>
@@ -1239,192 +1246,188 @@
               <option value="integrated">🟢 Integrado/Completado</option>
             </select>
           </div>
-          <button class="btn small danger" data-role="remove" title="Eliminar esta actuación">Eliminar</button>
+          <button class="btn small danger" data-role="remove">Eliminar</button>
         </div>
         <label>Motivo</label>
         <textarea placeholder="escribe aqui ..........."></textarea>
+        <label style="margin-top:10px">Imágenes (máx. 2)</label>
+        <div class="photo-thumbs">
+          <div data-photo-slot="1"></div>
+          <div data-photo-slot="2"></div>
+        </div>
       `;
-      const sel = block.querySelector("select");
-      const ta = block.querySelector("textarea");
-      sel.value = a.status || "";
-      ta.value = a.note || "";
-      sel.addEventListener("change", () => {
-        block.querySelector('[data-role="dot"]').className = `dot ${statusDotClass(sel.value)}`;
-        block.querySelector('[data-role="lbl"]').textContent = statusLabel(sel.value);
+ 
+      const sel=block.querySelector("select");
+      const ta=block.querySelector("textarea");
+      sel.value=a.status||"";
+      ta.value=a.note||"";
+      sel.addEventListener("change",()=>{
+        block.querySelector('[data-role="dot"]').className=`dot ${statusDotClass(sel.value)}`;
+        block.querySelector('[data-role="lbl"]').textContent=statusLabel(sel.value);
       });
-      block.querySelector('[data-role="remove"]').addEventListener("click", () => {
-        const current = getActionsFromDOM();
-        current.splice(idx, 1);
+      block.querySelector('[data-role="remove"]').addEventListener("click",()=>{
+        const current=getActionsFromDOM();
+        current.splice(idx,1);
         renderActions(current);
       });
+ 
       actionsWrap.appendChild(block);
+ 
+      // Render photo slots
+      if(a.foto1_url) renderPhotoSlot(block,1,a.foto1_url);
+      else renderUploadButton(block,1);
+      if(a.foto2_url) renderPhotoSlot(block,2,a.foto2_url);
+      else renderUploadButton(block,2);
     });
     setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
+ 
+    // If there's a pending scan file, attach to first action slot 1
+    if(pendingScanFile){
+      const firstBlock = actionsWrap.querySelector(".action-block");
+      if(firstBlock && !firstBlock.dataset.foto1){
+        const file = pendingScanFile;
+        pendingScanFile = null;
+        const identifier = (f_identifier_input.value||"").trim()||"sin-id";
+        uploadPhotoToStorage(file, identifier, 0, 1).then(url=>{
+          firstBlock.dataset.foto1 = url;
+          renderPhotoSlot(firstBlock, 1, url);
+          showToast("Imagen del escaneo adjuntada a la actuación 1.", "", null, 3000);
+        }).catch(err=>{
+          console.warn("Error adjuntando foto escaneada", err);
+        });
+      } else {
+        pendingScanFile = null;
+      }
+    }
   }
-
-  btnAddAction.addEventListener("click", () => {
-    const current = getActionsFromDOM();
-    current.push({ status: "", note: "" });
+ 
+  btnAddAction.addEventListener("click",()=>{
+    const current=getActionsFromDOM();
+    current.push({status:"",note:"",foto1_url:null,foto2_url:null});
     renderActions(current);
   });
-
+ 
+  // ─── NOTES ───
   function renderNotes(){
-    const notes = visibleNotes().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-    noteList.innerHTML = "";
+    const notes=visibleNotes().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+    noteList.innerHTML="";
     if(!notes.length){
-      const empty = document.createElement("div");
-      empty.className = "muted";
-      empty.textContent = "Sin notas.";
-      noteList.appendChild(empty);
-      return;
+      const empty=document.createElement("div");
+      empty.className="muted"; empty.textContent="Sin notas.";
+      noteList.appendChild(empty); return;
     }
-
-    notes.forEach(n => {
-      const item = document.createElement("div");
-      item.className = "item" + (n.is_deleted ? " archived" : "");
-      item.style.cursor = "default";
-      const preview = n.text.length > 180 ? n.text.slice(0, 180) + "…" : n.text;
-      const delBtn = n.is_deleted ? "" : `<button class="btn small danger" data-note-del="${n.id}">Borrar</button>`;
-      item.innerHTML = `
+    notes.forEach(n=>{
+      const item=document.createElement("div");
+      item.className="item"+(n.is_deleted?" archived":"");
+      item.style.cursor="default";
+      const preview=n.text.length>180?n.text.slice(0,180)+"…":n.text;
+      const delBtn=n.is_deleted?"":`<button class="btn small danger" data-note-del="${n.id}">Borrar</button>`;
+      item.innerHTML=`
         <div class="row">
           <div class="pill"><span class="dot orange"></span>🟠 NOTA</div>
           <div class="right muted">${escapeHTML(formatTS(n.createdAt))}</div>
         </div>
-        <div style="margin-top:8px; white-space:pre-wrap">${escapeHTML(preview)}</div>
+        <div style="margin-top:8px;white-space:pre-wrap">${escapeHTML(preview)}</div>
         <div class="row" style="margin-top:8px">${delBtn}</div>
       `;
       noteList.appendChild(item);
     });
-
-    noteList.querySelectorAll("[data-note-del]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const note = state.notes.find(x => x.id === btn.getAttribute("data-note-del"));
+    noteList.querySelectorAll("[data-note-del]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const note=state.notes.find(x=>x.id===btn.getAttribute("data-note-del"));
         if(!note) return;
-
         if(note.dbId){
-          const { error } = await sb
-            .from("notes")
-            .update({
-              is_deleted: true,
-              deleted_at: nowISO()
-            })
-            .eq("id", note.dbId);
-
-          if(error){
-            alert("Falló el borrado de la nota en Supabase: " + error.message);
-            return;
-          }
+          const {error}=await sb.from("notes").update({is_deleted:true,deleted_at:nowISO()}).eq("id",note.dbId);
+          if(error){ alert("Falló el borrado: "+error.message); return; }
         }
-
-        note.is_deleted = true;
-        note.deletedAt = nowISO();
-        addLog(null, "note_deleted", structuredClone(note));
-        saveState();
-        renderNotes();
-        renderList();
+        note.is_deleted=true; note.deletedAt=nowISO();
+        addLog(null,"note_deleted",structuredClone(note));
+        saveState(); renderNotes(); renderList();
       });
     });
   }
-
+ 
+  // ─── SUMMARY PILLS ───
   function updateSummaryPillsActiveState(){
-    [pillRed, pillYellow, pillBlue, pillPurple, pillOrange].forEach(p => p && p.classList.remove("active-filter"));
-    if(severityFilter === "red" && pillRed) pillRed.classList.add("active-filter");
-    if(severityFilter === "yellow" && pillYellow) pillYellow.classList.add("active-filter");
-    if(severityFilter === "blue" && pillBlue) pillBlue.classList.add("active-filter");
-    if(severityFilter === "purple" && pillPurple) pillPurple.classList.add("active-filter");
-    if(severityFilter === "orange" && pillOrange) pillOrange.classList.add("active-filter");
+    [pillRed,pillYellow,pillBlue,pillPurple,pillOrange].forEach(p=>p&&p.classList.remove("active-filter"));
+    if(severityFilter==="red"&&pillRed) pillRed.classList.add("active-filter");
+    if(severityFilter==="yellow"&&pillYellow) pillYellow.classList.add("active-filter");
+    if(severityFilter==="blue"&&pillBlue) pillBlue.classList.add("active-filter");
+    if(severityFilter==="purple"&&pillPurple) pillPurple.classList.add("active-filter");
+    if(severityFilter==="orange"&&pillOrange) pillOrange.classList.add("active-filter");
   }
-
+ 
   function renderList(){
-    let sumRed = 0, sumYellow = 0, sumBlue = 0, sumPurple = 0;
-    state.patients.forEach(p => {
-      const c = computeCounts(p);
-      sumRed += c.pending;
-      sumYellow += c.done;
-      sumBlue += c.followup;
-      sumPurple += c.various;
+    let sumRed=0,sumYellow=0,sumBlue=0,sumPurple=0;
+    state.patients.forEach(p=>{
+      const c=computeCounts(p);
+      sumRed+=c.pending; sumYellow+=c.done; sumBlue+=c.followup; sumPurple+=c.various;
     });
-    const sumOrange = activeNotes().length;
-    const sumTotal = sumRed + sumYellow + sumBlue;
-    if(el("sumRed")) el("sumRed").textContent = String(sumRed);
-    if(el("sumYellow")) el("sumYellow").textContent = String(sumYellow);
-    if(el("sumBlue")) el("sumBlue").textContent = String(sumBlue);
-    if(el("sumPurple")) el("sumPurple").textContent = String(sumPurple);
-    if(el("sumOrange")) el("sumOrange").textContent = String(sumOrange);
-    if(el("sumTotal")) el("sumTotal").textContent = String(sumTotal);
+    const sumOrange=activeNotes().length;
+    const sumTotal=sumRed+sumYellow+sumBlue;
+    ["sumRed","sumYellow","sumBlue","sumPurple","sumOrange","sumTotal"].forEach((id,i)=>{
+      if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumPurple,sumOrange,sumTotal][i]);
+    });
     updateSummaryPillsActiveState();
-
     sortPatients();
-    const q = (search.value || "").trim();
-    const f = filterStatus.value;
-
-    if(f === "notes" || severityFilter === "orange"){
-      patientList.innerHTML = "";
-      countPatients.textContent = String(state.patients.length);
-      countLogs.textContent = String(state.logs.length);
-      renderNotes();
-      return;
+    const q=(search.value||"").trim();
+    const f=filterStatus.value;
+ 
+    if(f==="notes"||severityFilter==="orange"){
+      patientList.innerHTML="";
+      countPatients.textContent=String(state.patients.length);
+      countLogs.textContent=String(state.logs.length);
+      renderNotes(); return;
     }
-
-    const filtered = state.patients.filter(p => {
-      const m = matchesSearchAll(p, q);
-      if(q && m){
-        if(severityFilter === "red") return hasRed(p);
-        if(severityFilter === "yellow") return hasYellow(p);
-        if(severityFilter === "blue") return hasBlue(p);
-        if(severityFilter === "purple") return hasPurple(p);
+ 
+    const filtered=state.patients.filter(p=>{
+      const m=matchesSearchAll(p,q);
+      if(q&&m){
+        if(severityFilter==="red") return hasRed(p);
+        if(severityFilter==="yellow") return hasYellow(p);
+        if(severityFilter==="blue") return hasBlue(p);
+        if(severityFilter==="purple") return hasPurple(p);
         return true;
       }
       if(!m) return false;
-
-      if(f === "followup"){
-        if(!hasBlue(p)) return false;
-      } else if(f === "various"){
-        if(!hasPurple(p)) return false;
-      } else if(f === "active"){
-        if(p.archived || isFollowupOnly(p) || isVariousOnly(p)) return false;
-      } else if(f === "archived"){
-        if(!p.archived) return false;
-      }
-
-      if(severityFilter === "red") return hasRed(p);
-      if(severityFilter === "yellow") return hasYellow(p);
-      if(severityFilter === "blue") return hasBlue(p);
-      if(severityFilter === "purple") return hasPurple(p);
+      if(f==="followup"){ if(!hasBlue(p)) return false; }
+      else if(f==="various"){ if(!hasPurple(p)) return false; }
+      else if(f==="active"){ if(p.archived||isFollowupOnly(p)||isVariousOnly(p)) return false; }
+      else if(f==="archived"){ if(!p.archived) return false; }
+      if(severityFilter==="red") return hasRed(p);
+      if(severityFilter==="yellow") return hasYellow(p);
+      if(severityFilter==="blue") return hasBlue(p);
+      if(severityFilter==="purple") return hasPurple(p);
       return true;
     });
-
-    const identifierNum = (x) => {
-      const n = Number(x?.identifier);
-      return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n;
-    };
-    const sevScore = (p) => hasRed(p) ? 0 : hasYellow(p) ? 1 : hasBlue(p) ? 2 : hasPurple(p) ? 3 : 4;
-    const actives = filtered.filter(p => !p.archived && (p.actions || []).filter(isUsedAction).length > 0).sort((a, b) => sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : identifierNum(a) - identifierNum(b));
-    const followups = filtered.filter(p => hasBlue(p)).sort((a, b) => identifierNum(a) - identifierNum(b));
-    const various = filtered.filter(p => hasPurple(p)).sort((a, b) => identifierNum(a) - identifierNum(b));
-    const archived = filtered.filter(p => p.archived).sort((a, b) => identifierNum(a) - identifierNum(b));
-
-    const allPatients = filtered.sort((a, b) => {
-      if(a.archived !== b.archived) return a.archived ? 1 : -1;
-      return sevScore(a) !== sevScore(b) ? sevScore(a) - sevScore(b) : identifierNum(a) - identifierNum(b);
+ 
+    const identifierNum=x=>{ const n=Number(x?.identifier); return Number.isNaN(n)?Number.POSITIVE_INFINITY:n; };
+    const sevScore=p=>hasRed(p)?0:hasYellow(p)?1:hasBlue(p)?2:hasPurple(p)?3:4;
+    const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort((a,b)=>sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b));
+    const followups=filtered.filter(p=>hasBlue(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
+    const various=filtered.filter(p=>hasPurple(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
+    const archived=filtered.filter(p=>p.archived).sort((a,b)=>identifierNum(a)-identifierNum(b));
+    const allPatients=filtered.sort((a,b)=>{
+      if(a.archived!==b.archived) return a.archived?1:-1;
+      return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
     });
-
-    const ordered = (f === "followup") ? followups
-      : (f === "various") ? various
-      : (f === "archived") ? archived
-      : (f === "active") ? actives
-      : allPatients;
-
-    patientList.innerHTML = "";
-    ordered.forEach(p => {
-      const counts = computeCounts(p);
-      const it = document.createElement("div");
-      it.className = "item" + (p.id === selectedPatientId ? " active" : "") + (p.archived ? " archived" : "");
-      const pendingDot = pendingDotBySeverity(p);
-      const integratedDot = patientAllIntegrated(p) ? "ok" : "off";
-      const arch = p.archived ? '<span class="badge"><span class="dot danger"></span>Archivado</span>' : "";
-      it.innerHTML = `
-        <p class="title">${escapeHTML(p.identifier || "—")}</p>
+ 
+    const ordered=f==="followup"?followups:f==="various"?various:f==="archived"?archived:f==="active"?actives:allPatients;
+    patientList.innerHTML="";
+    ordered.forEach(p=>{
+      const counts=computeCounts(p);
+      const it=document.createElement("div");
+      it.className="item"+(p.id===selectedPatientId?" active":"")+(p.archived?" archived":"");
+      const pendingDot=pendingDotBySeverity(p);
+      const integratedDot=patientAllIntegrated(p)?"ok":"off";
+      const arch=p.archived?'<span class="badge"><span class="dot danger"></span>Archivado</span>':"";
+      // count photos
+      const photoCount=(p.actions||[]).reduce((acc,a)=>{
+        return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0);
+      },0);
+      const photoBadge=photoCount>0?`<span class="badge"><span class="dot info"></span>📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
+      it.innerHTML=`
+        <p class="title">${escapeHTML(p.identifier||"—")}</p>
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
@@ -1435,553 +1438,337 @@
           <span class="badge"><span class="dot info"></span>🔵: ${counts.followup}</span>
           <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
           <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
+          ${photoBadge}
           ${arch}
         </div>
       `;
-      it.addEventListener("click", () => selectPatient(p.id));
+      it.addEventListener("click",()=>selectPatient(p.id));
       patientList.appendChild(it);
     });
-
-    countPatients.textContent = String(state.patients.length);
-    countLogs.textContent = String(state.logs.length);
+    countPatients.textContent=String(state.patients.length);
+    countLogs.textContent=String(state.logs.length);
     renderNotes();
   }
-
+ 
+  // ─── FORM ───
   function lockHCIfNeeded(){
     if(!selectedPatientId){
-      f_identifier.disabled = false;
-      identifierUnlocked = false;
-      btnUnlockHC.textContent = "Editar";
-      btnUnlockHC.disabled = true;
-      el("identifierHelp").textContent = "La HC se puede editar al crear. Luego queda bloqueada.";
+      f_identifier_input.disabled=false; identifierUnlocked=false;
+      btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=true;
+      el("identifierHelp").textContent="La HC se puede editar al crear. Luego queda bloqueada.";
       return;
     }
     if(identifierUnlocked){
-      f_identifier.disabled = false;
-      btnUnlockHC.textContent = "Bloquear";
-      btnUnlockHC.disabled = false;
-      el("identifierHelp").textContent = "Modo edición de HC ACTIVADO (usalo solo para correcciones).";
+      f_identifier_input.disabled=false; btnUnlockHC.textContent="Bloquear"; btnUnlockHC.disabled=false;
+      el("identifierHelp").textContent="Modo edición ACTIVADO (úsalo solo para correcciones).";
     } else {
-      f_identifier.disabled = true;
-      btnUnlockHC.textContent = "Editar";
-      btnUnlockHC.disabled = false;
-      el("identifierHelp").textContent = "HC bloqueada tras el primer guardado. Podés desbloquear para corregir.";
+      f_identifier_input.disabled=true; btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=false;
+      el("identifierHelp").textContent="Bloqueada tras el primer guardado. Podés desbloquear para corregir.";
     }
   }
-
+ 
   function clearForm(){
-    selectedPatientId = null;
-    identifierUnlocked = false;
-    selectedIdentifier.textContent = "—";
-    lastUpdated.textContent = "—";
-    historyPanel.style.display = "none";
-    historyPanel.innerHTML = "";
-    f_identifier_input.value = "";
-    f_identifier.value = "";
-    f_initial.value = "";
-    
-    renderActions([]);
-    lockHCIfNeeded();
-    renderList();
+    selectedPatientId=null; identifierUnlocked=false;
+    selectedIdentifier.textContent="—"; lastUpdated.textContent="—";
+    historyPanel.style.display="none"; historyPanel.innerHTML="";
+    f_identifier_input.value=""; f_identifier.value=""; f_initial.value="";
+    renderActions([]); lockHCIfNeeded(); renderList();
   }
-
+ 
   function selectPatient(id){
-    const p = state.patients.find(x => x.id === id);
+    const p=state.patients.find(x=>x.id===id);
     if(!p) return;
-    selectedPatientId = id;
-    identifierUnlocked = false;
-    selectedIdentifier.textContent = p.identifier || "—";
-    lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
-    f_identifier_input.value = p.identifier || "";
-    f_identifier.value = p.identifier || "";
-    f_initial.value = p.initialStudy || "";
-    
-    renderActions(p.actions || []);
-    historyPanel.style.display = "none";
-    historyPanel.innerHTML = "";
-    lockHCIfNeeded();
-    renderList();
+    selectedPatientId=id; identifierUnlocked=false;
+    selectedIdentifier.textContent=p.identifier||"—";
+    lastUpdated.textContent=`Últ. actualización: ${formatTS(p.updatedAt)}`;
+    f_identifier_input.value=p.identifier||"";
+    f_identifier.value=p.identifier||"";
+    f_initial.value=p.initialStudy||"";
+    renderActions(p.actions||[]);
+    historyPanel.style.display="none"; historyPanel.innerHTML="";
+    lockHCIfNeeded(); renderList();
   }
-
+ 
   function autocorrectActions(actions){
-    return actions.map(a => {
-      const note = String(a.note || "");
-      let status = String(a.status || "");
-      if(note.trim() !== "" && status === "") status = "pending";
-      return { status, note };
+    return actions.map(a=>{
+      const note=String(a.note||"");
+      let status=String(a.status||"");
+      if(note.trim()!==""&&status==="") status="pending";
+      return {status,note,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null};
     }).filter(isUsedAction);
   }
-
+ 
   function readFormToPatient(existing){
-    const p = normalizePatient(existing || {});
-    p.identifier = (f_identifier_input.value || "").trim();
-    
-    p.initialStudy = (f_initial.value || "").trim();
-    p.archived = existing ? !!existing.archived : false;
-    p.actions = autocorrectActions(getActionsFromDOM());
-    if(!existing) p.createdAt = nowISO();
-    p.updatedAt = nowISO();
+    const p=normalizePatient(existing||{});
+    p.identifier=(f_identifier_input.value||"").trim();
+    p.initialStudy=(f_initial.value||"").trim();
+    p.archived=existing?!!existing.archived:false;
+    p.actions=autocorrectActions(getActionsFromDOM());
+    if(!existing) p.createdAt=nowISO();
+    p.updatedAt=nowISO();
     return p;
   }
-
-  function validatePatient(p, existing){
-    const errs = [];
+ 
+  function validatePatient(p,existing){
+    const errs=[];
     if(!p.identifier) errs.push("Falta identificación.");
-
-    const idNorm = String(p.identifier || "").trim().toLowerCase();
+    const idNorm=String(p.identifier||"").trim().toLowerCase();
     if(idNorm){
-      const duplicate = state.patients.find(x => String(x.identifier || "").trim().toLowerCase() === idNorm && (!existing || x.id !== existing.id));
-      if(duplicate){
-        errs.push("Ya existe un registro con esa identificación.");
-      }
+      const dup=state.patients.find(x=>String(x.identifier||"").trim().toLowerCase()===idNorm&&(!existing||x.id!==existing.id));
+      if(dup) errs.push("Ya existe un registro con esa identificación.");
     }
-
     return errs;
   }
-
-  btnUnlockHC.addEventListener("click", () => {
+ 
+  // ─── EVENT LISTENERS ───
+  btnUnlockHC.addEventListener("click",()=>{
     if(!selectedPatientId) return;
     if(!identifierUnlocked){
-      const ok = confirm(`Vas a habilitar la edición de la HC.
-Usalo solo para correcciones.
-¿Continuar?`);
-      if(!ok) return;
-      identifierUnlocked = true;
-    } else {
-      identifierUnlocked = false;
-    }
+      if(!confirm("Vas a habilitar la edición del identificador.\nÚsalo solo para correcciones.\n¿Continuar?")) return;
+      identifierUnlocked=true;
+    } else { identifierUnlocked=false; }
     lockHCIfNeeded();
   });
-
-  btnNew.addEventListener("click", clearForm);
-
-  btnSave.addEventListener("click", async () => {
-    const draft = (noteDraft.value || "").trim();
+ 
+  btnNew.addEventListener("click",clearForm);
+ 
+  btnSave.addEventListener("click",async()=>{
+    const draft=(noteDraft.value||"").trim();
     if(draft){
-      const note = normalizeNote({ text: draft, createdAt: nowISO(), is_deleted: false });
-
-      const { data: noteData, error: noteError } = await sb
-        .from("notes")
-        .insert([{
-          user_id: currentUser?.id,
-          text: note.text,
-          is_deleted: false,
-          created_at: note.createdAt,
-          deleted_at: null
-        }])
-        .select();
-
-      if(noteError){
-        alert("Falló el guardado de la nota en Supabase: " + noteError.message);
-        return;
-      }
-
-      if(noteData?.[0]?.id) note.dbId = noteData[0].id;
+      const note=normalizeNote({text:draft,createdAt:nowISO(),is_deleted:false});
+      const {data:nd,error:ne}=await sb.from("notes").insert([{user_id:currentUser?.id,text:note.text,is_deleted:false,created_at:note.createdAt,deleted_at:null}]).select();
+      if(ne){ alert("Falló el guardado de la nota: "+ne.message); return; }
+      if(nd?.[0]?.id) note.dbId=nd[0].id;
       state.notes.push(note);
-      addLog(null, "note_created", structuredClone(note));
-      noteDraft.value = "";
+      addLog(null,"note_created",structuredClone(note));
+      noteDraft.value="";
     }
-
-    const existing = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
-    const shouldSavePatient = (f_identifier_input.value || "").trim() || (f_initial.value || "").trim() || getActionsFromDOM().some(isUsedAction);
-    if(!shouldSavePatient){
-      saveState();
-      renderList();
-      if(draft) showToast("Nota guardada.", "", null, 2500);
-      return;
-    }
-
-    const p = readFormToPatient(existing);
-
-    const errs = validatePatient(p, existing);
-    if(errs.length){
-  alert("No se pudo guardar:\n- " + errs.join("\n- "));
-  return;
-}
-    let dbData = null;
-    let dbError = null;
-
+ 
+    const existing=selectedPatientId?state.patients.find(x=>x.id===selectedPatientId):null;
+    const shouldSavePatient=(f_identifier_input.value||"").trim()||(f_initial.value||"").trim()||getActionsFromDOM().some(isUsedAction);
+    if(!shouldSavePatient){ saveState(); renderList(); if(draft) showToast("Nota guardada.","",null,2500); return; }
+ 
+    const p=readFormToPatient(existing);
+    const errs=validatePatient(p,existing);
+    if(errs.length){ alert("No se pudo guardar:\n- "+errs.join("\n- ")); return; }
+ 
+    let dbData=null,dbError=null;
     if(existing){
-      let targetDbId = existing.dbId || null;
-
+      let targetDbId=existing.dbId||null;
       if(!targetDbId){
-        const { data: foundRow, error: foundError } = await sb
-          .from("patients")
-          .select("id")
-          .eq("user_id", currentUser?.id)
-          .eq("identifier", p.identifier)
-          .limit(1)
-          .maybeSingle();
-
-        if(foundError){
-          
-          alert("Falló la búsqueda previa en Supabase: " + foundError.message);
-          return;
-        }
-
-        if(foundRow?.id) targetDbId = foundRow.id;
+        const found=await sb.from("patients").select("id").eq("user_id",currentUser?.id).eq("identifier",p.identifier).limit(1).maybeSingle();
+        if(found.error){ alert("Falló búsqueda: "+found.error.message); return; }
+        if(found.data?.id) targetDbId=found.data.id;
       }
-
       if(targetDbId){
-        const updateResult = await sb
-          .from("patients")
-          .update({
-            user_id: currentUser?.id,
-            identifier: p.identifier,
-            datos_generales: p.initialStudy,
-            archived: p.archived
-          })
-          .eq("id", targetDbId)
-          .select();
-
-        dbData = updateResult.data;
-        dbError = updateResult.error;
+        const r=await sb.from("patients").update({user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}).eq("id",targetDbId).select();
+        dbData=r.data; dbError=r.error;
       } else {
-        const insertResult = await sb
-          .from("patients")
-          .insert([{
-            user_id: currentUser?.id,
-            identifier: p.identifier,
-            datos_generales: p.initialStudy,
-            archived: p.archived
-          }])
-          .select();
-
-        dbData = insertResult.data;
-        dbError = insertResult.error;
+        const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
+        dbData=r.data; dbError=r.error;
       }
     } else {
-      const insertResult = await sb
-        .from("patients")
-        .insert([{
-          user_id: currentUser?.id,
-          identifier: p.identifier,
-          datos_generales: p.initialStudy,
-          archived: p.archived
-        }])
-        .select();
-
-      dbData = insertResult.data;
-      dbError = insertResult.error;
+      const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
+      dbData=r.data; dbError=r.error;
     }
-
-    
-    
-    if(dbError){
-      alert("Falló el guardado en Supabase: " + dbError.message);
-      return;
+ 
+    if(dbError){ alert("Falló el guardado en Supabase: "+dbError.message); return; }
+ 
+    if(Array.isArray(dbData)&&dbData[0]?.id){
+      p.dbId=dbData[0].id;
+      try { await syncPatientActionsToDb(p.dbId,p.actions||[]); }
+      catch(actErr){ alert("Registro guardado, pero falló sync de actuaciones: "+actErr.message); }
     }
-
-    if(Array.isArray(dbData) && dbData[0]?.id){
-      p.dbId = dbData[0].id;
-      try {
-        await syncPatientActionsToDb(p.dbId, p.actions || []);
-      } catch (actionsError) {
-        alert("Registro guardado, pero falló la sincronización de actuaciones: " + actionsError.message);
-      }
-    }
-
-    const wasArchived = !!p.archived;
-    const shouldBeArchived = patientAllIntegrated(p) || patientHasZeroActions(p);
-    if(!wasArchived && shouldBeArchived) p.archived = true;
-    if(wasArchived && !shouldBeArchived) p.archived = false;
-    const willAutoArchive = !wasArchived && shouldBeArchived;
-
+ 
+    const wasArchived=!!p.archived;
+    const shouldBeArchived=patientAllIntegrated(p)||patientHasZeroActions(p);
+    if(!wasArchived&&shouldBeArchived) p.archived=true;
+    if(wasArchived&&!shouldBeArchived) p.archived=false;
+    const willAutoArchive=!wasArchived&&shouldBeArchived;
+ 
     if(existing){
-      Object.assign(existing, p);
-      addLog(existing.id, "updated", structuredClone(existing));
-      saveState();
-      identifierUnlocked = false;
-      selectPatient(existing.id);
-      if(willAutoArchive){
-        showToast("Registro archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
-          const px = state.patients.find(x => x.id === existing.id);
-          if(!px) return;
-          px.archived = false;
-          px.updatedAt = nowISO();
-          addLog(px.id, "unarchived", structuredClone(px));
-          saveState();
-          selectPatient(px.id);
-          renderList();
-        });
-      }
+      Object.assign(existing,p);
+      addLog(existing.id,"updated",structuredClone(existing));
+      saveState(); identifierUnlocked=false; selectPatient(existing.id);
     } else {
-      p.id = uid();
-      state.patients.push(p);
-      addLog(p.id, "created", structuredClone(p));
-      saveState();
-      selectPatient(p.id);
-      if(willAutoArchive){
-        showToast("Registro archivado automáticamente (todo integrado o 0 actuaciones).", "Deshacer", () => {
-          const px = state.patients.find(x => x.id === p.id);
-          if(!px) return;
-          px.archived = false;
-          px.updatedAt = nowISO();
-          addLog(px.id, "unarchived", structuredClone(px));
-          saveState();
-          selectPatient(px.id);
-          renderList();
-        });
-      }
+      p.id=uid(); state.patients.push(p);
+      addLog(p.id,"created",structuredClone(p));
+      saveState(); selectPatient(p.id);
+    }
+ 
+    if(willAutoArchive){
+      showToast("Registro archivado automáticamente.","Deshacer",()=>{
+        const px=state.patients.find(x=>x.id===(existing?existing.id:p.id));
+        if(!px) return;
+        px.archived=false; px.updatedAt=nowISO();
+        addLog(px.id,"unarchived",structuredClone(px));
+        saveState(); selectPatient(px.id); renderList();
+      });
     }
     renderList();
   });
-
-  btnDeletePatient.addEventListener("click", async () => {
-    if(!selectedPatientId){
-      alert("Seleccioná un registro para borrar.");
-      return;
-    }
-
-    const existing = state.patients.find(x => x.id === selectedPatientId);
+ 
+  btnDeletePatient.addEventListener("click",async()=>{
+    if(!selectedPatientId){ alert("Seleccioná un registro para borrar."); return; }
+    const existing=state.patients.find(x=>x.id===selectedPatientId);
     if(!existing) return;
-
-    const ok = confirm(`¿Seguro que querés borrar al registro activo?
-
-${existing.identifier || "Sin identificación"}
-
-Esta acción lo elimina de la lista de registros.`);
-    if(!ok) return;
-
-    let targetDbId = existing.dbId || null;
-    if(!targetDbId && existing.identifier){
-      const found = await sb
-        .from("patients")
-        .select("id")
-        .eq("user_id", currentUser?.id)
-        .eq("identifier", existing.identifier)
-        .limit(1)
-        .maybeSingle();
-
-      if(found.error){
-        alert("Falló la búsqueda del registro en Supabase: " + found.error.message);
-        return;
-      }
-
-      if(found.data?.id) targetDbId = found.data.id;
+    if(!confirm(`¿Seguro que querés borrar el registro activo?\n\n${existing.identifier||"Sin identificación"}\n\nEsta acción lo elimina de la lista.`)) return;
+    let targetDbId=existing.dbId||null;
+    if(!targetDbId&&existing.identifier){
+      const found=await sb.from("patients").select("id").eq("user_id",currentUser?.id).eq("identifier",existing.identifier).limit(1).maybeSingle();
+      if(found.error){ alert("Falló la búsqueda: "+found.error.message); return; }
+      if(found.data?.id) targetDbId=found.data.id;
     }
-
     if(targetDbId){
-      const delActions = await sb
-        .from("patient_actions")
-        .delete()
-        .eq("patient_id", targetDbId);
-
-      if(delActions.error){
-        alert("Falló el borrado de actuaciones en Supabase: " + delActions.error.message);
-        return;
-      }
-
-      const delPatient = await sb
-        .from("patients")
-        .delete()
-        .eq("id", targetDbId);
-
-      if(delPatient.error){
-        alert("Falló el borrado del registro en Supabase: " + delPatient.error.message);
-        return;
-      }
+      const da=await sb.from("patient_actions").delete().eq("patient_id",targetDbId);
+      if(da.error){ alert("Falló borrado de actuaciones: "+da.error.message); return; }
+      const dp=await sb.from("patients").delete().eq("id",targetDbId);
+      if(dp.error){ alert("Falló borrado del registro: "+dp.error.message); return; }
     }
-
-    addLog(existing.id, "deleted_patient", structuredClone(existing));
-    state.patients = state.patients.filter(x => x.id !== selectedPatientId);
-    saveState();
-    clearForm();
-
+    addLog(existing.id,"deleted_patient",structuredClone(existing));
+    state.patients=state.patients.filter(x=>x.id!==selectedPatientId);
+    saveState(); clearForm();
     if(state.patients.length){
-      const next = state.patients.find(x => !x.archived) || state.patients[0];
+      const next=state.patients.find(x=>!x.archived)||state.patients[0];
       if(next) selectPatient(next.id);
-    } else {
-      renderList();
-    }
+    } else { renderList(); }
   });
-
+ 
   function renderHistoryLogs(logs){
     if(!logs.length) return '<div class="muted">No hay registros.</div>';
-    const sorted = [...logs].sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
-    let html = '<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Registro</th><th>Resumen</th></tr></thead><tbody>';
+    const sorted=[...logs].sort((a,b)=>(b.ts||"").localeCompare(a.ts||""));
+    let html='<table class="table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Registro</th><th>Resumen</th></tr></thead><tbody>';
     for(const L of sorted){
-      const snap = L.snapshot || {};
-      let summary = "";
-      if(snap.text){
-        summary = `NOTA · ${snap.text.slice(0, 120)}`;
-      } else {
-        const counts = computeCounts({ actions: Array.isArray(snap.actions) ? snap.actions : [] });
-        summary = `Actuaciones: ${counts.total} · 🔴 ${counts.pending} · 🟡 ${counts.done} · 🔵 ${counts.followup} · 🟣 ${counts.various} · 🟢 ${counts.integrated}`;
+      const snap=L.snapshot||{};
+      let summary="";
+      if(snap.text){ summary=`NOTA · ${snap.text.slice(0,120)}`; }
+      else {
+        const counts=computeCounts({actions:Array.isArray(snap.actions)?snap.actions:[]});
+        summary=`Actuaciones: ${counts.total} · 🔴 ${counts.pending} · 🟡 ${counts.done} · 🔵 ${counts.followup} · 🟣 ${counts.various} · 🟢 ${counts.integrated}`;
       }
-      html += `<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type || "—")}</td><td>${escapeHTML(snap.identifier || "NOTA")}</td><td>${escapeHTML(summary)}</td></tr>`;
+      html+=`<tr><td>${escapeHTML(formatTS(L.ts))}</td><td>${escapeHTML(L.type||"—")}</td><td>${escapeHTML(snap.identifier||"NOTA")}</td><td>${escapeHTML(summary)}</td></tr>`;
     }
-    html += '</tbody></table>';
+    html+='</tbody></table>';
     return html;
   }
-
-  btnViewPatientHistory.addEventListener("click", () => {
+ 
+  btnViewPatientHistory.addEventListener("click",()=>{
     if(!selectedPatientId){ alert("Seleccioná un registro."); return; }
-    const logs = state.logs.filter(l => l.patientId === selectedPatientId);
-    historyPanel.style.display = "block";
-    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial del registro</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro. No se borra nada.</div>${renderHistoryLogs(logs)}`;
-    historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    const logs=state.logs.filter(l=>l.patientId===selectedPatientId);
+    historyPanel.style.display="block";
+    historyPanel.innerHTML=`<h3 style="margin:0 0 8px;font-size:14px">Historial del registro</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro.</div>${renderHistoryLogs(logs)}`;
+    historyPanel.scrollIntoView({behavior:"smooth",block:"start"});
   });
-
-  btnViewGlobalHistory.addEventListener("click", () => {
-    historyPanel.style.display = "block";
-    historyPanel.innerHTML = `<h3 style="margin:0 0 8px; font-size:14px">Historial global</h3><div class="hint" style="margin-bottom:10px">Incluye cambios, duplicados, importaciones y notas.</div>${renderHistoryLogs(state.logs)}`;
-    historyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+ 
+  btnViewGlobalHistory.addEventListener("click",()=>{
+    historyPanel.style.display="block";
+    historyPanel.innerHTML=`<h3 style="margin:0 0 8px;font-size:14px">Historial global</h3><div class="hint" style="margin-bottom:10px">Incluye cambios, importaciones y notas.</div>${renderHistoryLogs(state.logs)}`;
+    historyPanel.scrollIntoView({behavior:"smooth",block:"start"});
   });
-
-  if(btnThemeToggle){
-    btnThemeToggle.addEventListener("click", toggleTheme);
-  }
-
-  btnFactoryReset.addEventListener("click", () => {
-    const ok = confirm(`¿Seguro? Esto borra los datos SOLO de este navegador en este PC.
-Recomendado: Exportar antes.`);
-    if(!ok) return;
-    localStorage.removeItem(KEY);
-    state = defaultState();
-    saveState();
-    clearForm();
-    renderList();
+ 
+  if(btnThemeToggle) btnThemeToggle.addEventListener("click",toggleTheme);
+  btnFactoryReset.addEventListener("click",()=>{
+    if(!confirm("¿Seguro? Borra solo la copia local de este navegador.")) return;
+    localStorage.removeItem(KEY); state=defaultState(); saveState(); clearForm(); renderList();
   });
-
-  search.addEventListener("input", renderList);
-  filterStatus.addEventListener("change", () => {
-    severityFilter = null;
-    renderList();
+ 
+  search.addEventListener("input",renderList);
+  filterStatus.addEventListener("change",()=>{ severityFilter=null; renderList(); });
+ 
+  if(pillRed) pillRed.addEventListener("click",()=>{ severityFilter=severityFilter==="red"?null:"red"; if(severityFilter) filterStatus.value="active"; renderList(); });
+  if(pillYellow) pillYellow.addEventListener("click",()=>{ severityFilter=severityFilter==="yellow"?null:"yellow"; if(severityFilter) filterStatus.value="active"; renderList(); });
+  if(pillBlue) pillBlue.addEventListener("click",()=>{ severityFilter=severityFilter==="blue"?null:"blue"; if(severityFilter) filterStatus.value="followup"; renderList(); });
+  if(pillPurple) pillPurple.addEventListener("click",()=>{ severityFilter=severityFilter==="purple"?null:"purple"; if(severityFilter) filterStatus.value="various"; renderList(); });
+  if(pillOrange) pillOrange.addEventListener("click",()=>{ severityFilter=severityFilter==="orange"?null:"orange"; if(severityFilter) filterStatus.value="notes"; renderList(); });
+ 
+  // ─── SCAN MODAL EVENTS ───
+  if(btnOpenScanModal) btnOpenScanModal.addEventListener("click",openScanModal);
+  el("btnCloseScanModal").addEventListener("click",closeScanModal);
+  el("scanModal").addEventListener("click",(e)=>{ if(e.target===el("scanModal")) closeScanModal(); });
+ 
+  el("scanFileInput").addEventListener("change",(e)=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    if(file.size>10*1024*1024){ alert("La imagen no puede superar 10 MB."); return; }
+    runOCR(file);
   });
-
-  if(pillRed){
-    pillRed.addEventListener("click", () => {
-      severityFilter = severityFilter === "red" ? null : "red";
-      if(severityFilter) filterStatus.value = "active";
-      renderList();
-    });
-  }
-  if(pillYellow){
-    pillYellow.addEventListener("click", () => {
-      severityFilter = severityFilter === "yellow" ? null : "yellow";
-      if(severityFilter) filterStatus.value = "active";
-      renderList();
-    });
-  }
-  if(pillBlue){
-    pillBlue.addEventListener("click", () => {
-      severityFilter = severityFilter === "blue" ? null : "blue";
-      if(severityFilter) filterStatus.value = "followup";
-      renderList();
-    });
-  }
-  if(pillPurple){
-    pillPurple.addEventListener("click", () => {
-      severityFilter = severityFilter === "purple" ? null : "purple";
-      if(severityFilter) filterStatus.value = "various";
-      renderList();
-    });
-  }
-  if(pillOrange){
-    pillOrange.addEventListener("click", () => {
-      severityFilter = severityFilter === "orange" ? null : "orange";
-      if(severityFilter) filterStatus.value = "notes";
-      renderList();
-    });
-  }
-
+ 
+  el("btnOcrConfirm").addEventListener("click",()=>{
+    const val=(el("ocrManualInput").value||"").trim()||scanFoundIdentifier;
+    confirmScanIdentifier(val);
+  });
+ 
+  el("btnOcrConfirmAlt").addEventListener("click",()=>{
+    const val=(el("ocrManualInputAlt").value||"").trim();
+    confirmScanIdentifier(val);
+  });
+ 
+  // ─── LIGHTBOX ───
+  el("lightboxClose").addEventListener("click",closeLightbox);
+  el("lightbox").addEventListener("click",(e)=>{ if(e.target===el("lightbox")) closeLightbox(); });
+ 
+  // ─── AUTH EVENTS ───
+  if(btnLogin) btnLogin.addEventListener("click",handleLogin);
+  [authEmail,authPassword].forEach(input=>{
+    if(input) input.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); handleLogin(); } });
+  });
+  if(btnRegister) btnRegister.addEventListener("click",handleRegister);
+  if(btnRecover) btnRecover.addEventListener("click",handleRecover);
+  if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
+ 
+  window.addEventListener("pagehide",()=>{
+    try {
+      localStorage.removeItem(KEY);
+      Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
+      sessionStorage.clear();
+    } catch(e){}
+  });
+ 
+  sb.auth.onAuthStateChange(async(_event,session)=>{
+    if(inactivityTimer) clearTimeout(inactivityTimer);
+    currentSession=session||null; currentUser=session?.user||null;
+    await loadProfileFromDb(); updateAuthUI();
+    if(currentUser){
+      await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
+    } else {
+      currentProfile=null; state=defaultState(); saveState();
+    }
+    renderList(); clearForm(); initialPick();
+  });
+ 
   function initialPick(){
     if(state.patients.length){
-      const p = state.patients.find(x => !x.archived) || state.patients[0];
+      const p=state.patients.find(x=>!x.archived)||state.patients[0];
       selectPatient(p.id);
-    } else {
-      clearForm();
-    }
+    } else { clearForm(); }
   }
-
+ 
   async function boot(){
-    // 🔴 detectar recuperación de contraseña
-    const hash = window.location.hash || (window.parent && window.parent !== window ? window.parent.location.hash : "");
-    if(hash && hash.includes("type=recovery")){
-      const newPass = prompt("Introduce tu nueva contraseña:");
+    const hash=window.location.hash||(window.parent&&window.parent!==window?window.parent.location.hash:"");
+    if(hash&&hash.includes("type=recovery")){
+      const newPass=prompt("Introduce tu nueva contraseña:");
       if(newPass){
-        const { error } = await sb.auth.updateUser({ password: newPass });
-        if(error){
-          alert("Error al cambiar contraseña: " + error.message);
-        } else {
-          alert("Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
-          window.location.href = window.location.origin + "/app.html";
-          return;
-        }
+        const {error}=await sb.auth.updateUser({password:newPass});
+        if(error) alert("Error al cambiar contraseña: "+error.message);
+        else { alert("Contraseña actualizada. Ya puedes iniciar sesión."); window.location.href=window.location.origin+"/app.html"; return; }
       }
     }
     applyTheme(currentTheme);
-    clearAuthFields();
     updateAuthUI();
     await restoreSession();
     if(currentUser){
       await loadProfileFromDb();
-      setupInactivityListeners();
-      resetInactivityTimer();
-      await loadPatientsFromDb();
-      await loadNotesFromDb();
-      await loadLogsFromDb();
-      renderList();
-      clearForm();
-      initialPick();
+      setupInactivityListeners(); resetInactivityTimer();
+      await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
+      renderList(); clearForm(); initialPick();
     } else {
-      clearAuthFields();
-      renderList();
-      clearForm();
+      renderList(); clearForm();
     }
   }
-
-  if(btnLogin) btnLogin.addEventListener("click", handleLogin);
-  [authEmail, authPassword].forEach(input => {
-    if(input){
-      input.addEventListener("keydown", (e) => {
-        if(e.key === "Enter"){
-          e.preventDefault();
-          handleLogin();
-        }
-      });
-    }
-  });
-  if(btnRegister) btnRegister.addEventListener("click", handleRegister);
-  if(btnRecover) btnRecover.addEventListener("click", handleRecover);
-  if(btnLogout) btnLogout.addEventListener("click", (e) => {
-    e.preventDefault();
-    handleLogout();
-  });
-
-  window.addEventListener("pagehide", () => {
-    try {
-      localStorage.removeItem(KEY);
-      Object.keys(localStorage).forEach(k => {
-        if(k.toLowerCase().includes("supabase") || k.toLowerCase().includes("auth")) localStorage.removeItem(k);
-      });
-      sessionStorage.clear();
-    } catch(e) {}
-  });
-
-  sb.auth.onAuthStateChange(async (_event, session) => {
-    if(inactivityTimer) clearTimeout(inactivityTimer);
-    currentSession = session || null;
-    currentUser = session?.user || null;
-    await loadProfileFromDb();
-    updateAuthUI();
-    if(currentUser){
-      await loadPatientsFromDb();
-      await loadNotesFromDb();
-      await loadLogsFromDb();
-    } else {
-      currentProfile = null;
-      state = defaultState();
-      saveState();
-    }
-    renderList();
-    clearForm();
-    initialPick();
-  });
-
+ 
   boot();
 })();
 </script>
 </body>
 </html>
+ 
