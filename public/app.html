@@ -1327,7 +1327,12 @@
         block.querySelector('[data-role="dot"]').className=`dot ${statusDotClass(sel.value)}`;
         block.querySelector('[data-role="lbl"]').textContent=statusLabel(sel.value);
       });
-      block.querySelector('[data-role="remove"]').addEventListener("click",()=>{
+      block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
+        // Borrar fotos del bucket antes de eliminar la actuación
+        const f1 = block.dataset.foto1||null;
+        const f2 = block.dataset.foto2||null;
+        if(f1) await deletePhotoFromStorage(f1);
+        if(f2) await deletePhotoFromStorage(f2);
         const current=getActionsFromDOM();
         current.splice(idx,1);
         renderActions(current);
@@ -1516,15 +1521,21 @@
   function lockHCIfNeeded(){
     if(!selectedPatientId){
       f_identifier_input.disabled=false; identifierUnlocked=false;
+      btnUnlockHC.style.display="none";
       btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=true;
-      el("identifierHelp").textContent="La HC se puede editar al crear. Luego queda bloqueada.";
+      el("identifierHelp").style.display="none";
+      el("identifierHelp").textContent="La identificación se puede editar al crear. Luego queda bloqueada.";
       return;
     }
     if(identifierUnlocked){
-      f_identifier_input.disabled=false; btnUnlockHC.textContent="Bloquear"; btnUnlockHC.disabled=false;
+      f_identifier_input.disabled=false;
+      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Bloquear"; btnUnlockHC.disabled=false;
+      el("identifierHelp").style.display="block";
       el("identifierHelp").textContent="Modo edición ACTIVADO (úsalo solo para correcciones).";
     } else {
-      f_identifier_input.disabled=true; btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=false;
+      f_identifier_input.disabled=true;
+      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=false;
+      el("identifierHelp").style.display="block";
       el("identifierHelp").textContent="Bloqueada tras el primer guardado. Podés desbloquear para corregir.";
     }
   }
@@ -1684,6 +1695,10 @@
       if(found.data?.id) targetDbId=found.data.id;
     }
     if(targetDbId){
+      // Borrar fotos del bucket antes de borrar las actuaciones
+      const photosToDelete = (existing.actions||[]).flatMap(a => [a.foto1_url, a.foto2_url]).filter(Boolean);
+      for(const url of photosToDelete) await deletePhotoFromStorage(url);
+
       const da=await sb.from("patient_actions").delete().eq("patient_id",targetDbId);
       if(da.error){ alert("Falló borrado de actuaciones: "+da.error.message); return; }
       const dp=await sb.from("patients").delete().eq("id",targetDbId);
