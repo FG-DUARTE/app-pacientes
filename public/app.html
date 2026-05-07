@@ -855,6 +855,18 @@
     }
   }
 
+  async function uploadScanFileNow(identifier){
+    if(!scanPendingFile) return null;
+    try {
+      const url = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1);
+      scanPendingFile = null;
+      return url;
+    } catch(err){
+      console.warn("Error subiendo foto de escaneo al bucket:", err);
+      return null;
+    }
+  }
+
   function confirmScanIdentifier(identifier){
     identifier = String(identifier||"").trim();
     if(!identifier){ alert("Escribí un identificador."); return; }
@@ -876,12 +888,14 @@
       const btnOpen = document.createElement("button");
       btnOpen.className = "btn primary small";
       btnOpen.textContent = "Abrir registro";
-      btnOpen.addEventListener("click", () => {
+      btnOpen.addEventListener("click", async () => {
+        btnOpen.disabled = true;
+        btnOpen.textContent = "Subiendo foto...";
+        const url = await uploadScanFileNow(identifier);
+        pendingScanFile = url; // URL string lista para adjuntar al guardar
         closeScanModal();
         selectPatient(existing.id);
-        // if we have a file, we'll attach it when saving
-        if(scanPendingFile) pendingScanFile = scanPendingFile;
-        scanPendingFile = null;
+        if(url) showToast("Imagen subida. Se adjuntará al guardar.", "", null, 4000);
       });
       matchActions.appendChild(btnOpen);
     } else {
@@ -889,16 +903,18 @@
       const btnCreate = document.createElement("button");
       btnCreate.className = "btn success small";
       btnCreate.textContent = "Crear nuevo registro";
-      btnCreate.addEventListener("click", () => {
+      btnCreate.addEventListener("click", async () => {
+        btnCreate.disabled = true;
+        btnCreate.textContent = "Subiendo foto...";
+        const url = await uploadScanFileNow(identifier);
+        pendingScanFile = url; // URL string lista
         closeScanModal();
         clearForm();
         f_identifier_input.value = identifier;
         f_identifier.value = identifier;
         selectedIdentifier.textContent = identifier;
-        if(scanPendingFile) pendingScanFile = scanPendingFile;
-        scanPendingFile = null;
-        // Scroll to form
         document.getElementById("f_initial").focus();
+        if(url) showToast("Imagen subida. Se adjuntará al guardar.", "", null, 4000);
       });
       matchActions.appendChild(btnCreate);
     }
@@ -1571,31 +1587,17 @@
 
     if(dbError){ alert("Falló el guardado en Supabase: "+dbError.message); return; }
 
-    // Si hay foto del escaneo pendiente, subirla al bucket ANTES de sincronizar actuaciones
-    if(pendingScanFile && p.actions && p.actions.length > 0){
-      try {
-        const scanUrl = await uploadPhotoToStorage(pendingScanFile, p.identifier, 0, 1);
-        // Meter la URL en foto1 de la primera actuación (desplazar si ya había algo)
-        if(!p.actions[0].foto1_url){
-          p.actions[0].foto1_url = scanUrl;
-        } else if(!p.actions[0].foto2_url){
-          p.actions[0].foto2_url = scanUrl;
-        }
-        showToast("Imagen del escaneo guardada en el registro.", "", null, 3000);
-      } catch(scanErr){
-        console.warn("Error subiendo foto de escaneo:", scanErr);
-      }
+    // pendingScanFile ahora es una URL string ya subida al bucket
+    if(pendingScanFile && typeof pendingScanFile === "string"){
+      const scanUrl = pendingScanFile;
       pendingScanFile = null;
-    } else if(pendingScanFile){
-      // No hay actuaciones aún, crear una vacía para alojar la foto
-      try {
-        const scanUrl = await uploadPhotoToStorage(pendingScanFile, p.identifier, 0, 1);
+      if(p.actions && p.actions.length > 0){
+        if(!p.actions[0].foto1_url) p.actions[0].foto1_url = scanUrl;
+        else if(!p.actions[0].foto2_url) p.actions[0].foto2_url = scanUrl;
+      } else {
+        // Sin actuaciones: crear una entrada vacía solo para alojar la foto
         p.actions = [{ status: "", note: "", foto1_url: scanUrl, foto2_url: null }];
-        showToast("Imagen del escaneo guardada en el registro.", "", null, 3000);
-      } catch(scanErr){
-        console.warn("Error subiendo foto de escaneo:", scanErr);
       }
-      pendingScanFile = null;
     }
 
     if(Array.isArray(dbData)&&dbData[0]?.id){
