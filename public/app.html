@@ -1,6 +1,3 @@
-TML
-Copiar
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -109,7 +106,7 @@ Copiar
     .mini{font-size:12px; color:var(--muted);}
     #historyPanel{max-height: 50vh;overflow-y: auto;}
     #historyPanel thead th{position: sticky;top: 0;background: var(--panel);z-index: 2;}
- 
+
     /* === SCAN MODAL === */
     .modal-overlay{
       display:none;
@@ -187,7 +184,7 @@ Copiar
       transition:width .3s ease;
       width:0%;
     }
- 
+
     /* === PHOTO THUMBS in actions === */
     .photo-thumbs{
       display:flex;
@@ -252,7 +249,7 @@ Copiar
       width:100%;
       height:100%;
     }
- 
+
     /* lightbox */
     .lightbox{
       display:none;
@@ -284,13 +281,13 @@ Copiar
   </style>
 </head>
 <body>
- 
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="lightboxClose">×</button>
   <img id="lightboxImg" src="" alt="foto" />
 </div>
- 
+
 <!-- SCAN MODAL -->
 <div class="modal-overlay" id="scanModal">
   <div class="modal-box">
@@ -301,22 +298,22 @@ Copiar
     <div class="hint" style="margin-bottom:12px">
       Subí una imagen o sacá una foto del documento. Se intentará extraer el identificador (NHC, HC, Historia Clínica...) automáticamente.
     </div>
- 
+
     <div class="scan-zone" id="scanZone">
       <input type="file" id="scanFileInput" accept="image/*" capture="environment" />
       <div style="font-size:32px">📄</div>
       <div style="font-weight:700; margin-top:8px">Toca para subir imagen o sacar foto</div>
       <div class="hint" style="margin-top:4px">JPG, PNG, HEIC · Máx 10 MB</div>
     </div>
- 
+
     <img id="scanPreview" class="scan-preview" style="display:none" alt="preview" />
- 
+
     <div id="ocrProgress" style="display:none; margin-top:10px">
       <div class="hint">Leyendo documento...</div>
       <div class="progress-bar-wrap"><div class="progress-bar" id="ocrProgressBar"></div></div>
       <div class="mini" id="ocrProgressText">Iniciando...</div>
     </div>
- 
+
     <div id="ocrResultBox" class="ocr-result-box" style="display:none">
       <div class="hint" style="margin-bottom:6px">Identificador encontrado:</div>
       <div class="ocr-found" id="ocrFoundNumber">—</div>
@@ -326,7 +323,7 @@ Copiar
         <button class="btn primary small" id="btnOcrConfirm">Confirmar identificador</button>
       </div>
     </div>
- 
+
     <div id="ocrNotFound" style="display:none; margin-top:10px">
       <div class="hint" style="color:var(--warn)">⚠️ No se encontró un identificador automáticamente.</div>
       <div class="row" style="margin-top:8px; gap:8px">
@@ -334,7 +331,7 @@ Copiar
         <button class="btn primary small" id="btnOcrConfirmAlt">Confirmar</button>
       </div>
     </div>
- 
+
     <div id="scanMatchResult" style="display:none; margin-top:14px">
       <div class="sep"></div>
       <div class="hint" style="margin-bottom:8px" id="scanMatchText"></div>
@@ -342,7 +339,7 @@ Copiar
     </div>
   </div>
 </div>
- 
+
 <header>
   <h1>BASE DE REGISTROS (actuaciones)</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
@@ -386,7 +383,7 @@ Copiar
     <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
 </header>
- 
+
 <div class="wrap" id="appWrap" style="display:none">
   <div class="grid">
     <!-- LEFT -->
@@ -427,7 +424,7 @@ Copiar
         <span class="kbd">Reset local</span> solo borra la copia local del navegador. No borra Supabase.
       </div>
     </section>
- 
+
     <!-- RIGHT -->
     <section class="card">
       <div class="row">
@@ -467,7 +464,7 @@ Copiar
     </section>
   </div>
 </div>
- 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -477,19 +474,19 @@ Copiar
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
- 
+
   const STORAGE_BUCKET = "archivos";
   const KEY = "rx_followup_app_v6";
   const LEGACY_KEYS = ["rx_followup_app_v5","rx_followup_app_v4","rx_followup_app_v3","rx_followup_app_v2","rx_followup_app_v1"];
   const nowISO = () => new Date().toISOString();
   const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
- 
+
   function defaultState(){ return { patients: [], logs: [], notes: [] }; }
- 
+
   function isUsedAction(a){
     return !!(a && (String(a.status||"")!=="" || String(a.note||"").trim()!==""));
   }
- 
+
   function normalizeActions(actions){
     const arr = Array.isArray(actions) ? actions : [];
     return arr.map(a => ({
@@ -499,7 +496,7 @@ Copiar
       foto2_url: a?.foto2_url || null
     })).filter(isUsedAction);
   }
- 
+
   function normalizePatient(p){
     return {
       id: p?.id||uid(),
@@ -512,7 +509,7 @@ Copiar
       updatedAt: p?.updatedAt||nowISO(),
     };
   }
- 
+
   function normalizeNote(n){
     return {
       id: n?.id||uid(),
@@ -523,7 +520,7 @@ Copiar
       is_deleted: !!n?.is_deleted,
     };
   }
- 
+
   function loadState(){
     try {
       for(const key of [KEY,...LEGACY_KEYS]){
@@ -541,12 +538,12 @@ Copiar
       return defaultState();
     } catch(e){ return defaultState(); }
   }
- 
+
   function saveState(){ localStorage.setItem(KEY,JSON.stringify(state)); }
- 
+
   // ─── AUTH HELPERS ───
   function setAuthMessage(msg){ if(authHint) authHint.textContent=msg||""; }
- 
+
   function updateAuthUI(){
     const logged = !!currentUser;
     if(authCard) authCard.style.display = logged?"none":"block";
@@ -562,7 +559,7 @@ Copiar
     if(welcomeBannerText) welcomeBannerText.textContent = nombre?`Bienvenido, ${nombre}`:"Bienvenido";
     if(btnOpenScanModal) btnOpenScanModal.style.display = logged?"inline-flex":"none";
   }
- 
+
   async function loadProfileFromDb(){
     if(!currentUser){ currentProfile=null; updateAuthUI(); return; }
     const {data,error} = await sb.from("profiles").select("user_id,nombre,apellido").eq("user_id",currentUser.id).maybeSingle();
@@ -578,12 +575,12 @@ Copiar
     }
     updateAuthUI();
   }
- 
+
   async function saveProfileToDb(userId,nombre,apellido){
     if(!userId) return;
     await sb.from("profiles").upsert({user_id:userId,nombre:nombre||"",apellido:apellido||""},{onConflict:"user_id"});
   }
- 
+
   async function restoreSession(){
     const {data} = await sb.auth.getSession();
     currentSession = data?.session||null;
@@ -591,7 +588,7 @@ Copiar
     await loadProfileFromDb();
     updateAuthUI();
   }
- 
+
   async function handleLogin(){
     const email=(authEmail?.value||"").trim();
     const password=authPassword?.value||"";
@@ -610,7 +607,7 @@ Copiar
     clearForm();
     initialPick();
   }
- 
+
   async function handleRegister(){
     if(!registerMode){ registerMode=true; updateAuthUI(); setAuthMessage("Completa nombre y apellido y vuelve a pulsar Confirmar alta."); return; }
     const nombre=(authNombre?.value||"").trim();
@@ -624,7 +621,7 @@ Copiar
     registerMode=false; updateAuthUI();
     setAuthMessage("Cuenta creada. Revisa tu correo si se requiere confirmación.");
   }
- 
+
   async function handleRecover(){
     const email=(authEmail?.value||"").trim();
     if(!email){ setAuthMessage("Escribe tu email."); return; }
@@ -632,7 +629,7 @@ Copiar
     if(error){ setAuthMessage("Falló la recuperación: "+error.message); return; }
     setAuthMessage("Revisa tu email para establecer nueva contraseña.");
   }
- 
+
   async function handleLogout(){
     if(inactivityTimer) clearTimeout(inactivityTimer);
     try { await sb.auth.signOut({scope:"global"}); } catch(e){}
@@ -654,7 +651,7 @@ Copiar
     if(window.parent&&window.parent!==window) window.parent.location.href=logoutUrl;
     else window.location.href=logoutUrl;
   }
- 
+
   // ─── DB LOADERS ───
   async function loadPatientsFromDb(){
     if(!currentUser){ state.patients=[]; saveState(); return; }
@@ -683,7 +680,7 @@ Copiar
     }));
     saveState();
   }
- 
+
   async function syncPatientActionsToDb(patientDbId,actions){
     const usedActions=(Array.isArray(actions)?actions:[]).filter(isUsedAction);
     const delResult=await sb.from("patient_actions").delete().eq("patient_id",patientDbId);
@@ -696,7 +693,7 @@ Copiar
     const insResult=await sb.from("patient_actions").insert(insertPayload).select();
     if(insResult.error) throw insResult.error;
   }
- 
+
   async function loadNotesFromDb(){
     if(!currentUser){ state.notes=[]; saveState(); return; }
     const {data,error}=await sb.from("notes")
@@ -709,7 +706,7 @@ Copiar
     }));
     saveState();
   }
- 
+
   async function loadLogsFromDb(){
     if(!currentUser){ state.logs=[]; saveState(); return; }
     const {data,error}=await sb.from("logs")
@@ -722,7 +719,7 @@ Copiar
     }));
     saveState();
   }
- 
+
   function addLog(patientId,type,snapshot){
     const newLog={id:uid(),patientId,ts:nowISO(),type,snapshot};
     state.logs.push(newLog);
@@ -734,7 +731,7 @@ Copiar
     }
     sb.from("logs").insert([{patient_id:dbPatientId,user_id:currentUser?.id||null,type,snapshot:snapshot||{},created_at:newLog.ts}]).then(()=>{});
   }
- 
+
   // ─── STORAGE HELPERS ───
   async function uploadPhotoToStorage(file, patientIdentifier, actionIndex, slotNumber){
     if(!currentUser) throw new Error("No autenticado");
@@ -746,7 +743,7 @@ Copiar
     const {data:urlData} = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
     return urlData.publicUrl;
   }
- 
+
   async function deletePhotoFromStorage(url){
     if(!url) return;
     try {
@@ -758,11 +755,11 @@ Copiar
       await sb.storage.from(STORAGE_BUCKET).remove([path]);
     } catch(e){ console.warn("deletePhotoFromStorage error",e); }
   }
- 
+
   // ─── OCR ───
   let tesseractWorker = null;
   let tesseractReady = false;
- 
+
   async function ensureTesseract(){
     if(tesseractReady && tesseractWorker) return tesseractWorker;
     tesseractWorker = await Tesseract.createWorker("spa", 1, {
@@ -779,7 +776,7 @@ Copiar
     tesseractReady = true;
     return tesseractWorker;
   }
- 
+
   function extractIdentifier(text){
     // Patterns: NHC, HC, Historia Clínica, Nº HC, N.H.C, Num HC etc.
     const patterns = [
@@ -796,11 +793,11 @@ Copiar
     }
     return null;
   }
- 
+
   // pending scan state
   let scanPendingFile = null;
   let scanFoundIdentifier = null;
- 
+
   function openScanModal(){
     const modal = document.getElementById("scanModal");
     modal.classList.add("open");
@@ -816,31 +813,31 @@ Copiar
     document.getElementById("ocrManualInput").value = "";
     if(document.getElementById("ocrManualInputAlt")) document.getElementById("ocrManualInputAlt").value = "";
   }
- 
+
   function closeScanModal(){
     document.getElementById("scanModal").classList.remove("open");
     scanPendingFile = null;
     scanFoundIdentifier = null;
   }
- 
+
   async function runOCR(file){
     scanPendingFile = file;
     const preview = document.getElementById("scanPreview");
     preview.src = URL.createObjectURL(file);
     preview.style.display = "block";
- 
+
     document.getElementById("ocrProgress").style.display = "block";
     document.getElementById("ocrResultBox").style.display = "none";
     document.getElementById("ocrNotFound").style.display = "none";
     document.getElementById("scanMatchResult").style.display = "none";
     document.getElementById("ocrProgressBar").style.width = "0%";
     document.getElementById("ocrProgressText").textContent = "Iniciando Tesseract...";
- 
+
     try {
       const worker = await ensureTesseract();
       const { data: { text } } = await worker.recognize(file);
       document.getElementById("ocrProgress").style.display = "none";
- 
+
       const found = extractIdentifier(text);
       if(found){
         scanFoundIdentifier = found.number;
@@ -857,23 +854,23 @@ Copiar
       console.warn("OCR error", err);
     }
   }
- 
+
   function confirmScanIdentifier(identifier){
     identifier = String(identifier||"").trim();
     if(!identifier){ alert("Escribí un identificador."); return; }
     scanFoundIdentifier = identifier;
- 
+
     // Search existing
     const existing = state.patients.find(p =>
       String(p.identifier||"").trim().toLowerCase() === identifier.toLowerCase()
     );
- 
+
     const matchResult = document.getElementById("scanMatchResult");
     const matchText = document.getElementById("scanMatchText");
     const matchActions = document.getElementById("scanMatchActions");
     matchResult.style.display = "block";
     matchActions.innerHTML = "";
- 
+
     if(existing){
       matchText.textContent = `✅ Identificador "${identifier}" encontrado. ¿Qué querés hacer?`;
       const btnOpen = document.createElement("button");
@@ -905,14 +902,14 @@ Copiar
       });
       matchActions.appendChild(btnCreate);
     }
- 
+
     const btnCancel = document.createElement("button");
     btnCancel.className = "btn ghost small";
     btnCancel.textContent = "Cancelar";
     btnCancel.addEventListener("click", closeScanModal);
     matchActions.appendChild(btnCancel);
   }
- 
+
   // ─── DOM refs ───
   const el = id => document.getElementById(id);
   const patientList = el("patientList");
@@ -962,7 +959,7 @@ Copiar
   const pillBlue = el("pillBlue");
   const pillPurple = el("pillPurple");
   const pillOrange = el("pillOrange");
- 
+
   let state = loadState();
   let selectedPatientId = null;
   let identifierUnlocked = false;
@@ -973,31 +970,31 @@ Copiar
   let currentProfile = null;
   let registerMode = false;
   let pendingScanFile = null; // file from scan modal to attach to first action
- 
+
   const INACTIVITY_LIMIT_MS = 15*60*1000;
   let inactivityTimer = null;
- 
+
   function resetInactivityTimer(){
     if(!currentUser) return;
     if(inactivityTimer) clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => { alert("Sesión cerrada por inactividad (15 min)."); handleLogout(); }, INACTIVITY_LIMIT_MS);
   }
- 
+
   function setupInactivityListeners(){
     ["click","mousemove","keydown","scroll","touchstart"].forEach(evt => window.addEventListener(evt,resetInactivityTimer));
   }
- 
+
   let toastTimer = null;
- 
+
   function applyTheme(theme){
     currentTheme = theme==="dark"?"dark":"light";
     document.body.classList.toggle("theme-dark",currentTheme==="dark");
     localStorage.setItem("rx_theme_mode",currentTheme);
     if(btnThemeToggle) btnThemeToggle.textContent = currentTheme==="dark"?"☀️ Modo día":"🌙 Modo noche";
   }
- 
+
   function toggleTheme(){ applyTheme(currentTheme==="dark"?"light":"dark"); }
- 
+
   function ensureToast(){
     let t=document.getElementById("toast");
     if(t) return t;
@@ -1009,7 +1006,7 @@ Copiar
     t.querySelector("#toastClose").addEventListener("click",hideToast);
     return t;
   }
- 
+
   function showToast(message,actionLabel,actionFn,timeoutMs=12000){
     const t=ensureToast();
     t.querySelector("#toastMsg").textContent=message;
@@ -1024,18 +1021,18 @@ Copiar
     if(toastTimer) clearTimeout(toastTimer);
     toastTimer=setTimeout(hideToast,timeoutMs);
   }
- 
+
   function hideToast(){
     const t=document.getElementById("toast");
     if(t) t.style.display="none";
     if(toastTimer) clearTimeout(toastTimer);
     toastTimer=null;
   }
- 
+
   function escapeHTML(s){
     return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   }
- 
+
   function sortPatients(){
     state.patients.sort((a,b)=>{
       const na=Number(a.identifier),nb=Number(b.identifier);
@@ -1043,12 +1040,12 @@ Copiar
       return (a.identifier||"").localeCompare(b.identifier||"","es",{sensitivity:"base"});
     });
   }
- 
+
   function formatTS(iso){
     try { return new Date(iso).toLocaleString("es-ES",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }
     catch { return iso; }
   }
- 
+
   function statusDotClass(s){
     if(s==="integrated") return "ok";
     if(s==="followup") return "info";
@@ -1057,7 +1054,7 @@ Copiar
     if(s==="pending") return "danger";
     return "off";
   }
- 
+
   function statusLabel(s){
     if(s==="pending") return "Pendiente";
     if(s==="done") return "Realizado";
@@ -1066,12 +1063,12 @@ Copiar
     if(s==="integrated") return "Integrado";
     return "—";
   }
- 
+
   function hasRed(p){ return (p.actions||[]).some(a=>a.status==="pending"); }
   function hasYellow(p){ return (p.actions||[]).some(a=>a.status==="done"); }
   function hasBlue(p){ return (p.actions||[]).some(a=>a.status==="followup"); }
   function hasPurple(p){ return (p.actions||[]).some(a=>a.status==="various"); }
- 
+
   function pendingDotBySeverity(p){
     if(hasRed(p)) return "danger";
     if(hasYellow(p)) return "warn";
@@ -1079,18 +1076,18 @@ Copiar
     if(hasPurple(p)) return "violet";
     return "off";
   }
- 
+
   function isFollowupOnly(p){ return !p.archived&&hasBlue(p)&&!hasRed(p)&&!hasYellow(p)&&!hasPurple(p); }
   function isVariousOnly(p){ return !p.archived&&hasPurple(p)&&!hasRed(p)&&!hasYellow(p)&&!hasBlue(p); }
- 
+
   function patientAllIntegrated(p){
     const used=(p.actions||[]).some(isUsedAction);
     if(!used) return false;
     return (p.actions||[]).filter(isUsedAction).every(a=>a.status==="integrated");
   }
- 
+
   function patientHasZeroActions(p){ return Array.isArray(p.actions)&&p.actions.length===0; }
- 
+
   function computeCounts(p){
     const c={pending:0,done:0,followup:0,various:0,integrated:0,total:0};
     for(const a of (p.actions||[])){
@@ -1099,9 +1096,9 @@ Copiar
     }
     return c;
   }
- 
+
   function normTxt(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
- 
+
   function matchesSearchAll(p,q){
     if(!q) return true;
     const qq=normTxt(q);
@@ -1113,20 +1110,20 @@ Copiar
     }
     return false;
   }
- 
+
   function matchesNote(n,q){
     if(!q) return true;
     return normTxt(n.text).includes(normTxt(q));
   }
- 
+
   function activeNotes(){ return (state.notes||[]).filter(n=>!n.is_deleted); }
- 
+
   function visibleNotes(){
     const q=(search.value||"").trim();
     if(filterStatus.value==="notes") return (state.notes||[]).filter(n=>matchesNote(n,q));
     return activeNotes().filter(n=>matchesNote(n,q));
   }
- 
+
   // ─── ACTIONS DOM ───
   // Each action block stores photo URLs in data attributes
   function getActionsFromDOM(){
@@ -1141,25 +1138,25 @@ Copiar
     });
     return actions;
   }
- 
+
   function setActionsCount(n){ actionsCount.textContent=`${n} actuaciones`; }
- 
+
   function openLightbox(url){
     const lb=document.getElementById("lightbox");
     document.getElementById("lightboxImg").src=url;
     lb.classList.add("open");
   }
- 
+
   function closeLightbox(){
     document.getElementById("lightbox").classList.remove("open");
     document.getElementById("lightboxImg").src="";
   }
- 
+
   function renderPhotoSlot(block, slotNum, url){
     const key = `foto${slotNum}`;
     const container = block.querySelector(`[data-photo-slot="${slotNum}"]`);
     if(!container) return;
- 
+
     if(url){
       container.innerHTML = `
         <div class="photo-thumb-wrap">
@@ -1180,14 +1177,14 @@ Copiar
       renderUploadButton(block, slotNum);
     }
   }
- 
+
   function renderUploadButton(block, slotNum){
     const key = `foto${slotNum}`;
     const container = block.querySelector(`[data-photo-slot="${slotNum}"]`);
     if(!container) return;
     const existingUrl = block.dataset[key]||null;
     if(existingUrl) return; // already has photo
- 
+
     const idx = Array.from(actionsWrap.querySelectorAll(".action-block")).indexOf(block);
     const uploadWrap = document.createElement("div");
     uploadWrap.className = "photo-upload-btn";
@@ -1197,15 +1194,15 @@ Copiar
       <input type="file" accept="image/*" capture="environment" />
     `;
     container.appendChild(uploadWrap);
- 
+
     uploadWrap.querySelector("input[type=file]").addEventListener("change", async (e)=>{
       const file = e.target.files[0];
       if(!file) return;
       if(file.size > 10*1024*1024){ alert("La imagen no puede superar 10 MB."); return; }
- 
+
       const identifier = (f_identifier_input.value||"").trim()||"sin-id";
       uploadWrap.innerHTML = `<span style="font-size:20px">⏳</span><span>Subiendo...</span>`;
- 
+
       try {
         const url = await uploadPhotoToStorage(file, identifier, idx, slotNum);
         block.dataset[key] = url;
@@ -1220,7 +1217,7 @@ Copiar
       }
     });
   }
- 
+
   function renderActions(actions){
     actionsWrap.innerHTML="";
     const display = Array.isArray(actions)&&actions.length ? actions : [{status:"",note:"",foto1_url:null,foto2_url:null}];
@@ -1256,7 +1253,7 @@ Copiar
           <div data-photo-slot="2"></div>
         </div>
       `;
- 
+
       const sel=block.querySelector("select");
       const ta=block.querySelector("textarea");
       sel.value=a.status||"";
@@ -1270,9 +1267,9 @@ Copiar
         current.splice(idx,1);
         renderActions(current);
       });
- 
+
       actionsWrap.appendChild(block);
- 
+
       // Render photo slots
       if(a.foto1_url) renderPhotoSlot(block,1,a.foto1_url);
       else renderUploadButton(block,1);
@@ -1280,7 +1277,7 @@ Copiar
       else renderUploadButton(block,2);
     });
     setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
- 
+
     // If there's a pending scan file, attach to first action slot 1
     if(pendingScanFile){
       const firstBlock = actionsWrap.querySelector(".action-block");
@@ -1300,13 +1297,13 @@ Copiar
       }
     }
   }
- 
+
   btnAddAction.addEventListener("click",()=>{
     const current=getActionsFromDOM();
     current.push({status:"",note:"",foto1_url:null,foto2_url:null});
     renderActions(current);
   });
- 
+
   // ─── NOTES ───
   function renderNotes(){
     const notes=visibleNotes().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
@@ -1346,7 +1343,7 @@ Copiar
       });
     });
   }
- 
+
   // ─── SUMMARY PILLS ───
   function updateSummaryPillsActiveState(){
     [pillRed,pillYellow,pillBlue,pillPurple,pillOrange].forEach(p=>p&&p.classList.remove("active-filter"));
@@ -1356,7 +1353,7 @@ Copiar
     if(severityFilter==="purple"&&pillPurple) pillPurple.classList.add("active-filter");
     if(severityFilter==="orange"&&pillOrange) pillOrange.classList.add("active-filter");
   }
- 
+
   function renderList(){
     let sumRed=0,sumYellow=0,sumBlue=0,sumPurple=0;
     state.patients.forEach(p=>{
@@ -1372,14 +1369,14 @@ Copiar
     sortPatients();
     const q=(search.value||"").trim();
     const f=filterStatus.value;
- 
+
     if(f==="notes"||severityFilter==="orange"){
       patientList.innerHTML="";
       countPatients.textContent=String(state.patients.length);
       countLogs.textContent=String(state.logs.length);
       renderNotes(); return;
     }
- 
+
     const filtered=state.patients.filter(p=>{
       const m=matchesSearchAll(p,q);
       if(q&&m){
@@ -1400,7 +1397,7 @@ Copiar
       if(severityFilter==="purple") return hasPurple(p);
       return true;
     });
- 
+
     const identifierNum=x=>{ const n=Number(x?.identifier); return Number.isNaN(n)?Number.POSITIVE_INFINITY:n; };
     const sevScore=p=>hasRed(p)?0:hasYellow(p)?1:hasBlue(p)?2:hasPurple(p)?3:4;
     const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort((a,b)=>sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b));
@@ -1411,7 +1408,7 @@ Copiar
       if(a.archived!==b.archived) return a.archived?1:-1;
       return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
     });
- 
+
     const ordered=f==="followup"?followups:f==="various"?various:f==="archived"?archived:f==="active"?actives:allPatients;
     patientList.innerHTML="";
     ordered.forEach(p=>{
@@ -1449,7 +1446,7 @@ Copiar
     countLogs.textContent=String(state.logs.length);
     renderNotes();
   }
- 
+
   // ─── FORM ───
   function lockHCIfNeeded(){
     if(!selectedPatientId){
@@ -1466,7 +1463,7 @@ Copiar
       el("identifierHelp").textContent="Bloqueada tras el primer guardado. Podés desbloquear para corregir.";
     }
   }
- 
+
   function clearForm(){
     selectedPatientId=null; identifierUnlocked=false;
     selectedIdentifier.textContent="—"; lastUpdated.textContent="—";
@@ -1474,7 +1471,7 @@ Copiar
     f_identifier_input.value=""; f_identifier.value=""; f_initial.value="";
     renderActions([]); lockHCIfNeeded(); renderList();
   }
- 
+
   function selectPatient(id){
     const p=state.patients.find(x=>x.id===id);
     if(!p) return;
@@ -1488,7 +1485,7 @@ Copiar
     historyPanel.style.display="none"; historyPanel.innerHTML="";
     lockHCIfNeeded(); renderList();
   }
- 
+
   function autocorrectActions(actions){
     return actions.map(a=>{
       const note=String(a.note||"");
@@ -1497,7 +1494,7 @@ Copiar
       return {status,note,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null};
     }).filter(isUsedAction);
   }
- 
+
   function readFormToPatient(existing){
     const p=normalizePatient(existing||{});
     p.identifier=(f_identifier_input.value||"").trim();
@@ -1508,7 +1505,7 @@ Copiar
     p.updatedAt=nowISO();
     return p;
   }
- 
+
   function validatePatient(p,existing){
     const errs=[];
     if(!p.identifier) errs.push("Falta identificación.");
@@ -1519,7 +1516,7 @@ Copiar
     }
     return errs;
   }
- 
+
   // ─── EVENT LISTENERS ───
   btnUnlockHC.addEventListener("click",()=>{
     if(!selectedPatientId) return;
@@ -1529,9 +1526,9 @@ Copiar
     } else { identifierUnlocked=false; }
     lockHCIfNeeded();
   });
- 
+
   btnNew.addEventListener("click",clearForm);
- 
+
   btnSave.addEventListener("click",async()=>{
     const draft=(noteDraft.value||"").trim();
     if(draft){
@@ -1543,15 +1540,15 @@ Copiar
       addLog(null,"note_created",structuredClone(note));
       noteDraft.value="";
     }
- 
+
     const existing=selectedPatientId?state.patients.find(x=>x.id===selectedPatientId):null;
     const shouldSavePatient=(f_identifier_input.value||"").trim()||(f_initial.value||"").trim()||getActionsFromDOM().some(isUsedAction);
     if(!shouldSavePatient){ saveState(); renderList(); if(draft) showToast("Nota guardada.","",null,2500); return; }
- 
+
     const p=readFormToPatient(existing);
     const errs=validatePatient(p,existing);
     if(errs.length){ alert("No se pudo guardar:\n- "+errs.join("\n- ")); return; }
- 
+
     let dbData=null,dbError=null;
     if(existing){
       let targetDbId=existing.dbId||null;
@@ -1571,21 +1568,48 @@ Copiar
       const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
       dbData=r.data; dbError=r.error;
     }
- 
+
     if(dbError){ alert("Falló el guardado en Supabase: "+dbError.message); return; }
- 
+
+    // Si hay foto del escaneo pendiente, subirla al bucket ANTES de sincronizar actuaciones
+    if(pendingScanFile && p.actions && p.actions.length > 0){
+      try {
+        const scanUrl = await uploadPhotoToStorage(pendingScanFile, p.identifier, 0, 1);
+        // Meter la URL en foto1 de la primera actuación (desplazar si ya había algo)
+        if(!p.actions[0].foto1_url){
+          p.actions[0].foto1_url = scanUrl;
+        } else if(!p.actions[0].foto2_url){
+          p.actions[0].foto2_url = scanUrl;
+        }
+        showToast("Imagen del escaneo guardada en el registro.", "", null, 3000);
+      } catch(scanErr){
+        console.warn("Error subiendo foto de escaneo:", scanErr);
+      }
+      pendingScanFile = null;
+    } else if(pendingScanFile){
+      // No hay actuaciones aún, crear una vacía para alojar la foto
+      try {
+        const scanUrl = await uploadPhotoToStorage(pendingScanFile, p.identifier, 0, 1);
+        p.actions = [{ status: "", note: "", foto1_url: scanUrl, foto2_url: null }];
+        showToast("Imagen del escaneo guardada en el registro.", "", null, 3000);
+      } catch(scanErr){
+        console.warn("Error subiendo foto de escaneo:", scanErr);
+      }
+      pendingScanFile = null;
+    }
+
     if(Array.isArray(dbData)&&dbData[0]?.id){
       p.dbId=dbData[0].id;
       try { await syncPatientActionsToDb(p.dbId,p.actions||[]); }
       catch(actErr){ alert("Registro guardado, pero falló sync de actuaciones: "+actErr.message); }
     }
- 
+
     const wasArchived=!!p.archived;
     const shouldBeArchived=patientAllIntegrated(p)||patientHasZeroActions(p);
     if(!wasArchived&&shouldBeArchived) p.archived=true;
     if(wasArchived&&!shouldBeArchived) p.archived=false;
     const willAutoArchive=!wasArchived&&shouldBeArchived;
- 
+
     if(existing){
       Object.assign(existing,p);
       addLog(existing.id,"updated",structuredClone(existing));
@@ -1595,7 +1619,7 @@ Copiar
       addLog(p.id,"created",structuredClone(p));
       saveState(); selectPatient(p.id);
     }
- 
+
     if(willAutoArchive){
       showToast("Registro archivado automáticamente.","Deshacer",()=>{
         const px=state.patients.find(x=>x.id===(existing?existing.id:p.id));
@@ -1607,7 +1631,7 @@ Copiar
     }
     renderList();
   });
- 
+
   btnDeletePatient.addEventListener("click",async()=>{
     if(!selectedPatientId){ alert("Seleccioná un registro para borrar."); return; }
     const existing=state.patients.find(x=>x.id===selectedPatientId);
@@ -1633,7 +1657,7 @@ Copiar
       if(next) selectPatient(next.id);
     } else { renderList(); }
   });
- 
+
   function renderHistoryLogs(logs){
     if(!logs.length) return '<div class="muted">No hay registros.</div>';
     const sorted=[...logs].sort((a,b)=>(b.ts||"").localeCompare(a.ts||""));
@@ -1651,7 +1675,7 @@ Copiar
     html+='</tbody></table>';
     return html;
   }
- 
+
   btnViewPatientHistory.addEventListener("click",()=>{
     if(!selectedPatientId){ alert("Seleccioná un registro."); return; }
     const logs=state.logs.filter(l=>l.patientId===selectedPatientId);
@@ -1659,54 +1683,54 @@ Copiar
     historyPanel.innerHTML=`<h3 style="margin:0 0 8px;font-size:14px">Historial del registro</h3><div class="hint" style="margin-bottom:10px">Cada guardado crea un registro.</div>${renderHistoryLogs(logs)}`;
     historyPanel.scrollIntoView({behavior:"smooth",block:"start"});
   });
- 
+
   btnViewGlobalHistory.addEventListener("click",()=>{
     historyPanel.style.display="block";
     historyPanel.innerHTML=`<h3 style="margin:0 0 8px;font-size:14px">Historial global</h3><div class="hint" style="margin-bottom:10px">Incluye cambios, importaciones y notas.</div>${renderHistoryLogs(state.logs)}`;
     historyPanel.scrollIntoView({behavior:"smooth",block:"start"});
   });
- 
+
   if(btnThemeToggle) btnThemeToggle.addEventListener("click",toggleTheme);
   btnFactoryReset.addEventListener("click",()=>{
     if(!confirm("¿Seguro? Borra solo la copia local de este navegador.")) return;
     localStorage.removeItem(KEY); state=defaultState(); saveState(); clearForm(); renderList();
   });
- 
+
   search.addEventListener("input",renderList);
   filterStatus.addEventListener("change",()=>{ severityFilter=null; renderList(); });
- 
+
   if(pillRed) pillRed.addEventListener("click",()=>{ severityFilter=severityFilter==="red"?null:"red"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillYellow) pillYellow.addEventListener("click",()=>{ severityFilter=severityFilter==="yellow"?null:"yellow"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillBlue) pillBlue.addEventListener("click",()=>{ severityFilter=severityFilter==="blue"?null:"blue"; if(severityFilter) filterStatus.value="followup"; renderList(); });
   if(pillPurple) pillPurple.addEventListener("click",()=>{ severityFilter=severityFilter==="purple"?null:"purple"; if(severityFilter) filterStatus.value="various"; renderList(); });
   if(pillOrange) pillOrange.addEventListener("click",()=>{ severityFilter=severityFilter==="orange"?null:"orange"; if(severityFilter) filterStatus.value="notes"; renderList(); });
- 
+
   // ─── SCAN MODAL EVENTS ───
   if(btnOpenScanModal) btnOpenScanModal.addEventListener("click",openScanModal);
   el("btnCloseScanModal").addEventListener("click",closeScanModal);
   el("scanModal").addEventListener("click",(e)=>{ if(e.target===el("scanModal")) closeScanModal(); });
- 
+
   el("scanFileInput").addEventListener("change",(e)=>{
     const file=e.target.files[0];
     if(!file) return;
     if(file.size>10*1024*1024){ alert("La imagen no puede superar 10 MB."); return; }
     runOCR(file);
   });
- 
+
   el("btnOcrConfirm").addEventListener("click",()=>{
     const val=(el("ocrManualInput").value||"").trim()||scanFoundIdentifier;
     confirmScanIdentifier(val);
   });
- 
+
   el("btnOcrConfirmAlt").addEventListener("click",()=>{
     const val=(el("ocrManualInputAlt").value||"").trim();
     confirmScanIdentifier(val);
   });
- 
+
   // ─── LIGHTBOX ───
   el("lightboxClose").addEventListener("click",closeLightbox);
   el("lightbox").addEventListener("click",(e)=>{ if(e.target===el("lightbox")) closeLightbox(); });
- 
+
   // ─── AUTH EVENTS ───
   if(btnLogin) btnLogin.addEventListener("click",handleLogin);
   [authEmail,authPassword].forEach(input=>{
@@ -1715,7 +1739,7 @@ Copiar
   if(btnRegister) btnRegister.addEventListener("click",handleRegister);
   if(btnRecover) btnRecover.addEventListener("click",handleRecover);
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
- 
+
   window.addEventListener("pagehide",()=>{
     try {
       localStorage.removeItem(KEY);
@@ -1723,7 +1747,7 @@ Copiar
       sessionStorage.clear();
     } catch(e){}
   });
- 
+
   sb.auth.onAuthStateChange(async(_event,session)=>{
     if(inactivityTimer) clearTimeout(inactivityTimer);
     currentSession=session||null; currentUser=session?.user||null;
@@ -1735,14 +1759,14 @@ Copiar
     }
     renderList(); clearForm(); initialPick();
   });
- 
+
   function initialPick(){
     if(state.patients.length){
       const p=state.patients.find(x=>!x.archived)||state.patients[0];
       selectPatient(p.id);
     } else { clearForm(); }
   }
- 
+
   async function boot(){
     const hash=window.location.hash||(window.parent&&window.parent!==window?window.parent.location.hash:"");
     if(hash&&hash.includes("type=recovery")){
@@ -1765,10 +1789,9 @@ Copiar
       renderList(); clearForm();
     }
   }
- 
+
   boot();
 })();
 </script>
 </body>
 </html>
- 
