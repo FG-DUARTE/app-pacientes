@@ -858,9 +858,8 @@
     }
   }
 
-  // Auto-guarda registro + actuación pendiente + foto directamente en Supabase
-  async function autoSaveWithPhoto(identifier, fotoUrl){
-    // Insertar registro nuevo
+  // Auto-guarda registro + actuación pendiente vacía (sin foto)
+  async function autoSaveWithPhoto(identifier){
     const ins = await sb.from("patients").insert([{
       user_id: currentUser?.id,
       identifier: identifier,
@@ -871,28 +870,23 @@
     const patientDbId = ins.data?.[0]?.id || null;
     if(!patientDbId) return null;
 
-    // Insertar actuación 🔴 Pendiente con foto
+    // Actuación 🔴 Pendiente vacía, sin foto
     await sb.from("patient_actions").insert([{
       patient_id: patientDbId,
       status: "pending",
       note: "",
-      foto1_url: fotoUrl || null,
-      foto2_url: null
+      foto1_url: null, foto2_url: null, foto3_url: null, foto4_url: null, foto5_url: null
     }]);
 
-    // Actualizar state local
     const newP = normalizePatient({
-      dbId: patientDbId,
-      identifier,
-      initialStudy: "",
-      archived: false,
-      actions: [{ status:"pending", note:"", foto1_url: fotoUrl||null, foto2_url: null }]
+      dbId: patientDbId, identifier, initialStudy: "", archived: false,
+      actions: [{ status:"pending", note:"", foto1_url:null, foto2_url:null, foto3_url:null, foto4_url:null, foto5_url:null }]
     });
     newP.id = uid();
     state.patients.push(newP);
     addLog(newP.id, "scan_created", structuredClone(newP));
     saveState();
-    return newP.id; // local id
+    return newP.id;
   }
 
   function confirmScanIdentifier(identifier){
@@ -916,33 +910,10 @@
       btnOpen.className = "btn primary small";
       btnOpen.textContent = "Abrir registro";
       btnOpen.addEventListener("click", async () => {
-        btnOpen.disabled = true;
-        btnOpen.textContent = "Guardando...";
-        // Subir foto y añadir actuación pendiente al registro existente
-        let fotoUrl = null;
-        if(scanPendingFile){
-          try { fotoUrl = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1); } catch(e){}
-          scanPendingFile = null;
-        }
-        if(fotoUrl && existing.dbId){
-          await sb.from("patient_actions").insert([{
-            patient_id: existing.dbId,
-            status: "pending",
-            note: "",
-            foto1_url: fotoUrl,
-            foto2_url: null
-          }]);
-          existing.actions = existing.actions || [];
-          existing.actions.push({ status:"pending", note:"", foto1_url: fotoUrl, foto2_url: null });
-          existing.updatedAt = nowISO();
-          addLog(existing.id, "scan_photo_added", { identifier, fotoUrl });
-          saveState();
-        }
+        scanPendingFile = null; // la foto del escaneo no se guarda
         closeScanModal();
-        await loadPatientsFromDb();
         selectPatient(existing.id);
-        renderList();
-        showToast("✅ Nueva actuación 🔴 con foto añadida al registro.", "", null, 4000);
+        showToast("✅ Registro abierto.", "", null, 3000);
       });
       matchActions.appendChild(btnOpen);
     } else {
@@ -953,12 +924,8 @@
       btnCreate.addEventListener("click", async () => {
         btnCreate.disabled = true;
         btnCreate.textContent = "Guardando...";
-        let fotoUrl = null;
-        if(scanPendingFile){
-          try { fotoUrl = await uploadPhotoToStorage(scanPendingFile, identifier, 0, 1); } catch(e){}
-          scanPendingFile = null;
-        }
-        const localId = await autoSaveWithPhoto(identifier, fotoUrl);
+        scanPendingFile = null; // la foto del escaneo no se guarda
+        await autoSaveWithPhoto(identifier);
         closeScanModal();
         await loadPatientsFromDb();
         const created = state.patients.find(p =>
@@ -966,7 +933,7 @@
         );
         if(created) selectPatient(created.id);
         renderList();
-        showToast("✅ Registro creado con actuación 🔴 Pendiente y foto guardada.", "", null, 4000);
+        showToast("✅ Registro creado con actuación 🔴 Pendiente.", "", null, 3000);
       });
       matchActions.appendChild(btnCreate);
     }
