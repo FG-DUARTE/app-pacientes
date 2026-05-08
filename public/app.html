@@ -804,7 +804,6 @@
   function openScanModal(){
     const modal = document.getElementById("scanModal");
     modal.classList.add("open");
-    // reset state
     scanPendingFile = null;
     scanFoundIdentifier = null;
     document.getElementById("scanPreview").style.display = "none";
@@ -815,6 +814,9 @@
     document.getElementById("ocrProgressBar").style.width = "0%";
     document.getElementById("ocrManualInput").value = "";
     if(document.getElementById("ocrManualInputAlt")) document.getElementById("ocrManualInputAlt").value = "";
+    // Resetear el input de archivo para que dispare change aunque sea el mismo archivo
+    const fileInput = document.getElementById("scanFileInput");
+    if(fileInput) fileInput.value = "";
   }
 
   function closeScanModal(){
@@ -1197,7 +1199,7 @@
         if(!confirm("¿Eliminar esta foto?")) return;
         await deletePhotoFromStorage(url);
         block.dataset[key] = "";
-        renderPhotoSlot(block, slotNum, null);
+        container.innerHTML = ""; // limpiar antes de redibujar
         renderUploadButton(block, slotNum);
       });
     } else {
