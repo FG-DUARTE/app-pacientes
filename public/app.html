@@ -858,7 +858,7 @@
     }
   }
 
-  // Auto-guarda registro + actuación pendiente vacía (sin foto)
+  // Crea un registro vacío sin actuaciones ni fotos
   async function autoSaveWithPhoto(identifier){
     const ins = await sb.from("patients").insert([{
       user_id: currentUser?.id,
@@ -869,18 +869,8 @@
     if(ins.error){ alert("Error al crear registro: "+ins.error.message); return null; }
     const patientDbId = ins.data?.[0]?.id || null;
     if(!patientDbId) return null;
-
-    // Actuación 🔴 Pendiente vacía, sin foto
-    await sb.from("patient_actions").insert([{
-      patient_id: patientDbId,
-      status: "pending",
-      note: "",
-      foto1_url: null, foto2_url: null, foto3_url: null, foto4_url: null, foto5_url: null
-    }]);
-
     const newP = normalizePatient({
-      dbId: patientDbId, identifier, initialStudy: "", archived: false,
-      actions: [{ status:"pending", note:"", foto1_url:null, foto2_url:null, foto3_url:null, foto4_url:null, foto5_url:null }]
+      dbId: patientDbId, identifier, initialStudy: "", archived: false, actions: []
     });
     newP.id = uid();
     state.patients.push(newP);
@@ -933,7 +923,7 @@
         );
         if(created) selectPatient(created.id);
         renderList();
-        showToast("✅ Registro creado con actuación 🔴 Pendiente.", "", null, 3000);
+        showToast("✅ Registro creado.", "", null, 2000);
       });
       matchActions.appendChild(btnCreate);
     }
@@ -1258,7 +1248,12 @@
 
   function renderActions(actions){
     actionsWrap.innerHTML="";
-    const display = Array.isArray(actions)&&actions.length ? actions : [{status:"",note:"",foto1_url:null,foto2_url:null,foto3_url:null,foto4_url:null,foto5_url:null}];
+    const hasActions = Array.isArray(actions) && actions.length > 0;
+    if(!hasActions){
+      setActionsCount(0);
+      return;
+    }
+    const display = actions;
     display.forEach((a,idx)=>{
       const block=document.createElement("div");
       block.className="card action-block";
