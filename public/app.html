@@ -493,7 +493,10 @@
       status: String(a?.status||""),
       note: String(a?.note||""),
       foto1_url: a?.foto1_url || null,
-      foto2_url: a?.foto2_url || null
+      foto2_url: a?.foto2_url || null,
+      foto3_url: a?.foto3_url || null,
+      foto4_url: a?.foto4_url || null,
+      foto5_url: a?.foto5_url || null,
     })).filter(isUsedAction);
   }
 
@@ -663,14 +666,14 @@
     let actionsData=[];
     if(patientIds.length){
       const ar = await sb.from("patient_actions")
-        .select("id,patient_id,status,note,foto1_url,foto2_url,created_at,updated_at")
+        .select("id,patient_id,status,note,foto1_url,foto2_url,foto3_url,foto4_url,foto5_url,created_at,updated_at")
         .in("patient_id",patientIds).order("created_at",{ascending:true});
       if(!ar.error&&Array.isArray(ar.data)) actionsData=ar.data;
     }
     const actionsByPatient=new Map();
     for(const row of actionsData){
       const arr=actionsByPatient.get(row.patient_id)||[];
-      arr.push({status:row.status||"",note:row.note||"",foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null});
+      arr.push({status:row.status||"",note:row.note||"",foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null,foto3_url:row.foto3_url||null,foto4_url:row.foto4_url||null,foto5_url:row.foto5_url||null});
       actionsByPatient.set(row.patient_id,arr);
     }
     state.patients=(Array.isArray(patientsData)?patientsData:[]).map(row=>normalizePatient({
@@ -688,7 +691,7 @@
     if(!usedActions.length) return;
     const insertPayload=usedActions.map(a=>({
       patient_id:patientDbId,status:a.status,note:a.note,
-      foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null
+      foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null,foto3_url:a.foto3_url||null,foto4_url:a.foto4_url||null,foto5_url:a.foto5_url||null
     }));
     const insResult=await sb.from("patient_actions").insert(insertPayload).select();
     if(insResult.error) throw insResult.error;
@@ -1198,7 +1201,10 @@
         status: String(n.querySelector("select").value||""),
         note: String(n.querySelector("textarea").value||""),
         foto1_url: n.dataset.foto1||null,
-        foto2_url: n.dataset.foto2||null
+        foto2_url: n.dataset.foto2||null,
+        foto3_url: n.dataset.foto3||null,
+        foto4_url: n.dataset.foto4||null,
+        foto5_url: n.dataset.foto5||null,
       });
     });
     return actions;
@@ -1285,13 +1291,16 @@
 
   function renderActions(actions){
     actionsWrap.innerHTML="";
-    const display = Array.isArray(actions)&&actions.length ? actions : [{status:"",note:"",foto1_url:null,foto2_url:null}];
+    const display = Array.isArray(actions)&&actions.length ? actions : [{status:"",note:"",foto1_url:null,foto2_url:null,foto3_url:null,foto4_url:null,foto5_url:null}];
     display.forEach((a,idx)=>{
       const block=document.createElement("div");
       block.className="card action-block";
       block.style.cssText="padding:12px;margin-bottom:10px;box-shadow:none;background:var(--card);";
       block.dataset.foto1 = a.foto1_url||"";
       block.dataset.foto2 = a.foto2_url||"";
+      block.dataset.foto3 = a.foto3_url||"";
+      block.dataset.foto4 = a.foto4_url||"";
+      block.dataset.foto5 = a.foto5_url||"";
       block.innerHTML=`
         <div class="row">
           <div class="pill">
@@ -1312,10 +1321,13 @@
         </div>
         <label>Motivo</label>
         <textarea placeholder="escribe aqui ..........."></textarea>
-        <label style="margin-top:10px">Imágenes (máx. 2)</label>
+        <label style="margin-top:10px">Imágenes (máx. 5)</label>
         <div class="photo-thumbs">
           <div data-photo-slot="1"></div>
           <div data-photo-slot="2"></div>
+          <div data-photo-slot="3"></div>
+          <div data-photo-slot="4"></div>
+          <div data-photo-slot="5"></div>
         </div>
       `;
 
@@ -1328,11 +1340,10 @@
         block.querySelector('[data-role="lbl"]').textContent=statusLabel(sel.value);
       });
       block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
-        // Borrar fotos del bucket antes de eliminar la actuación
-        const f1 = block.dataset.foto1||null;
-        const f2 = block.dataset.foto2||null;
-        if(f1) await deletePhotoFromStorage(f1);
-        if(f2) await deletePhotoFromStorage(f2);
+        const f1=block.dataset.foto1||null; const f2=block.dataset.foto2||null;
+        const f3=block.dataset.foto3||null; const f4=block.dataset.foto4||null;
+        const f5=block.dataset.foto5||null;
+        for(const f of [f1,f2,f3,f4,f5]) if(f) await deletePhotoFromStorage(f);
         const current=getActionsFromDOM();
         current.splice(idx,1);
         renderActions(current);
@@ -1340,37 +1351,19 @@
 
       actionsWrap.appendChild(block);
 
-      // Render photo slots
-      if(a.foto1_url) renderPhotoSlot(block,1,a.foto1_url);
-      else renderUploadButton(block,1);
-      if(a.foto2_url) renderPhotoSlot(block,2,a.foto2_url);
-      else renderUploadButton(block,2);
+      // Render 5 photo slots
+      for(let s=1;s<=5;s++){
+        const url = a[`foto${s}_url`]||null;
+        if(url) renderPhotoSlot(block,s,url);
+        else renderUploadButton(block,s);
+      }
     });
     setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
-
-    // If there's a pending scan file, attach to first action slot 1
-    if(pendingScanFile){
-      const firstBlock = actionsWrap.querySelector(".action-block");
-      if(firstBlock && !firstBlock.dataset.foto1){
-        const file = pendingScanFile;
-        pendingScanFile = null;
-        const identifier = (f_identifier_input.value||"").trim()||"sin-id";
-        uploadPhotoToStorage(file, identifier, 0, 1).then(url=>{
-          firstBlock.dataset.foto1 = url;
-          renderPhotoSlot(firstBlock, 1, url);
-          showToast("Imagen del escaneo adjuntada a la actuación 1.", "", null, 3000);
-        }).catch(err=>{
-          console.warn("Error adjuntando foto escaneada", err);
-        });
-      } else {
-        pendingScanFile = null;
-      }
-    }
   }
 
   btnAddAction.addEventListener("click",()=>{
     const current=getActionsFromDOM();
-    current.push({status:"",note:"",foto1_url:null,foto2_url:null});
+    current.push({status:"",note:"",foto1_url:null,foto2_url:null,foto3_url:null,foto4_url:null,foto5_url:null});
     renderActions(current);
   });
 
@@ -1490,7 +1483,7 @@
       const arch=p.archived?'<span class="badge"><span class="dot danger"></span>Archivado</span>':"";
       // count photos
       const photoCount=(p.actions||[]).reduce((acc,a)=>{
-        return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0);
+        return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0);
       },0);
       const photoBadge=photoCount>0?`<span class="badge"><span class="dot info"></span>📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
       it.innerHTML=`
@@ -1567,7 +1560,7 @@
       const note=String(a.note||"");
       let status=String(a.status||"");
       if(note.trim()!==""&&status==="") status="pending";
-      return {status,note,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null};
+      return {status,note,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null,foto3_url:a.foto3_url||null,foto4_url:a.foto4_url||null,foto5_url:a.foto5_url||null};
     }).filter(isUsedAction);
   }
 
@@ -1696,7 +1689,7 @@
     }
     if(targetDbId){
       // Borrar fotos del bucket antes de borrar las actuaciones
-      const photosToDelete = (existing.actions||[]).flatMap(a => [a.foto1_url, a.foto2_url]).filter(Boolean);
+      const photosToDelete = (existing.actions||[]).flatMap(a => [a.foto1_url,a.foto2_url,a.foto3_url,a.foto4_url,a.foto5_url]).filter(Boolean);
       for(const url of photosToDelete) await deletePhotoFromStorage(url);
 
       const da=await sb.from("patient_actions").delete().eq("patient_id",targetDbId);
