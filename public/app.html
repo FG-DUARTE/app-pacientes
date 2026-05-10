@@ -31,6 +31,12 @@
       --off:#94a3b8;
       --shadow: 0 10px 30px rgba(15,23,42,.08);
       --radius:16px;
+      --header-bg:#e6f1fb;
+      --header-border:#b5d4f4;
+      --left-bg:#eef4ff;
+      --left-border:#c7d9f8;
+      --right-bg:#f0f5ff;
+      --right-border:#b5d4f4;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
     body.theme-dark{
@@ -52,15 +58,23 @@
       --orange:#fb923c;
       --off:#5f6b86;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --header-bg:#0c1e3a;
+      --header-border:#1a3a6a;
+      --left-bg:#0a1828;
+      --left-border:#1a3050;
+      --right-bg:#0d1f38;
+      --right-border:#1e3560;
     }
     body{margin:0;background:linear-gradient(180deg,var(--bg-grad-1) 0%, var(--bg-grad-2) 55%, var(--bg-grad-3) 100%); color:var(--txt);}
-    header{padding:20px 18px 10px; max-width:1200px; margin:0 auto;}
+    header{padding:20px 18px 10px; max-width:1200px; margin:0 auto; background:var(--header-bg); border-bottom:1px solid var(--header-border);}
     h1{margin:0 0 6px; font-size:20px; letter-spacing:.2px;}
     .sub{color:var(--muted); font-size:13px;}
     .wrap{max-width:1200px; margin:0 auto; padding:12px 18px 40px;}
     .grid{display:grid; gap:12px; grid-template-columns: 380px 1fr;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;}
+    .card.panel-left{background:var(--left-bg);border-color:var(--left-border);}
+    .card.panel-right{background:var(--right-bg);border-color:var(--right-border);}
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     label{font-size:12px; color:var(--muted); display:block; margin:8px 0 4px;}
     input, textarea, select{width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--border);color:var(--txt);border-radius:12px;padding:10px 10px;outline:none;font-size:16px;}
@@ -393,9 +407,7 @@
 <div class="wrap" id="appWrap" style="display:none">
   <div class="grid">
     <!-- LEFT -->
-    <section class="card">
-      <div class="row">
-        <div class="pill">Registros: <span id="countPatients" class="kbd">0</span></div>
+    <section class="card panel-left">
         <div class="pill">Historial: <span id="countLogs" class="kbd">0</span></div>
         <button class="btn small right" id="btnNew">+ Nuevo</button>
       </div>
@@ -432,7 +444,7 @@
     </section>
 
     <!-- RIGHT -->
-    <section class="card">
+    <section class="card panel-right">
       <div class="row">
         <div class="pill">Registro seleccionado: <span id="selectedIdentifier" class="kbd">—</span></div>
         <div class="right row" style="gap:8px">
