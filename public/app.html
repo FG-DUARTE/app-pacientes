@@ -510,7 +510,7 @@
     <section class="card panel-right">
       <div class="row">
         <div class="pill">Registro seleccionado: <span id="selectedIdentifier" class="kbd">—</span></div>
-        <span class="autosave-indicator" id="autosaveIndicator">⏳ Cambios sin guardar</span>
+        <span class="autosave-indicator" id="autosaveIndicator">⚠️ Cambios sin guardar</span>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
@@ -780,52 +780,41 @@
   async function syncPatientActionsToDb(patientDbId, actions){
     const usedActions = (Array.isArray(actions) ? actions : []).filter(isUsedAction);
 
-    // Obtener actuaciones existentes para hacer UPDATE en lugar de DELETE+INSERT
+    // Obtener fotos existentes en BD para preservarlas si el DOM no las tiene
     const { data: existing } = await sb.from("patient_actions")
       .select("id, foto1_url, foto2_url, foto3_url, foto4_url, foto5_url")
       .eq("patient_id", patientDbId)
       .order("created_at", { ascending: true });
-
     const existingRows = Array.isArray(existing) ? existing : [];
 
-    // UPDATE las que ya existen preservando fotos si el form no las tiene
-    for(let i = 0; i < usedActions.length; i++){
-      const a = usedActions[i];
-      const existingRow = existingRows[i];
-
-      // Preservar fotos del servidor si el DOM no las tiene (vinieron por QR)
-      const foto1 = a.foto1_url || existingRow?.foto1_url || null;
-      const foto2 = a.foto2_url || existingRow?.foto2_url || null;
-      const foto3 = a.foto3_url || existingRow?.foto3_url || null;
-      const foto4 = a.foto4_url || existingRow?.foto4_url || null;
-      const foto5 = a.foto5_url || existingRow?.foto5_url || null;
-
-      const payload = {
+    // Merge fotos: si el DOM tiene URL la usa, si no, preserva la de BD
+    const mergedActions = usedActions.map((a, i) => {
+      const ex = existingRows[i] || {};
+      return {
         patient_id: patientDbId,
         status: a.status,
         note: a.note,
-        foto1_url: foto1,
-        foto2_url: foto2,
-        foto3_url: foto3,
-        foto4_url: foto4,
-        foto5_url: foto5,
+        foto1_url: a.foto1_url || ex.foto1_url || null,
+        foto2_url: a.foto2_url || ex.foto2_url || null,
+        foto3_url: a.foto3_url || ex.foto3_url || null,
+        foto4_url: a.foto4_url || ex.foto4_url || null,
+        foto5_url: a.foto5_url || ex.foto5_url || null,
       };
+    });
 
-      if(existingRow){
-        await sb.from("patient_actions").update(payload).eq("id", existingRow.id);
-      } else {
-        await sb.from("patient_actions").insert([{ ...payload }]);
-      }
-    }
-
-    // Borrar actuaciones sobrantes si se eliminaron del form
+    // Borrar fotos del bucket de actuaciones eliminadas
     for(let i = usedActions.length; i < existingRows.length; i++){
       const row = existingRows[i];
-      // Borrar fotos del bucket
       for(const key of ["foto1_url","foto2_url","foto3_url","foto4_url","foto5_url"]){
         if(row[key]) await deletePhotoFromStorage(row[key]);
       }
-      await sb.from("patient_actions").delete().eq("id", row.id);
+    }
+
+    // DELETE + INSERT limpio
+    await sb.from("patient_actions").delete().eq("patient_id", patientDbId);
+    if(mergedActions.length){
+      const { error } = await sb.from("patient_actions").insert(mergedActions);
+      if(error) throw error;
     }
   }
 
@@ -1666,23 +1655,12 @@
 
   async function selectPatient(id){
     if(qrCurrentToken) closeQrModal();
+    // Si hay cambios sin guardar, preguntar antes de cambiar
     if(isDirty && selectedPatientId && selectedPatientId !== id){
-      await autoSaveCurrentIfDirty();
+      const ok = confirm("Tenés cambios sin guardar en este registro.\n¿Querés salir de todas formas sin guardar?");
+      if(!ok) return;
     }
-    // Buscar el identificador antes de recargar
-    const pBefore = state.patients.find(x => x.id === id);
-    const identifierRef = pBefore?.identifier || null;
-    const dbIdRef = pBefore?.dbId || null;
-
-    // Recargar desde Supabase
-    await loadPatientsFromDb();
-
-    // Buscar por id, dbId o identifier tras la recarga
-    const p = state.patients.find(x =>
-      x.id === id ||
-      (dbIdRef && x.dbId === dbIdRef) ||
-      (identifierRef && x.identifier === identifierRef)
-    );
+    const p = state.patients.find(x => x.id === id);
     if(!p) return;
     selectedPatientId=id; identifierUnlocked=false;
     selectedIdentifier.textContent=p.identifier||"—";
@@ -1717,12 +1695,20 @@
     return p;
   }
 
-  function validatePatient(p,existing){
+  function validatePatient(p, existing){
     const errs=[];
     if(!p.identifier) errs.push("Falta identificación.");
     const idNorm=String(p.identifier||"").trim().toLowerCase();
     if(idNorm){
-      const dup=state.patients.find(x=>String(x.identifier||"").trim().toLowerCase()===idNorm&&(!existing||x.id!==existing.id));
+      const dup=state.patients.find(x=>{
+        if(String(x.identifier||"").trim().toLowerCase() !== idNorm) return false;
+        // Es el mismo si coincide por id local, dbId, o identifier del existing
+        if(existing){
+          if(existing.id && x.id === existing.id) return false;
+          if(existing.dbId && x.dbId === existing.dbId) return false;
+        }
+        return true;
+      });
       if(dup) errs.push("Ya existe un registro con esa identificación.");
     }
     return errs;
@@ -1923,9 +1909,8 @@
   el("lightboxClose").addEventListener("click",closeLightbox);
   el("lightbox").addEventListener("click",(e)=>{ if(e.target===el("lightbox")) closeLightbox(); });
 
-  // ─── AUTOSAVE ───
+  // ─── DIRTY TRACKING — solo indicador + confirmación al salir ───
   let isDirty = false;
-  let autosaveTimer = null;
 
   function markDirty(){
     isDirty = true;
@@ -1939,34 +1924,10 @@
     if(ind) ind.classList.remove("visible");
   }
 
-  async function autoSaveCurrentIfDirty(){
-    if(!isDirty || !selectedPatientId) return;
-    const existing = state.patients.find(x => x.id === selectedPatientId);
-    if(!existing) return;
-    const p = readFormToPatient(existing);
-    const errs = validatePatient(p, existing);
-    if(errs.length) return; // no guardar si hay errores
-    // Guardar en Supabase
-    let targetDbId = existing.dbId || null;
-    if(targetDbId){
-      await sb.from("patients").update({
-        identifier: p.identifier, datos_generales: p.initialStudy, archived: p.archived
-      }).eq("id", targetDbId);
-      try { await syncPatientActionsToDb(targetDbId, p.actions||[]); } catch(e){}
-    }
-    Object.assign(existing, p);
-    addLog(existing.id, "autosaved", structuredClone(existing));
-    saveState();
-    markClean();
-    showToast("💾 Cambios guardados automáticamente.", "", null, 2000);
-  }
-
-  // Detectar cambios en el formulario
   function setupDirtyListeners(){
     [f_identifier_input, f_initial].forEach(input => {
       if(input) input.addEventListener("input", markDirty);
     });
-    // Para actuaciones usamos MutationObserver
     if(actionsWrap){
       actionsWrap.addEventListener("change", markDirty);
       actionsWrap.addEventListener("input", markDirty);
@@ -1988,10 +1949,6 @@
   if(btnRegister) btnRegister.addEventListener("click",handleRegister);
   if(btnRecover) btnRecover.addEventListener("click",handleRecover);
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
-
-  window.addEventListener("beforeunload", async () => {
-    if(isDirty) await autoSaveCurrentIfDirty();
-  });
 
   window.addEventListener("pagehide",()=>{
     try {
