@@ -534,7 +534,6 @@
       <div id="actionsWrap"></div>
       <div class="row" style="margin-top:8px">
         <button class="btn" id="btnAddAction">+ Añadir actuación</button>
-        <button class="btn small success" id="btnOpenQr" style="display:none">📱 Subir por QR</button>
         <div class="right muted" id="actionsCount">0 actuaciones</div>
       </div>
       <div class="sep"></div>
@@ -778,17 +777,56 @@
     saveState();
   }
 
-  async function syncPatientActionsToDb(patientDbId,actions){
-    const usedActions=(Array.isArray(actions)?actions:[]).filter(isUsedAction);
-    const delResult=await sb.from("patient_actions").delete().eq("patient_id",patientDbId);
-    if(delResult.error) throw delResult.error;
-    if(!usedActions.length) return;
-    const insertPayload=usedActions.map(a=>({
-      patient_id:patientDbId,status:a.status,note:a.note,
-      foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null,foto3_url:a.foto3_url||null,foto4_url:a.foto4_url||null,foto5_url:a.foto5_url||null
-    }));
-    const insResult=await sb.from("patient_actions").insert(insertPayload).select();
-    if(insResult.error) throw insResult.error;
+  async function syncPatientActionsToDb(patientDbId, actions){
+    const usedActions = (Array.isArray(actions) ? actions : []).filter(isUsedAction);
+
+    // Obtener actuaciones existentes para hacer UPDATE en lugar de DELETE+INSERT
+    const { data: existing } = await sb.from("patient_actions")
+      .select("id, foto1_url, foto2_url, foto3_url, foto4_url, foto5_url")
+      .eq("patient_id", patientDbId)
+      .order("created_at", { ascending: true });
+
+    const existingRows = Array.isArray(existing) ? existing : [];
+
+    // UPDATE las que ya existen preservando fotos si el form no las tiene
+    for(let i = 0; i < usedActions.length; i++){
+      const a = usedActions[i];
+      const existingRow = existingRows[i];
+
+      // Preservar fotos del servidor si el DOM no las tiene (vinieron por QR)
+      const foto1 = a.foto1_url || existingRow?.foto1_url || null;
+      const foto2 = a.foto2_url || existingRow?.foto2_url || null;
+      const foto3 = a.foto3_url || existingRow?.foto3_url || null;
+      const foto4 = a.foto4_url || existingRow?.foto4_url || null;
+      const foto5 = a.foto5_url || existingRow?.foto5_url || null;
+
+      const payload = {
+        patient_id: patientDbId,
+        status: a.status,
+        note: a.note,
+        foto1_url: foto1,
+        foto2_url: foto2,
+        foto3_url: foto3,
+        foto4_url: foto4,
+        foto5_url: foto5,
+      };
+
+      if(existingRow){
+        await sb.from("patient_actions").update(payload).eq("id", existingRow.id);
+      } else {
+        await sb.from("patient_actions").insert([{ ...payload }]);
+      }
+    }
+
+    // Borrar actuaciones sobrantes si se eliminaron del form
+    for(let i = usedActions.length; i < existingRows.length; i++){
+      const row = existingRows[i];
+      // Borrar fotos del bucket
+      for(const key of ["foto1_url","foto2_url","foto3_url","foto4_url","foto5_url"]){
+        if(row[key]) await deletePhotoFromStorage(row[key]);
+      }
+      await sb.from("patient_actions").delete().eq("id", row.id);
+    }
   }
 
   async function loadNotesFromDb(){
@@ -1292,10 +1330,26 @@
       container.querySelector(".photo-thumb").addEventListener("click", ()=>openLightbox(url));
       container.querySelector(`[data-del-slot]`).addEventListener("click", async ()=>{
         if(!confirm("¿Eliminar esta foto?")) return;
+        // Borrar del bucket
         await deletePhotoFromStorage(url);
+        // Limpiar dataset y redibujar
         block.dataset[key] = "";
-        container.innerHTML = ""; // limpiar antes de redibujar
+        container.innerHTML = "";
         renderUploadButton(block, slotNum);
+        // Actualizar en Supabase si la actuación ya existe en BD
+        const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
+        if(p?.dbId){
+          const { data: rows } = await sb.from("patient_actions")
+            .select("id")
+            .eq("patient_id", p.dbId)
+            .order("created_at", { ascending: true });
+          const blocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
+          const blockIdx = blocks.indexOf(block);
+          if(rows && rows[blockIdx]){
+            await sb.from("patient_actions").update({ [`foto${slotNum}_url`]: null }).eq("id", rows[blockIdx].id);
+          }
+        }
+        markDirty();
       });
     } else {
       container.innerHTML = "";
@@ -1376,6 +1430,7 @@
               <option value="integrated">🟢 Integrado/Completado</option>
             </select>
           </div>
+          <button class="btn small" data-role="qr" title="Subir fotos desde móvil">📱</button>
           <button class="btn small danger" data-role="remove">Eliminar</button>
         </div>
         <label>Motivo</label>
@@ -1398,7 +1453,15 @@
         block.querySelector('[data-role="dot"]').className=`dot ${statusDotClass(sel.value)}`;
         block.querySelector('[data-role="lbl"]').textContent=statusLabel(sel.value);
       });
-      block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
+      block.querySelector('[data-role="qr"]').addEventListener("click", () => {
+        // Calcular slots libres en esta actuación
+        const freeSlots = [];
+        for(let s=1;s<=5;s++){
+          if(!block.dataset[`foto${s}`]) freeSlots.push(s);
+        }
+        if(!freeSlots.length){ alert("Esta actuación ya tiene 5 fotos. Eliminá alguna para subir más."); return; }
+        openQrModal(idx, freeSlots, block);
+      });
         const f1=block.dataset.foto1||null; const f2=block.dataset.foto2||null;
         const f3=block.dataset.foto3||null; const f4=block.dataset.foto4||null;
         const f5=block.dataset.foto5||null;
@@ -1607,6 +1670,8 @@
     if(isDirty && selectedPatientId && selectedPatientId !== id){
       await autoSaveCurrentIfDirty();
     }
+    // Recargar desde Supabase para tener fotos frescas (incluso las subidas por QR)
+    await loadPatientsFromDb();
     const p=state.patients.find(x=>x.id===id);
     if(!p) return;
     selectedPatientId=id; identifierUnlocked=false;
@@ -1905,7 +1970,6 @@
   });
   el("btnCloseQrModal").addEventListener("click", closeQrModal);
   el("qrModal").addEventListener("click", e => { if(e.target === el("qrModal")) closeQrModal(); });
-  el("btnOpenQr").addEventListener("click", openQrModal);
 
   if(btnLogin) btnLogin.addEventListener("click",handleLogin);
   [authEmail,authPassword].forEach(input=>{
@@ -1979,110 +2043,113 @@
     return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
 
-  async function openQrModal(){
+  let qrTargetBlock = null; // referencia al bloque de actuación
+
+  async function openQrModal(actionIdx, freeSlots, block){
     if(!selectedPatientId){ alert("Seleccioná un registro primero."); return; }
     const p = state.patients.find(x => x.id === selectedPatientId);
     if(!p) return;
 
-    // Crear token en Supabase
+    qrTargetBlock = block;
+
+    // Crear token con info de slots libres
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
-    const { data, error } = await sb.from("qr_tokens").insert([{
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const { error } = await sb.from("qr_tokens").insert([{
       token,
       user_id: currentUser.id,
       patient_identifier: p.identifier,
       patient_db_id: p.dbId || null,
-      action_index: (p.actions||[]).length,
+      action_index: actionIdx,
       expires_at: expiresAt
-    }]).select();
+    }]);
 
     if(error){ alert("Error al generar QR: " + error.message); return; }
     qrCurrentToken = token;
 
-    // Generar URL de upload
-    const uploadUrl = `${window.location.origin}/upload.html?token=${token}`;
+    // URL con slots libres como parámetro
+    const uploadUrl = `${window.location.origin}/upload.html?token=${token}&slots=${freeSlots.join(",")}&action=${actionIdx}`;
 
-    // Mostrar modal
     el("qrModal").classList.add("open");
-    el("qrStatus").textContent = "Esperando fotos...";
+    el("qrStatus").textContent = `Esperando fotos... (${freeSlots.length} slot${freeSlots.length>1?"s":""} libre${freeSlots.length>1?"s":""})`;
     el("qrPhotosReceived").innerHTML = "";
 
-    // Dibujar QR con qrcodejs
     const qrContainer = el("qrContainer");
     qrContainer.innerHTML = "";
     new QRCode(qrContainer, {
       text: uploadUrl,
-      width: 220,
-      height: 220,
-      colorDark: "#0f172a",
-      colorLight: "#ffffff",
+      width: 220, height: 220,
+      colorDark: "#0f172a", colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M
     });
 
-    // Copiar enlace
     el("btnCopyQrUrl").onclick = () => {
       navigator.clipboard.writeText(uploadUrl);
       el("btnCopyQrUrl").textContent = "✅ Copiado";
       setTimeout(() => el("btnCopyQrUrl").textContent = "📋 Copiar enlace", 2000);
     };
 
-    // Timer 10 min
+    // Timer
     let secsLeft = 10 * 60;
     if(qrTimerInterval) clearInterval(qrTimerInterval);
     qrTimerInterval = setInterval(() => {
       secsLeft--;
-      const m = Math.floor(secsLeft / 60).toString().padStart(2,"0");
-      const s = (secsLeft % 60).toString().padStart(2,"0");
+      const m = Math.floor(secsLeft/60).toString().padStart(2,"0");
+      const s = (secsLeft%60).toString().padStart(2,"0");
       el("qrTimer").textContent = `Expira en ${m}:${s}`;
-      if(secsLeft <= 0){
+      if(secsLeft<=0){
         clearInterval(qrTimerInterval);
         el("qrTimer").textContent = "QR expirado";
-        el("qrStatus").textContent = "El QR ya no es válido.";
         stopQrRealtime();
       }
     }, 1000);
 
-    // Realtime: escuchar fotos subidas
-    startQrRealtime(token, p);
+    // Polling para detectar fotos nuevas
+    startQrRealtime(token, p, actionIdx, freeSlots, block);
   }
 
-  function startQrRealtime(token, p){
+  function startQrRealtime(token, p, actionIdx, freeSlots, block){
     stopQrRealtime();
-    // Polling cada 4 segundos buscando fotos nuevas via qr_tokens
+    let lastCount = 0;
     qrRealtimeChannel = setInterval(async () => {
       const { data } = await sb.from("qr_tokens")
         .select("used_slots")
         .eq("token", token)
         .maybeSingle();
-      if(!data) return;
+      if(!data || data.used_slots === lastCount) return;
+      lastCount = data.used_slots;
 
-      // Buscar actuaciones nuevas del registro que tengan fotos
+      // Recargar registro y actualizar slots del bloque
       await loadPatientsFromDb();
       const updated = state.patients.find(x => x.id === selectedPatientId);
       if(!updated) return;
 
-      const totalPhotos = (updated.actions||[]).reduce((acc,a) =>
-        acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0), 0
-      );
+      const action = updated.actions[actionIdx];
+      if(!action) return;
 
-      const container = el("qrPhotosReceived");
-      const currentShown = container.querySelectorAll("img").length;
-      if(totalPhotos > currentShown){
-        // Mostrar nuevas fotos
-        container.innerHTML = "";
-        (updated.actions||[]).forEach(a => {
-          [a.foto1_url,a.foto2_url,a.foto3_url,a.foto4_url,a.foto5_url].filter(Boolean).forEach(url => {
-            const img = document.createElement("img");
-            img.className = "qr-photo-thumb";
-            img.src = url;
-            container.appendChild(img);
-          });
-        });
-        el("qrStatus").textContent = `✅ ${totalPhotos} foto${totalPhotos>1?"s":""} recibida${totalPhotos>1?"s":""}`;
-        // Actualizar formulario
-        selectPatient(selectedPatientId);
-        renderList();
+      // Actualizar slots en el bloque DOM
+      for(let s=1;s<=5;s++){
+        const url = action[`foto${s}_url`]||null;
+        if(url && !block.dataset[`foto${s}`]){
+          block.dataset[`foto${s}`] = url;
+          renderPhotoSlot(block, s, url);
+        }
       }
+
+      const totalNew = [action.foto1_url,action.foto2_url,action.foto3_url,action.foto4_url,action.foto5_url].filter(Boolean).length;
+      el("qrStatus").textContent = `✅ ${data.used_slots} foto${data.used_slots>1?"s":""} recibida${data.used_slots>1?"s":""}`;
+
+      // Mostrar thumbs en el modal
+      const container = el("qrPhotosReceived");
+      container.innerHTML = "";
+      [action.foto1_url,action.foto2_url,action.foto3_url,action.foto4_url,action.foto5_url].filter(Boolean).forEach(url => {
+        const img = document.createElement("img");
+        img.className = "qr-photo-thumb";
+        img.src = url;
+        container.appendChild(img);
+      });
+
+      renderList();
     }, 4000);
   }
 
