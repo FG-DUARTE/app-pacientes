@@ -1462,6 +1462,7 @@
         if(!freeSlots.length){ alert("Esta actuación ya tiene 5 fotos. Eliminá alguna para subir más."); return; }
         openQrModal(idx, freeSlots, block);
       });
+      block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
         const f1=block.dataset.foto1||null; const f2=block.dataset.foto2||null;
         const f3=block.dataset.foto3||null; const f4=block.dataset.foto4||null;
         const f5=block.dataset.foto5||null;
