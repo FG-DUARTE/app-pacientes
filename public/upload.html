@@ -267,57 +267,32 @@
     let failed = 0;
     const urls = [];
 
-    for(let i = 0; i < selectedFiles.length; i++){
-      const file = selectedFiles[i];
-      el("progressText").textContent = `Subiendo ${i+1} de ${selectedFiles.length}...`;
-      el("progressBar").style.width = `${Math.round(((i)/selectedFiles.length)*100)}%`;
+    // Subir todas las fotos via Edge Function y guardar en BD en una sola llamada
+    const formData = new FormData();
+    formData.append("token", token);
+    selectedFiles.forEach((file, i) => formData.append(`file_${i}`, file));
 
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("token", token);
+    el("progressText").textContent = "Subiendo fotos...";
+    el("progressBar").style.width = "50%";
 
-        const res = await fetch("https://ubzcboqndsuugszwarls.supabase.co/functions/v1/qr-upload", {
-          method: "POST",
-          body: formData
-        });
+    try {
+      const res = await fetch("https://ubzcboqndsuugszwarls.supabase.co/functions/v1/qr-upload", {
+        method: "POST",
+        body: formData
+      });
 
-        const result = await res.json();
+      const result = await res.json();
+      el("progressBar").style.width = "100%";
 
-        if(!res.ok || result.error){
-          console.error("Error subiendo:", result.error);
-          failed++; continue;
-        }
-
-        urls.push(result.url);
-
-        // Marcar thumb como subida
-        const thumbs = el("photosPreview").querySelectorAll(".photo-thumb");
-        if(thumbs[i]) thumbs[i].classList.add("uploaded");
-
-        uploaded++;
-      } catch(e){ console.error(e); failed++; }
-    }
-
-    el("progressBar").style.width = "100%";
-
-    // Guardar URLs en patient_actions
-    if(urls.length && tokenData.patient_db_id){
-      // Insertar nueva actuación con las fotos
-      const actionPayload = {
-        patient_id: tokenData.patient_db_id,
-        status: "pending",
-        note: "📱 Fotos subidas desde móvil via QR",
-        foto1_url: urls[0] || null,
-        foto2_url: urls[1] || null,
-        foto3_url: urls[2] || null,
-        foto4_url: urls[3] || null,
-        foto5_url: urls[4] || null,
-      };
-      await sb.from("patient_actions").insert([actionPayload]);
-
-      // Actualizar used_slots en el token
-      await sb.from("qr_tokens").update({ used_slots: uploaded }).eq("token", token);
+      if(!res.ok || result.error){
+        failed = selectedFiles.length;
+      } else {
+        uploaded = result.uploaded || 0;
+        failed = result.failed || 0;
+      }
+    } catch(e){
+      console.error(e);
+      failed = selectedFiles.length;
     }
 
     el("progressWrap").style.display = "none";

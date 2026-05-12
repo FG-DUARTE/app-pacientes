@@ -1601,6 +1601,8 @@
   }
 
   async function selectPatient(id){
+    // Cerrar QR modal si está abierto al cambiar de registro
+    if(qrCurrentToken) closeQrModal();
     // Guardar cambios del registro actual antes de cambiar
     if(isDirty && selectedPatientId && selectedPatientId !== id){
       await autoSaveCurrentIfDirty();
@@ -2090,7 +2092,7 @@
 
   function closeQrModal(){
     el("qrModal").classList.remove("open");
-    if(qrTimerInterval) clearInterval(qrTimerInterval);
+    if(qrTimerInterval) { clearInterval(qrTimerInterval); qrTimerInterval = null; }
     stopQrRealtime();
     qrCurrentToken = null;
   }
