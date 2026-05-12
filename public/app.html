@@ -607,8 +607,6 @@
     el("emailModal").classList.add("open");
   }
 
-  el("btnCloseEmailModal").addEventListener("click", () => el("emailModal").classList.remove("open"));
-
   function setAuthMessage(msg){ if(authHint) authHint.textContent=msg||""; }
 
   function updateAuthUI(){
@@ -1006,6 +1004,7 @@
 
   // ─── DOM refs ───
   const el = id => document.getElementById(id);
+  el("btnCloseEmailModal").addEventListener("click", () => el("emailModal").classList.remove("open"));
   const patientList = el("patientList");
   const noteList = el("noteList");
   const noteDraft = el("noteDraft");
