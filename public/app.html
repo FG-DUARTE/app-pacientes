@@ -298,9 +298,40 @@
       align-items:center;
       justify-content:center;
     }
+    /* EMAIL SENT MODAL */
+    .email-modal-overlay{
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.55); z-index:3000;
+      align-items:center; justify-content:center; padding:16px;
+    }
+    .email-modal-overlay.open{display:flex;}
+    .email-modal-box{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:28px; width:100%; max-width:400px; text-align:center;
+    }
+    .email-modal-icon{font-size:52px; margin-bottom:12px;}
+    .email-modal-title{font-size:20px; font-weight:900; margin:0 0 8px; color:var(--txt);}
+    .email-modal-body{color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:20px;}
+    /* AUTOSAVE dirty indicator */
+    .autosave-indicator{
+      font-size:11px; color:var(--warn); font-weight:700;
+      display:none; align-items:center; gap:4px;
+    }
+    .autosave-indicator.visible{display:inline-flex;}
   </style>
 </head>
 <body>
+
+<!-- EMAIL SENT MODAL -->
+<div class="email-modal-overlay" id="emailModal">
+  <div class="email-modal-box">
+    <div class="email-modal-icon" id="emailModalIcon">📧</div>
+    <div class="email-modal-title" id="emailModalTitle">Email enviado</div>
+    <div class="email-modal-body" id="emailModalBody"></div>
+    <button class="btn primary" id="btnCloseEmailModal" style="width:100%">Entendido</button>
+  </div>
+</div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
@@ -372,7 +403,10 @@
     </div>
   </div>
   <div class="card" id="authCard" style="margin-top:12px; max-width:520px; display:none;">
-    <h3 style="margin:0 0 8px; font-size:16px;">Acceso de usuario</h3>
+    <div class="row" style="margin-bottom:8px">
+      <h3 style="margin:0; font-size:16px;" id="authTitle">Acceso de usuario</h3>
+      <button class="btn small ghost" id="btnBackToLogin" style="display:none">← Volver</button>
+    </div>
     <div class="hint" style="margin-bottom:10px;">Cada usuario verá solo sus propios registros, actuaciones, notas e historial.</div>
     <div class="split" id="registerFields" style="display:none">
       <div><label>Nombre</label><input id="authNombre" type="text" placeholder="Nombre" autocomplete="off" /></div>
@@ -449,6 +483,7 @@
     <section class="card panel-right">
       <div class="row">
         <div class="pill">Registro seleccionado: <span id="selectedIdentifier" class="kbd">—</span></div>
+        <span class="autosave-indicator" id="autosaveIndicator">⏳ Cambios sin guardar</span>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
           <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
@@ -565,6 +600,15 @@
   function saveState(){ localStorage.setItem(KEY,JSON.stringify(state)); }
 
   // ─── AUTH HELPERS ───
+  function showEmailModal(icon, title, body){
+    el("emailModalIcon").textContent = icon;
+    el("emailModalTitle").textContent = title;
+    el("emailModalBody").textContent = body;
+    el("emailModal").classList.add("open");
+  }
+
+  el("btnCloseEmailModal").addEventListener("click", () => el("emailModal").classList.remove("open"));
+
   function setAuthMessage(msg){ if(authHint) authHint.textContent=msg||""; }
 
   function updateAuthUI(){
@@ -575,6 +619,10 @@
     if(authStatusText) authStatusText.textContent = logged?(currentUser.email||"Usuario autenticado"):"No autenticado";
     if(registerFields) registerFields.style.display = (!logged&&registerMode)?"grid":"none";
     if(btnRegister) btnRegister.textContent = registerMode?"Confirmar alta":"Crear cuenta";
+    const btnBack = el("btnBackToLogin");
+    const authTitle = el("authTitle");
+    if(btnBack) btnBack.style.display = (!logged && registerMode) ? "inline-flex" : "none";
+    if(authTitle) authTitle.textContent = registerMode ? "Crear cuenta" : "Acceso de usuario";
     if(welcomePill) welcomePill.style.display = logged?"inline-flex":"none";
     const nombre = [currentProfile?.nombre,currentProfile?.apellido].filter(Boolean).join(" ").trim();
     if(welcomeText) welcomeText.textContent = nombre?`Bienvenido, ${nombre}`:"Bienvenido";
@@ -642,7 +690,7 @@
     if(error){ setAuthMessage("Falló el alta: "+error.message); return; }
     if(data?.user?.id) await saveProfileToDb(data.user.id,nombre,apellido);
     registerMode=false; updateAuthUI();
-    setAuthMessage("Cuenta creada. Revisa tu correo si se requiere confirmación.");
+    showEmailModal("✅", "Cuenta creada", `Se ha enviado un email de confirmación a ${email}. Revisá tu bandeja de entrada (y el spam) antes de iniciar sesión.`);
   }
 
   async function handleRecover(){
@@ -650,7 +698,7 @@
     if(!email){ setAuthMessage("Escribe tu email."); return; }
     const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/app.html"});
     if(error){ setAuthMessage("Falló la recuperación: "+error.message); return; }
-    setAuthMessage("Revisa tu email para establecer nueva contraseña.");
+    showEmailModal("🔑", "Email de recuperación enviado", `Hemos enviado un enlace a ${email}. Abrí ese link para establecer una nueva contraseña. Revisá también el spam.`);
   }
 
   async function handleLogout(){
@@ -1524,7 +1572,11 @@
     renderActions([]); lockHCIfNeeded(); renderList();
   }
 
-  function selectPatient(id){
+  async function selectPatient(id){
+    // Guardar cambios del registro actual antes de cambiar
+    if(isDirty && selectedPatientId && selectedPatientId !== id){
+      await autoSaveCurrentIfDirty();
+    }
     const p=state.patients.find(x=>x.id===id);
     if(!p) return;
     selectedPatientId=id; identifierUnlocked=false;
@@ -1536,6 +1588,7 @@
     renderActions(p.actions||[]);
     historyPanel.style.display="none"; historyPanel.innerHTML="";
     lockHCIfNeeded(); renderList();
+    markClean();
   }
 
   function autocorrectActions(actions){
@@ -1641,10 +1694,12 @@
       Object.assign(existing,p);
       addLog(existing.id,"updated",structuredClone(existing));
       saveState(); identifierUnlocked=false; selectPatient(existing.id);
+      markClean();
     } else {
       p.id=uid(); state.patients.push(p);
       addLog(p.id,"created",structuredClone(p));
       saveState(); selectPatient(p.id);
+      markClean();
     }
 
     if(willAutoArchive){
@@ -1762,7 +1817,61 @@
   el("lightboxClose").addEventListener("click",closeLightbox);
   el("lightbox").addEventListener("click",(e)=>{ if(e.target===el("lightbox")) closeLightbox(); });
 
-  // ─── AUTH EVENTS ───
+  // ─── AUTOSAVE ───
+  let isDirty = false;
+  let autosaveTimer = null;
+
+  function markDirty(){
+    isDirty = true;
+    const ind = el("autosaveIndicator");
+    if(ind) ind.classList.add("visible");
+  }
+
+  function markClean(){
+    isDirty = false;
+    const ind = el("autosaveIndicator");
+    if(ind) ind.classList.remove("visible");
+  }
+
+  async function autoSaveCurrentIfDirty(){
+    if(!isDirty || !selectedPatientId) return;
+    const existing = state.patients.find(x => x.id === selectedPatientId);
+    if(!existing) return;
+    const p = readFormToPatient(existing);
+    const errs = validatePatient(p, existing);
+    if(errs.length) return; // no guardar si hay errores
+    // Guardar en Supabase
+    let targetDbId = existing.dbId || null;
+    if(targetDbId){
+      await sb.from("patients").update({
+        identifier: p.identifier, datos_generales: p.initialStudy, archived: p.archived
+      }).eq("id", targetDbId);
+      try { await syncPatientActionsToDb(targetDbId, p.actions||[]); } catch(e){}
+    }
+    Object.assign(existing, p);
+    addLog(existing.id, "autosaved", structuredClone(existing));
+    saveState();
+    markClean();
+    showToast("💾 Cambios guardados automáticamente.", "", null, 2000);
+  }
+
+  // Detectar cambios en el formulario
+  function setupDirtyListeners(){
+    [f_identifier_input, f_initial].forEach(input => {
+      if(input) input.addEventListener("input", markDirty);
+    });
+    // Para actuaciones usamos MutationObserver
+    if(actionsWrap){
+      actionsWrap.addEventListener("change", markDirty);
+      actionsWrap.addEventListener("input", markDirty);
+    }
+  }
+  const btnBackToLogin = el("btnBackToLogin");
+  if(btnBackToLogin) btnBackToLogin.addEventListener("click", () => {
+    registerMode = false;
+    updateAuthUI();
+    setAuthMessage("Usa email + contraseña. Si no tienes cuenta, crea una.");
+  });
   if(btnLogin) btnLogin.addEventListener("click",handleLogin);
   [authEmail,authPassword].forEach(input=>{
     if(input) input.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); handleLogin(); } });
@@ -1771,7 +1880,9 @@
   if(btnRecover) btnRecover.addEventListener("click",handleRecover);
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
 
-  window.addEventListener("pagehide",()=>{
+  window.addEventListener("beforeunload", async () => {
+    if(isDirty) await autoSaveCurrentIfDirty();
+  });
     try {
       localStorage.removeItem(KEY);
       Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
@@ -1816,6 +1927,7 @@
       setupInactivityListeners(); resetInactivityTimer();
       await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
       renderList(); clearForm(); initialPick();
+      setupDirtyListeners();
     } else {
       renderList(); clearForm();
     }
