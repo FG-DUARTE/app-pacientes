@@ -339,7 +339,8 @@
       <button class="btn small ghost right" id="btnCloseQrModal">× Cerrar</button>
     </div>
     <div class="hint" style="margin-bottom:8px">Escaneá el QR con tu móvil para subir fotos directamente a este registro.</div>
-    <canvas id="qrCanvas" width="220" height="220"></canvas>
+    <canvas id="qrCanvas" style="display:none"></canvas>
+    <div id="qrContainer" style="margin:12px auto; display:inline-block;"></div>
     <div class="qr-timer" id="qrTimer">Expira en 10:00</div>
     <div class="hint" id="qrStatus">Esperando fotos...</div>
     <div class="qr-photos-received" id="qrPhotosReceived"></div>
@@ -549,7 +550,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
@@ -2004,10 +2005,16 @@
     el("qrStatus").textContent = "Esperando fotos...";
     el("qrPhotosReceived").innerHTML = "";
 
-    // Dibujar QR
-    QRCode.toCanvas(el("qrCanvas"), uploadUrl, {
-      width: 220, margin: 2,
-      color: { dark: "#0f172a", light: "#ffffff" }
+    // Dibujar QR con qrcodejs
+    const qrContainer = el("qrContainer");
+    qrContainer.innerHTML = "";
+    new QRCode(qrContainer, {
+      text: uploadUrl,
+      width: 220,
+      height: 220,
+      colorDark: "#0f172a",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
     });
 
     // Copiar enlace
