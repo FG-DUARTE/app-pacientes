@@ -2049,9 +2049,11 @@
   let qrTargetBlock = null; // referencia al bloque de actuación
 
   async function openQrModal(actionIdx, freeSlots, block){
+    console.log("openQrModal llamado", actionIdx, freeSlots);
     if(!selectedPatientId){ alert("Seleccioná un registro primero."); return; }
     const p = state.patients.find(x => x.id === selectedPatientId);
-    if(!p) return;
+    if(!p){ console.log("No se encontró el registro"); return; }
+    console.log("p encontrado:", p.identifier, "dbId:", p.dbId);
 
     qrTargetBlock = block;
 
@@ -2067,7 +2069,11 @@
       expires_at: expiresAt
     }]);
 
-    if(error){ alert("Error al generar QR: " + error.message); return; }
+    if(error){ 
+      console.log("Error insertando qr_token:", error.message);
+      alert("Error al generar QR: " + error.message); return; 
+    }
+    console.log("Token creado OK:", token);
     qrCurrentToken = token;
 
     // URL con slots libres como parámetro
