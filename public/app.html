@@ -319,9 +319,35 @@
       display:none; align-items:center; gap:4px;
     }
     .autosave-indicator.visible{display:inline-flex;}
+    /* QR MODAL */
+    .qr-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;padding:16px;}
+    .qr-modal-overlay.open{display:flex;}
+    .qr-modal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;width:100%;max-width:400px;text-align:center;}
+    .qr-modal-box canvas{border-radius:12px;margin:12px auto;display:block;}
+    .qr-timer{font-size:13px;color:var(--warn);font-weight:700;margin:8px 0;}
+    .qr-photos-received{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+    .qr-photo-thumb{width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid var(--ok);}
   </style>
 </head>
 <body>
+
+<!-- QR MODAL -->
+<div class="qr-modal-overlay" id="qrModal">
+  <div class="qr-modal-box">
+    <div class="row" style="margin-bottom:12px">
+      <div style="font-size:16px;font-weight:800">📱 Subir fotos desde móvil</div>
+      <button class="btn small ghost right" id="btnCloseQrModal">× Cerrar</button>
+    </div>
+    <div class="hint" style="margin-bottom:8px">Escaneá el QR con tu móvil para subir fotos directamente a este registro.</div>
+    <canvas id="qrCanvas" width="220" height="220"></canvas>
+    <div class="qr-timer" id="qrTimer">Expira en 10:00</div>
+    <div class="hint" id="qrStatus">Esperando fotos...</div>
+    <div class="qr-photos-received" id="qrPhotosReceived"></div>
+    <div style="margin-top:14px">
+      <button class="btn small ghost" id="btnCopyQrUrl">📋 Copiar enlace</button>
+    </div>
+  </div>
+</div>
 
 <!-- EMAIL SENT MODAL -->
 <div class="email-modal-overlay" id="emailModal">
@@ -507,6 +533,7 @@
       <div id="actionsWrap"></div>
       <div class="row" style="margin-top:8px">
         <button class="btn" id="btnAddAction">+ Añadir actuación</button>
+        <button class="btn small success" id="btnOpenQr" style="display:none">📱 Subir por QR</button>
         <div class="right muted" id="actionsCount">0 actuaciones</div>
       </div>
       <div class="sep"></div>
@@ -522,6 +549,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 (() => {
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
@@ -1588,6 +1616,7 @@
     historyPanel.style.display="none"; historyPanel.innerHTML="";
     lockHCIfNeeded(); renderList();
     markClean();
+    updateQrButton();
   }
 
   function autocorrectActions(actions){
@@ -1871,6 +1900,10 @@
     updateAuthUI();
     setAuthMessage("Usa email + contraseña. Si no tienes cuenta, crea una.");
   });
+  el("btnCloseQrModal").addEventListener("click", closeQrModal);
+  el("qrModal").addEventListener("click", e => { if(e.target === el("qrModal")) closeQrModal(); });
+  el("btnOpenQr").addEventListener("click", openQrModal);
+
   if(btnLogin) btnLogin.addEventListener("click",handleLogin);
   [authEmail,authPassword].forEach(input=>{
     if(input) input.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); handleLogin(); } });
@@ -1932,6 +1965,133 @@
     } else {
       renderList(); clearForm();
     }
+  }
+
+  // ─── QR UPLOAD SYSTEM ───
+  let qrTimerInterval = null;
+  let qrRealtimeChannel = null;
+  let qrCurrentToken = null;
+
+  function generateToken(){
+    return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  async function openQrModal(){
+    if(!selectedPatientId){ alert("Seleccioná un registro primero."); return; }
+    const p = state.patients.find(x => x.id === selectedPatientId);
+    if(!p) return;
+
+    // Crear token en Supabase
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
+    const { data, error } = await sb.from("qr_tokens").insert([{
+      token,
+      user_id: currentUser.id,
+      patient_identifier: p.identifier,
+      patient_db_id: p.dbId || null,
+      action_index: (p.actions||[]).length,
+      expires_at: expiresAt
+    }]).select();
+
+    if(error){ alert("Error al generar QR: " + error.message); return; }
+    qrCurrentToken = token;
+
+    // Generar URL de upload
+    const uploadUrl = `${window.location.origin}/upload.html?token=${token}`;
+
+    // Mostrar modal
+    el("qrModal").classList.add("open");
+    el("qrStatus").textContent = "Esperando fotos...";
+    el("qrPhotosReceived").innerHTML = "";
+
+    // Dibujar QR
+    QRCode.toCanvas(el("qrCanvas"), uploadUrl, {
+      width: 220, margin: 2,
+      color: { dark: "#0f172a", light: "#ffffff" }
+    });
+
+    // Copiar enlace
+    el("btnCopyQrUrl").onclick = () => {
+      navigator.clipboard.writeText(uploadUrl);
+      el("btnCopyQrUrl").textContent = "✅ Copiado";
+      setTimeout(() => el("btnCopyQrUrl").textContent = "📋 Copiar enlace", 2000);
+    };
+
+    // Timer 10 min
+    let secsLeft = 10 * 60;
+    if(qrTimerInterval) clearInterval(qrTimerInterval);
+    qrTimerInterval = setInterval(() => {
+      secsLeft--;
+      const m = Math.floor(secsLeft / 60).toString().padStart(2,"0");
+      const s = (secsLeft % 60).toString().padStart(2,"0");
+      el("qrTimer").textContent = `Expira en ${m}:${s}`;
+      if(secsLeft <= 0){
+        clearInterval(qrTimerInterval);
+        el("qrTimer").textContent = "QR expirado";
+        el("qrStatus").textContent = "El QR ya no es válido.";
+        stopQrRealtime();
+      }
+    }, 1000);
+
+    // Realtime: escuchar fotos subidas
+    startQrRealtime(token, p);
+  }
+
+  function startQrRealtime(token, p){
+    stopQrRealtime();
+    // Polling cada 4 segundos buscando fotos nuevas via qr_tokens
+    qrRealtimeChannel = setInterval(async () => {
+      const { data } = await sb.from("qr_tokens")
+        .select("used_slots")
+        .eq("token", token)
+        .maybeSingle();
+      if(!data) return;
+
+      // Buscar actuaciones nuevas del registro que tengan fotos
+      await loadPatientsFromDb();
+      const updated = state.patients.find(x => x.id === selectedPatientId);
+      if(!updated) return;
+
+      const totalPhotos = (updated.actions||[]).reduce((acc,a) =>
+        acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0), 0
+      );
+
+      const container = el("qrPhotosReceived");
+      const currentShown = container.querySelectorAll("img").length;
+      if(totalPhotos > currentShown){
+        // Mostrar nuevas fotos
+        container.innerHTML = "";
+        (updated.actions||[]).forEach(a => {
+          [a.foto1_url,a.foto2_url,a.foto3_url,a.foto4_url,a.foto5_url].filter(Boolean).forEach(url => {
+            const img = document.createElement("img");
+            img.className = "qr-photo-thumb";
+            img.src = url;
+            container.appendChild(img);
+          });
+        });
+        el("qrStatus").textContent = `✅ ${totalPhotos} foto${totalPhotos>1?"s":""} recibida${totalPhotos>1?"s":""}`;
+        // Actualizar formulario
+        selectPatient(selectedPatientId);
+        renderList();
+      }
+    }, 4000);
+  }
+
+  function stopQrRealtime(){
+    if(qrRealtimeChannel){ clearInterval(qrRealtimeChannel); qrRealtimeChannel = null; }
+  }
+
+  function closeQrModal(){
+    el("qrModal").classList.remove("open");
+    if(qrTimerInterval) clearInterval(qrTimerInterval);
+    stopQrRealtime();
+    qrCurrentToken = null;
+  }
+
+  // Mostrar/ocultar botón QR según si hay registro seleccionado
+  function updateQrButton(){
+    const btn = el("btnOpenQr");
+    if(btn) btn.style.display = selectedPatientId ? "inline-flex" : "none";
   }
 
   boot();

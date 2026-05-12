@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Subir fotos</title>
+  <style>
+    :root{
+      --bg:#f0f5ff;
+      --card:#ffffff;
+      --txt:#0f172a;
+      --muted:#64748b;
+      --border:#cbd5e1;
+      --accent:#2563eb;
+      --ok:#10b981;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow:0 10px 30px rgba(15,23,42,.1);
+      --radius:16px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      color:var(--txt);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+      width:100%;
+      max-width:420px;
+      text-align:center;
+    }
+    .logo{font-size:48px; margin-bottom:8px;}
+    h1{margin:0 0 6px; font-size:20px; font-weight:900;}
+    .sub{color:var(--muted); font-size:13px; margin-bottom:20px;}
+    .identifier-badge{
+      background:var(--bg);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:8px 16px;
+      font-size:14px;
+      font-weight:700;
+      color:var(--accent);
+      display:inline-block;
+      margin-bottom:20px;
+      font-family: ui-monospace, monospace;
+    }
+    .upload-zone{
+      border:2px dashed var(--border);
+      border-radius:14px;
+      padding:32px 16px;
+      cursor:pointer;
+      transition:.15s ease;
+      position:relative;
+      margin-bottom:16px;
+    }
+    .upload-zone:hover{border-color:var(--accent);}
+    .upload-zone input[type=file]{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+      width:100%;
+      height:100%;
+    }
+    .upload-icon{font-size:40px; margin-bottom:8px;}
+    .upload-label{font-weight:700; font-size:16px; margin-bottom:4px;}
+    .upload-hint{color:var(--muted); font-size:13px;}
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:14px 20px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+      width:100%;
+      transition:.15s ease;
+    }
+    .btn.primary{background:linear-gradient(180deg,#2b6cff,#1c4ed8); color:#fff;}
+    .btn.primary:disabled{opacity:.5; cursor:not-allowed;}
+    .progress{
+      display:none;
+      margin:12px 0;
+    }
+    .progress-bar-wrap{
+      background:var(--border);
+      border-radius:999px;
+      height:8px;
+      overflow:hidden;
+    }
+    .progress-bar{
+      height:8px;
+      background:var(--accent);
+      border-radius:999px;
+      transition:width .3s ease;
+      width:0%;
+    }
+    .progress-text{font-size:12px; color:var(--muted); margin-top:6px;}
+    .photos-preview{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin:16px 0;
+    }
+    .photo-thumb{
+      width:80px;
+      height:80px;
+      object-fit:cover;
+      border-radius:10px;
+      border:2px solid var(--border);
+    }
+    .photo-thumb.uploaded{border-color:var(--ok);}
+    .status-msg{
+      padding:12px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+      margin-top:12px;
+      display:none;
+    }
+    .status-msg.ok{background:#d1fae5; color:#065f46; border:1px solid #6ee7b7;}
+    .status-msg.error{background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;}
+    .status-msg.warn{background:#fef3c7; color:#92400e; border:1px solid #fcd34d;}
+    .timer-badge{
+      font-size:12px;
+      color:var(--warn);
+      font-weight:700;
+      margin-bottom:16px;
+    }
+    .sep{height:1px; background:var(--border); margin:16px 0;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">📋</div>
+  <h1>Subir fotos</h1>
+  <div class="sub">Página de carga desde móvil</div>
+
+  <div id="loadingState">
+    <div class="sub">Verificando enlace...</div>
+  </div>
+
+  <div id="mainState" style="display:none">
+    <div class="identifier-badge" id="identifierDisplay">—</div>
+    <div class="timer-badge" id="timerDisplay">⏱ Expira en 10:00</div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" multiple />
+      <div class="upload-icon">📷</div>
+      <div class="upload-label">Toca para sacar foto o elegir imágenes</div>
+      <div class="upload-hint">Podés seleccionar varias a la vez</div>
+    </div>
+
+    <div class="photos-preview" id="photosPreview"></div>
+
+    <div class="progress" id="progressWrap">
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-text" id="progressText">Subiendo...</div>
+    </div>
+
+    <button class="btn primary" id="btnUpload" disabled>Subir fotos</button>
+
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <div id="expiredState" style="display:none">
+    <div class="status-msg error" style="display:block">⏱ Este enlace ha expirado. Generá un nuevo QR desde la app.</div>
+  </div>
+
+  <div id="errorState" style="display:none">
+    <div class="status-msg error" style="display:block">❌ Enlace inválido o no encontrado.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(async () => {
+  const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
+  const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+
+  const STORAGE_BUCKET = "archivos";
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  const show = id => document.getElementById(id).style.display = "block";
+  const hide = id => document.getElementById(id).style.display = "none";
+  const el = id => document.getElementById(id);
+
+  let tokenData = null;
+  let selectedFiles = [];
+  let timerInterval = null;
+
+  // Verificar token
+  if(!token){
+    hide("loadingState"); show("errorState"); return;
+  }
+
+  const { data, error } = await sb.from("qr_tokens")
+    .select("*")
+    .eq("token", token)
+    .maybeSingle();
+
+  if(error || !data){
+    hide("loadingState"); show("errorState"); return;
+  }
+
+  if(new Date(data.expires_at) < new Date()){
+    hide("loadingState"); show("expiredState"); return;
+  }
+
+  tokenData = data;
+  hide("loadingState"); show("mainState");
+  el("identifierDisplay").textContent = `Registro: ${data.patient_identifier}`;
+
+  // Timer
+  function updateTimer(){
+    const secsLeft = Math.max(0, Math.floor((new Date(tokenData.expires_at) - new Date()) / 1000));
+    const m = Math.floor(secsLeft / 60).toString().padStart(2,"0");
+    const s = (secsLeft % 60).toString().padStart(2,"0");
+    el("timerDisplay").textContent = `⏱ Expira en ${m}:${s}`;
+    if(secsLeft <= 0){
+      clearInterval(timerInterval);
+      el("timerDisplay").textContent = "⏱ Expirado";
+      el("btnUpload").disabled = true;
+      el("fileInput").disabled = true;
+    }
+  }
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 1000);
+
+  // Selección de archivos
+  el("fileInput").addEventListener("change", e => {
+    selectedFiles = Array.from(e.target.files);
+    el("photosPreview").innerHTML = "";
+    selectedFiles.forEach(f => {
+      const img = document.createElement("img");
+      img.className = "photo-thumb";
+      img.src = URL.createObjectURL(f);
+      el("photosPreview").appendChild(img);
+    });
+    el("btnUpload").disabled = selectedFiles.length === 0;
+  });
+
+  // Subir fotos
+  el("btnUpload").addEventListener("click", async () => {
+    if(!selectedFiles.length) return;
+    el("btnUpload").disabled = true;
+    el("progressWrap").style.display = "block";
+    el("statusMsg").style.display = "none";
+
+    let uploaded = 0;
+    let failed = 0;
+    const urls = [];
+
+    for(let i = 0; i < selectedFiles.length; i++){
+      const file = selectedFiles[i];
+      el("progressText").textContent = `Subiendo ${i+1} de ${selectedFiles.length}...`;
+      el("progressBar").style.width = `${Math.round(((i)/selectedFiles.length)*100)}%`;
+
+      try {
+        const ext = file.name.split(".").pop() || "jpg";
+        const safeName = String(tokenData.patient_identifier||"sin-id").replace(/[^a-zA-Z0-9_-]/g,"_");
+        const path = `${tokenData.user_id}/${safeName}/qr_upload/${Date.now()}_${i}.${ext}`;
+
+        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
+          upsert: true, contentType: file.type
+        });
+
+        if(upErr){ failed++; continue; }
+
+        const { data: urlData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        urls.push(urlData.publicUrl);
+
+        // Marcar thumb como subida
+        const thumbs = el("photosPreview").querySelectorAll(".photo-thumb");
+        if(thumbs[i]) thumbs[i].classList.add("uploaded");
+
+        uploaded++;
+      } catch(e){ failed++; }
+    }
+
+    el("progressBar").style.width = "100%";
+
+    // Guardar URLs en patient_actions
+    if(urls.length && tokenData.patient_db_id){
+      // Insertar nueva actuación con las fotos
+      const actionPayload = {
+        patient_id: tokenData.patient_db_id,
+        status: "pending",
+        note: "📱 Fotos subidas desde móvil via QR",
+        foto1_url: urls[0] || null,
+        foto2_url: urls[1] || null,
+        foto3_url: urls[2] || null,
+        foto4_url: urls[3] || null,
+        foto5_url: urls[4] || null,
+      };
+      await sb.from("patient_actions").insert([actionPayload]);
+
+      // Actualizar used_slots en el token
+      await sb.from("qr_tokens").update({ used_slots: uploaded }).eq("token", token);
+    }
+
+    el("progressWrap").style.display = "none";
+    const msg = el("statusMsg");
+    msg.style.display = "block";
+
+    if(uploaded > 0 && failed === 0){
+      msg.className = "status-msg ok";
+      msg.textContent = `✅ ${uploaded} foto${uploaded>1?"s":""} subida${uploaded>1?"s":""} correctamente. Ya podés cerrar esta página.`;
+    } else if(uploaded > 0 && failed > 0){
+      msg.className = "status-msg warn";
+      msg.textContent = `⚠️ ${uploaded} subida${uploaded>1?"s":""} correctamente, ${failed} fallida${failed>1?"s":""}.`;
+    } else {
+      msg.className = "status-msg error";
+      msg.textContent = "❌ No se pudieron subir las fotos. Intentá de nuevo.";
+      el("btnUpload").disabled = false;
+    }
+
+    selectedFiles = [];
+  });
+})();
+</script>
+</body>
+</html>
