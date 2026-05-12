@@ -2046,20 +2046,22 @@
     return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
 
-  let qrTargetBlock = null; // referencia al bloque de actuación
+  let qrTargetBlock = null;
 
   async function openQrModal(actionIdx, freeSlots, block){
-    console.log("openQrModal llamado", actionIdx, freeSlots);
     if(!selectedPatientId){ alert("Seleccioná un registro primero."); return; }
     const p = state.patients.find(x => x.id === selectedPatientId);
-    if(!p){ console.log("No se encontró el registro"); return; }
-    console.log("p encontrado:", p.identifier, "dbId:", p.dbId);
+    if(!p) return;
 
+    // Cerrar cualquier QR anterior
+    closeQrModal();
     qrTargetBlock = block;
 
-    // Crear token con info de slots libres
+    // Crear token simple — solo 1 foto, expira en 5 min
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    const nextSlot = freeSlots[0]; // solo el primer slot libre
+
     const { error } = await sb.from("qr_tokens").insert([{
       token,
       user_id: currentUser.id,
@@ -2069,18 +2071,15 @@
       expires_at: expiresAt
     }]);
 
-    if(error){ 
-      console.log("Error insertando qr_token:", error.message);
-      alert("Error al generar QR: " + error.message); return; 
-    }
-    console.log("Token creado OK:", token);
+    if(error){ alert("Error al generar QR: " + error.message); return; }
     qrCurrentToken = token;
 
-    // URL con slots libres como parámetro
-    const uploadUrl = `${window.location.origin}/upload.html?token=${token}&slots=${freeSlots.join(",")}&action=${actionIdx}`;
+    // URL simple — 1 slot, 1 foto
+    const uploadUrl = `${window.location.origin}/upload.html?token=${token}&slots=${nextSlot}&action=${actionIdx}`;
 
     el("qrModal").classList.add("open");
-    el("qrStatus").textContent = `Esperando fotos... (${freeSlots.length} slot${freeSlots.length>1?"s":""} libre${freeSlots.length>1?"s":""})`;
+    el("qrStatus").textContent = "📱 Esperando foto...";
+    el("qrTimer").textContent = `Se guardará en slot ${nextSlot}`;
     el("qrPhotosReceived").innerHTML = "";
 
     const qrContainer = el("qrContainer");
@@ -2098,64 +2097,38 @@
       setTimeout(() => el("btnCopyQrUrl").textContent = "📋 Copiar enlace", 2000);
     };
 
-    // Timer
-    let secsLeft = 10 * 60;
-    if(qrTimerInterval) clearInterval(qrTimerInterval);
-    qrTimerInterval = setInterval(() => {
-      secsLeft--;
-      const m = Math.floor(secsLeft/60).toString().padStart(2,"0");
-      const s = (secsLeft%60).toString().padStart(2,"0");
-      el("qrTimer").textContent = `Expira en ${m}:${s}`;
-      if(secsLeft<=0){
-        clearInterval(qrTimerInterval);
-        el("qrTimer").textContent = "QR expirado";
-        stopQrRealtime();
-      }
-    }, 1000);
-
-    // Polling para detectar fotos nuevas
-    startQrRealtime(token, p, actionIdx, freeSlots, block);
+    // Polling simple — cuando llega la foto cierra el modal
+    startQrRealtime(token, p, actionIdx, nextSlot);
   }
 
-  function startQrRealtime(token, p, actionIdx, freeSlots, block){
+  function startQrRealtime(token, p, actionIdx, targetSlot){
     stopQrRealtime();
-    let lastCount = 0;
     qrRealtimeChannel = setInterval(async () => {
       const { data } = await sb.from("qr_tokens")
         .select("used_slots")
         .eq("token", token)
         .maybeSingle();
-      if(!data || data.used_slots === lastCount) return;
-      lastCount = data.used_slots;
 
-      // Recargar todo el registro desde Supabase
+      if(!data || data.used_slots === 0) return;
+
+      // Foto recibida — recargar y mostrar
+      stopQrRealtime();
       await loadPatientsFromDb();
+
       const updated = state.patients.find(x =>
         x.id === selectedPatientId ||
         (p.dbId && x.dbId === p.dbId) ||
         x.identifier === p.identifier
       );
-      if(!updated) return;
 
-      // Re-renderizar actuaciones completas para mostrar fotos
-      renderActions(updated.actions || []);
-      renderList();
+      if(updated){
+        renderActions(updated.actions || []);
+        renderList();
+        showToast(`✅ Foto recibida en slot ${targetSlot}.`, "", null, 3000);
+      }
 
-      // Mostrar thumbs en el modal
-      const container = el("qrPhotosReceived");
-      container.innerHTML = "";
-      (updated.actions || []).forEach(a => {
-        [a.foto1_url,a.foto2_url,a.foto3_url,a.foto4_url,a.foto5_url].filter(Boolean).forEach(url => {
-          const img = document.createElement("img");
-          img.className = "qr-photo-thumb";
-          img.src = url;
-          container.appendChild(img);
-        });
-      });
-
-      const totalFotos = container.querySelectorAll("img").length;
-      el("qrStatus").textContent = `✅ ${totalFotos} foto${totalFotos>1?"s":""} recibida${totalFotos>1?"s":""}`;
-    }, 4000);
+      closeQrModal();
+    }, 3000);
   }
 
   function stopQrRealtime(){
@@ -2164,12 +2137,11 @@
 
   function closeQrModal(){
     el("qrModal").classList.remove("open");
-    if(qrTimerInterval) { clearInterval(qrTimerInterval); qrTimerInterval = null; }
     stopQrRealtime();
     qrCurrentToken = null;
+    qrTargetBlock = null;
   }
 
-  // Mostrar/ocultar botón QR según si hay registro seleccionado
   function updateQrButton(){
     const btn = el("btnOpenQr");
     if(btn) btn.style.display = selectedPatientId ? "inline-flex" : "none";

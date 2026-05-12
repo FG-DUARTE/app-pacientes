@@ -196,14 +196,10 @@
   const STORAGE_BUCKET = "archivos";
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
-  const slotsParam = params.get("slots") || "1,2,3,4,5";
+  const slotsParam = params.get("slots") || "1";
   const actionIdx = params.get("action") || "0";
   const freeSlots = slotsParam.split(",").map(Number).filter(Boolean);
-
-  console.log("URL completa:", window.location.href);
-  console.log("slots param:", slotsParam);
-  console.log("freeSlots:", freeSlots);
-  console.log("actionIdx:", actionIdx);
+  const targetSlot = freeSlots[0] || 1;
 
   const show = id => document.getElementById(id).style.display = "block";
   const hide = id => document.getElementById(id).style.display = "none";
@@ -234,7 +230,7 @@
   tokenData = data;
   hide("loadingState"); show("mainState");
   el("identifierDisplay").textContent = `Registro: ${data.patient_identifier}`;
-  el("uploadZone").querySelector(".upload-hint").textContent = `Podés subir hasta ${freeSlots.length} foto${freeSlots.length>1?"s":""}`;
+  el("uploadZone").querySelector(".upload-hint").textContent = `Subí 1 foto — irá al espacio ${targetSlot}`;
 
 
   // Timer
@@ -255,7 +251,8 @@
 
   // Selección de archivos
   el("fileInput").addEventListener("change", e => {
-    selectedFiles = Array.from(e.target.files);
+    // Solo 1 foto
+    selectedFiles = [e.target.files[0]].filter(Boolean);
     el("photosPreview").innerHTML = "";
     selectedFiles.forEach(f => {
       const img = document.createElement("img");
@@ -278,10 +275,10 @@
     const urls = [];
 
     // Subir todas las fotos via Edge Function y guardar en BD en una sola llamada
-    const filesToUpload = selectedFiles.slice(0, freeSlots.length);
+    const filesToUpload = selectedFiles.slice(0, 1);
     const formData = new FormData();
     formData.append("token", token);
-    formData.append("slots", slotsParam);
+    formData.append("slots", String(targetSlot));
     formData.append("action_index", actionIdx);
     filesToUpload.forEach((file, i) => formData.append(`file_${i}`, file));
 
