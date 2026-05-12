@@ -1450,6 +1450,12 @@
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
         const allBlocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
         const currentBlock = allBlocks[idx] || block;
+        // Verificar que el registro esté guardado
+        const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
+        if(!p?.dbId){
+          alert("Guardá el registro primero antes de subir fotos por QR.");
+          return;
+        }
         // Calcular slots libres mirando si el slot tiene miniatura real en el DOM
         const freeSlots = [];
         for(let s=1;s<=5;s++){
