@@ -1233,9 +1233,10 @@
   function isVariousOnly(p){ return !p.archived&&hasPurple(p)&&!hasRed(p)&&!hasYellow(p)&&!hasBlue(p); }
 
   function patientAllIntegrated(p){
-    const used=(p.actions||[]).some(isUsedAction);
-    if(!used) return false;
-    return (p.actions||[]).filter(isUsedAction).every(a=>a.status==="integrated");
+    // Solo considerar actuaciones que tienen status definido
+    const withStatus = (p.actions||[]).filter(a => isUsedAction(a) && String(a.status||"") !== "");
+    if(!withStatus.length) return false;
+    return withStatus.every(a => a.status === "integrated");
   }
 
   function patientHasZeroActions(p){ return Array.isArray(p.actions)&&p.actions.length===0; }
