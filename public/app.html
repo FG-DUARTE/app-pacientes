@@ -1665,15 +1665,24 @@
   }
 
   async function selectPatient(id){
-    // Cerrar QR modal si está abierto al cambiar de registro
     if(qrCurrentToken) closeQrModal();
-    // Guardar cambios del registro actual antes de cambiar
     if(isDirty && selectedPatientId && selectedPatientId !== id){
       await autoSaveCurrentIfDirty();
     }
-    // Recargar desde Supabase para tener fotos frescas (incluso las subidas por QR)
+    // Buscar el identificador antes de recargar
+    const pBefore = state.patients.find(x => x.id === id);
+    const identifierRef = pBefore?.identifier || null;
+    const dbIdRef = pBefore?.dbId || null;
+
+    // Recargar desde Supabase
     await loadPatientsFromDb();
-    const p=state.patients.find(x=>x.id===id);
+
+    // Buscar por id, dbId o identifier tras la recarga
+    const p = state.patients.find(x =>
+      x.id === id ||
+      (dbIdRef && x.dbId === dbIdRef) ||
+      (identifierRef && x.identifier === identifierRef)
+    );
     if(!p) return;
     selectedPatientId=id; identifierUnlocked=false;
     selectedIdentifier.textContent=p.identifier||"—";
