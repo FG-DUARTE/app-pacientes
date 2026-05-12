@@ -1457,12 +1457,29 @@
         openQrModal(idx, freeSlots, block);
       });
       block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
+        if(!confirm("¿Eliminar esta actuación y sus fotos?")) return;
         const f1=block.dataset.foto1||null; const f2=block.dataset.foto2||null;
         const f3=block.dataset.foto3||null; const f4=block.dataset.foto4||null;
         const f5=block.dataset.foto5||null;
+        // Borrar fotos del bucket
         for(const f of [f1,f2,f3,f4,f5]) if(f) await deletePhotoFromStorage(f);
+        // Borrar de Supabase directamente por índice
+        const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
+        if(p?.dbId){
+          const { data: rows } = await sb.from("patient_actions")
+            .select("id")
+            .eq("patient_id", p.dbId)
+            .order("created_at", { ascending: true });
+          if(rows && rows[idx]){
+            await sb.from("patient_actions").delete().eq("id", rows[idx].id);
+          }
+        }
+        // Actualizar DOM y state
         const current=getActionsFromDOM();
         current.splice(idx,1);
+        // Actualizar state local
+        if(p) p.actions = current;
+        saveState();
         renderActions(current);
         markDirty();
       });
