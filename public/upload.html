@@ -311,13 +311,14 @@
 
     if(uploaded > 0 && failed === 0){
       msg.className = "status-msg ok";
-      msg.textContent = `✅ ${uploaded} foto${uploaded>1?"s":""} subida${uploaded>1?"s":""} correctamente. Ya podés cerrar esta página.`;
+      msg.textContent = `✅ Foto subida correctamente. Esta página se cerrará en 3 segundos...`;
+      setTimeout(() => window.close(), 3000);
     } else if(uploaded > 0 && failed > 0){
       msg.className = "status-msg warn";
-      msg.textContent = `⚠️ ${uploaded} subida${uploaded>1?"s":""} correctamente, ${failed} fallida${failed>1?"s":""}.`;
+      msg.textContent = `⚠️ Subida correctamente, pero algo falló. Podés cerrar esta página.`;
     } else {
       msg.className = "status-msg error";
-      msg.textContent = "❌ No se pudieron subir las fotos. Intentá de nuevo.";
+      msg.textContent = "❌ No se pudo subir la foto. Intentá de nuevo.";
       el("btnUpload").disabled = false;
     }
 
