@@ -1448,13 +1448,15 @@
       });
       ta.addEventListener("input", markDirty);
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
-        // Calcular slots libres en esta actuación
+        // Buscar el bloque actual en el DOM (puede haberse re-renderizado)
+        const allBlocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
+        const currentBlock = allBlocks[idx] || block;
         const freeSlots = [];
         for(let s=1;s<=5;s++){
-          if(!block.dataset[`foto${s}`]) freeSlots.push(s);
+          if(!currentBlock.dataset[`foto${s}`]) freeSlots.push(s);
         }
         if(!freeSlots.length){ alert("Esta actuación ya tiene 5 fotos. Eliminá alguna para subir más."); return; }
-        openQrModal(idx, freeSlots, block);
+        openQrModal(idx, freeSlots, currentBlock);
       });
       block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
         if(!confirm("¿Eliminar esta actuación y sus fotos?")) return;
