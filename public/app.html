@@ -2111,23 +2111,26 @@
 
       if(!data || data.used_slots === 0) return;
 
-      // Foto recibida — recargar y mostrar
+      // Foto recibida
       stopQrRealtime();
-      await loadPatientsFromDb();
+      closeQrModal();
 
+      // Recargar BD y re-seleccionar el mismo registro
+      await loadPatientsFromDb();
       const updated = state.patients.find(x =>
-        x.id === selectedPatientId ||
         (p.dbId && x.dbId === p.dbId) ||
         x.identifier === p.identifier
       );
 
       if(updated){
-        renderActions(updated.actions || []);
-        renderList();
-        showToast(`✅ Foto recibida en slot ${targetSlot}.`, "", null, 3000);
+        // Re-seleccionar sin confirmar dirty (la foto vino de QR no del form)
+        const prevDirty = isDirty;
+        isDirty = false;
+        await selectPatient(updated.id);
+        isDirty = prevDirty;
+        if(prevDirty) markDirty();
+        showToast(`✅ Foto guardada en slot ${targetSlot}.`, "", null, 3000);
       }
-
-      closeQrModal();
     }, 3000);
   }
 
