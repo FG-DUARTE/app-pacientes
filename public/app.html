@@ -1458,11 +1458,6 @@
           const hasDataset = currentBlock.dataset[`foto${s}`];
           if(!hasPhoto && !hasDataset) freeSlots.push(s);
         }
-        console.log("freeSlots calculados:", freeSlots, "datasets:", {
-          f1: currentBlock.dataset.foto1,
-          f2: currentBlock.dataset.foto2,
-          f3: currentBlock.dataset.foto3
-        });
         if(!freeSlots.length){ alert("Esta actuación ya tiene 5 fotos. Eliminá alguna para subir más."); return; }
         openQrModal(idx, freeSlots, currentBlock);
       });
