@@ -461,7 +461,6 @@
     <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
     <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
-    <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
 </header>
 
@@ -567,7 +566,11 @@
   function defaultState(){ return { patients: [], logs: [], notes: [] }; }
 
   function isUsedAction(a){
-    return !!(a && (String(a.status||"")!=="" || String(a.note||"").trim()!==""));
+    return !!(a && (
+      String(a.status||"") !== "" ||
+      String(a.note||"").trim() !== "" ||
+      a.foto1_url || a.foto2_url || a.foto3_url || a.foto4_url || a.foto5_url
+    ));
   }
 
   function normalizeActions(actions){
@@ -1419,7 +1422,7 @@
               <option value="integrated">🟢 Integrado/Completado</option>
             </select>
           </div>
-          <button class="btn small" data-role="qr" title="Subir fotos desde móvil">📱</button>
+          <button class="btn small" data-role="qr" title="Subir fotos desde móvil" style="background:linear-gradient(180deg,#10b981,#059669);color:#fff;border-color:#10b981;font-size:16px;padding:6px 10px;">📸</button>
           <button class="btn small danger" data-role="remove">Eliminar</button>
         </div>
         <label>Motivo</label>
@@ -1441,7 +1444,9 @@
       sel.addEventListener("change",()=>{
         block.querySelector('[data-role="dot"]').className=`dot ${statusDotClass(sel.value)}`;
         block.querySelector('[data-role="lbl"]').textContent=statusLabel(sel.value);
+        markDirty();
       });
+      ta.addEventListener("input", markDirty);
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
         // Calcular slots libres en esta actuación
         const freeSlots = [];
@@ -1478,6 +1483,7 @@
     const current=getActionsFromDOM();
     current.push({status:"",note:"",foto1_url:null,foto2_url:null,foto3_url:null,foto4_url:null,foto5_url:null});
     renderActions(current);
+    markDirty();
   });
 
   // ─── NOTES ───
@@ -2089,37 +2095,33 @@
       if(!data || data.used_slots === lastCount) return;
       lastCount = data.used_slots;
 
-      // Recargar registro y actualizar slots del bloque
+      // Recargar todo el registro desde Supabase
       await loadPatientsFromDb();
-      const updated = state.patients.find(x => x.id === selectedPatientId);
+      const updated = state.patients.find(x =>
+        x.id === selectedPatientId ||
+        (p.dbId && x.dbId === p.dbId) ||
+        x.identifier === p.identifier
+      );
       if(!updated) return;
 
-      const action = updated.actions[actionIdx];
-      if(!action) return;
-
-      // Actualizar slots en el bloque DOM
-      for(let s=1;s<=5;s++){
-        const url = action[`foto${s}_url`]||null;
-        if(url && !block.dataset[`foto${s}`]){
-          block.dataset[`foto${s}`] = url;
-          renderPhotoSlot(block, s, url);
-        }
-      }
-
-      const totalNew = [action.foto1_url,action.foto2_url,action.foto3_url,action.foto4_url,action.foto5_url].filter(Boolean).length;
-      el("qrStatus").textContent = `✅ ${data.used_slots} foto${data.used_slots>1?"s":""} recibida${data.used_slots>1?"s":""}`;
+      // Re-renderizar actuaciones completas para mostrar fotos
+      renderActions(updated.actions || []);
+      renderList();
 
       // Mostrar thumbs en el modal
       const container = el("qrPhotosReceived");
       container.innerHTML = "";
-      [action.foto1_url,action.foto2_url,action.foto3_url,action.foto4_url,action.foto5_url].filter(Boolean).forEach(url => {
-        const img = document.createElement("img");
-        img.className = "qr-photo-thumb";
-        img.src = url;
-        container.appendChild(img);
+      (updated.actions || []).forEach(a => {
+        [a.foto1_url,a.foto2_url,a.foto3_url,a.foto4_url,a.foto5_url].filter(Boolean).forEach(url => {
+          const img = document.createElement("img");
+          img.className = "qr-photo-thumb";
+          img.src = url;
+          container.appendChild(img);
+        });
       });
 
-      renderList();
+      const totalFotos = container.querySelectorAll("img").length;
+      el("qrStatus").textContent = `✅ ${totalFotos} foto${totalFotos>1?"s":""} recibida${totalFotos>1?"s":""}`;
     }, 4000);
   }
 
