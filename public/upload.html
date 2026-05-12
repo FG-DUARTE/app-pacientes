@@ -273,25 +273,30 @@
       el("progressBar").style.width = `${Math.round(((i)/selectedFiles.length)*100)}%`;
 
       try {
-        const ext = file.name.split(".").pop() || "jpg";
-        const safeName = String(tokenData.patient_identifier||"sin-id").replace(/[^a-zA-Z0-9_-]/g,"_");
-        const path = `${tokenData.user_id}/${safeName}/qr_upload/${Date.now()}_${i}.${ext}`;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("token", token);
 
-        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
-          upsert: true, contentType: file.type
+        const res = await fetch("https://ubzcboqndsuugszwarls.supabase.co/functions/v1/qr-upload", {
+          method: "POST",
+          body: formData
         });
 
-        if(upErr){ failed++; continue; }
+        const result = await res.json();
 
-        const { data: urlData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-        urls.push(urlData.publicUrl);
+        if(!res.ok || result.error){
+          console.error("Error subiendo:", result.error);
+          failed++; continue;
+        }
+
+        urls.push(result.url);
 
         // Marcar thumb como subida
         const thumbs = el("photosPreview").querySelectorAll(".photo-thumb");
         if(thumbs[i]) thumbs[i].classList.add("uploaded");
 
         uploaded++;
-      } catch(e){ failed++; }
+      } catch(e){ console.error(e); failed++; }
     }
 
     el("progressBar").style.width = "100%";
