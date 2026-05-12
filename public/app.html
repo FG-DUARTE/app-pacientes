@@ -1448,12 +1448,15 @@
       });
       ta.addEventListener("input", markDirty);
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
-        // Buscar el bloque actual en el DOM (puede haberse re-renderizado)
         const allBlocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
         const currentBlock = allBlocks[idx] || block;
+        // Calcular slots libres mirando si el slot tiene miniatura real en el DOM
         const freeSlots = [];
         for(let s=1;s<=5;s++){
-          if(!currentBlock.dataset[`foto${s}`]) freeSlots.push(s);
+          const slotDiv = currentBlock.querySelector(`[data-photo-slot="${s}"]`);
+          const hasPhoto = slotDiv && slotDiv.querySelector(".photo-thumb");
+          const hasDataset = currentBlock.dataset[`foto${s}`];
+          if(!hasPhoto && !hasDataset) freeSlots.push(s);
         }
         if(!freeSlots.length){ alert("Esta actuación ya tiene 5 fotos. Eliminá alguna para subir más."); return; }
         openQrModal(idx, freeSlots, currentBlock);
