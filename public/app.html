@@ -1459,6 +1459,7 @@
         const current=getActionsFromDOM();
         current.splice(idx,1);
         renderActions(current);
+        markDirty();
       });
 
       actionsWrap.appendChild(block);
@@ -1931,6 +1932,8 @@
     if(actionsWrap){
       actionsWrap.addEventListener("change", markDirty);
       actionsWrap.addEventListener("input", markDirty);
+      actionsWrap.addEventListener("keyup", markDirty);
+      actionsWrap.addEventListener("keydown", markDirty);
     }
   }
   const btnBackToLogin = el("btnBackToLogin");
