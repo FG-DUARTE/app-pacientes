@@ -1831,10 +1831,14 @@
     }
 
     if(willAutoArchive){
-      showToast("Registro archivado automáticamente.","Deshacer",()=>{
+      showToast("Registro archivado automáticamente.","Deshacer", async ()=>{
         const px=state.patients.find(x=>x.id===(existing?existing.id:p.id));
         if(!px) return;
         px.archived=false; px.updatedAt=nowISO();
+        // Actualizar en Supabase
+        if(px.dbId){
+          await sb.from("patients").update({ archived: false }).eq("id", px.dbId);
+        }
         addLog(px.id,"unarchived",structuredClone(px));
         saveState(); selectPatient(px.id); renderList();
       });
