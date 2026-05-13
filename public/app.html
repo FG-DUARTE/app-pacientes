@@ -1123,13 +1123,28 @@
   let registerMode = false;
   let pendingScanFile = null; // file from scan modal to attach to first action
 
-  const INACTIVITY_LIMIT_MS = 15*60*1000;
+  const INACTIVITY_LIMIT_MS = 30*60*1000;
   let inactivityTimer = null;
 
   function resetInactivityTimer(){
     if(!currentUser) return;
     if(inactivityTimer) clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(() => { alert("Sesión cerrada por inactividad (15 min)."); handleLogout(); }, INACTIVITY_LIMIT_MS);
+    inactivityTimer = setTimeout(async () => { 
+      alert("Sesión cerrada por inactividad (30 min).");
+      // Cerrar sesión sin redirigir — mostrar login en la misma página
+      if(inactivityTimer) clearTimeout(inactivityTimer);
+      try { await sb.auth.signOut({scope:"global"}); } catch(e){}
+      try {
+        localStorage.removeItem(KEY);
+        LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+        Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
+        sessionStorage.clear();
+      } catch(e){}
+      currentSession=null; currentUser=null; currentProfile=null;
+      registerMode=false; selectedPatientId=null; severityFilter=null;
+      state=defaultState();
+      updateAuthUI(); renderList(); clearForm();
+    }, INACTIVITY_LIMIT_MS);
   }
 
   function setupInactivityListeners(){
