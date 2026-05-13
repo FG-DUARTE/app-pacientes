@@ -1600,7 +1600,7 @@
       if(!m) return false;
       if(f==="followup"){ if(!hasBlue(p)) return false; }
       else if(f==="various"){ if(!hasPurple(p)) return false; }
-      else if(f==="active"){ if(p.archived||isFollowupOnly(p)||isVariousOnly(p)) return false; }
+      else if(f==="active"){ if(p.archived || (!hasRed(p) && !hasYellow(p))) return false; }
       else if(f==="archived"){ if(!p.archived) return false; }
       if(severityFilter==="red") return hasRed(p);
       if(severityFilter==="yellow") return hasYellow(p);
