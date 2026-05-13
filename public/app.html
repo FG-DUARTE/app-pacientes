@@ -97,6 +97,24 @@
     .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
     .sep{height:1px;background:var(--border); margin:12px 0;}
     .list{display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow:auto; padding-right:4px;}
+    @media (max-width:980px){
+      #patientList{
+        flex-direction:row;
+        overflow-x:auto;
+        overflow-y:hidden;
+        max-height:none;
+        padding-bottom:8px;
+        padding-right:0;
+        scroll-snap-type:x mandatory;
+        -webkit-overflow-scrolling:touch;
+      }
+      #patientList .item{
+        min-width:260px;
+        max-width:260px;
+        flex-shrink:0;
+        scroll-snap-align:start;
+      }
+    }
     .item{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:10px;cursor:pointer;}
     .item:hover{border-color:#2b3d66;}
     .item.active{border-color: var(--accent); box-shadow: 0 0 0 2px rgba(110,168,254,.15) inset;}
