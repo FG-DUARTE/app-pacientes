@@ -1831,16 +1831,25 @@
     }
 
     if(willAutoArchive){
+      const undoId = existing ? existing.id : p.id;
+      const undoDbId = existing ? existing.dbId : p.dbId;
       showToast("Registro archivado automáticamente.","Deshacer", async ()=>{
-        const px=state.patients.find(x=>x.id===(existing?existing.id:p.id));
-        if(!px) return;
-        px.archived=false; px.updatedAt=nowISO();
-        // Actualizar en Supabase
-        if(px.dbId){
-          await sb.from("patients").update({ archived: false }).eq("id", px.dbId);
+        // Primero actualizar Supabase
+        if(undoDbId){
+          await sb.from("patients").update({ archived: false }).eq("id", undoDbId);
         }
-        addLog(px.id,"unarchived",structuredClone(px));
-        saveState(); selectPatient(px.id); renderList();
+        // Luego actualizar state local
+        const px = state.patients.find(x => x.id === undoId || x.dbId === undoDbId);
+        if(!px) return;
+        px.archived = false;
+        px.updatedAt = nowISO();
+        addLog(px.id, "unarchived", structuredClone(px));
+        saveState();
+        // Recargar desde Supabase para confirmar
+        await loadPatientsFromDb();
+        const fresh = state.patients.find(x => x.dbId === undoDbId);
+        if(fresh) selectPatient(fresh.id);
+        renderList();
       });
     }
     renderList();
