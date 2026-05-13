@@ -1812,12 +1812,6 @@
       catch(actErr){ alert("Registro guardado, pero falló sync de actuaciones: "+actErr.message); }
     }
 
-    const wasArchived=!!p.archived;
-    const shouldBeArchived=(patientAllIntegrated(p)||patientHasZeroActions(p)) && !hasRed(p) && !hasYellow(p);
-    if(!wasArchived&&shouldBeArchived) p.archived=true;
-    if(wasArchived&&!shouldBeArchived) p.archived=false;
-    const willAutoArchive=!wasArchived&&shouldBeArchived;
-
     if(existing){
       Object.assign(existing,p);
       addLog(existing.id,"updated",structuredClone(existing));
@@ -1828,29 +1822,6 @@
       addLog(p.id,"created",structuredClone(p));
       saveState(); selectPatient(p.id);
       markClean();
-    }
-
-    if(willAutoArchive){
-      const undoId = existing ? existing.id : p.id;
-      const undoDbId = existing ? existing.dbId : p.dbId;
-      showToast("Registro archivado automáticamente.","Deshacer", async ()=>{
-        // Primero actualizar Supabase
-        if(undoDbId){
-          await sb.from("patients").update({ archived: false }).eq("id", undoDbId);
-        }
-        // Luego actualizar state local
-        const px = state.patients.find(x => x.id === undoId || x.dbId === undoDbId);
-        if(!px) return;
-        px.archived = false;
-        px.updatedAt = nowISO();
-        addLog(px.id, "unarchived", structuredClone(px));
-        saveState();
-        // Recargar desde Supabase para confirmar
-        await loadPatientsFromDb();
-        const fresh = state.patients.find(x => x.dbId === undoDbId);
-        if(fresh) selectPatient(fresh.id);
-        renderList();
-      });
     }
     renderList();
   });
