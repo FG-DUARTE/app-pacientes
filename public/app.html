@@ -1813,7 +1813,7 @@
     }
 
     const wasArchived=!!p.archived;
-    const shouldBeArchived=patientAllIntegrated(p)||patientHasZeroActions(p);
+    const shouldBeArchived=(patientAllIntegrated(p)||patientHasZeroActions(p)) && !hasRed(p) && !hasYellow(p);
     if(!wasArchived&&shouldBeArchived) p.archived=true;
     if(wasArchived&&!shouldBeArchived) p.archived=false;
     const willAutoArchive=!wasArchived&&shouldBeArchived;
