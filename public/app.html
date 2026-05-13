@@ -480,7 +480,7 @@
           <option value="active">Activos</option>
           <option value="followup">En seguimiento</option>
           <option value="various">Varios</option>
-          <option value="archived">Archivados</option>
+          <option value="completed">Completados</option>
           <option value="notes">Notas</option>
           <option value="all">Todos</option>
         </select>
@@ -1600,8 +1600,8 @@
       if(!m) return false;
       if(f==="followup"){ if(!hasBlue(p)) return false; }
       else if(f==="various"){ if(!hasPurple(p)) return false; }
-      else if(f==="active"){ if(p.archived || (!hasRed(p) && !hasYellow(p))) return false; }
-      else if(f==="archived"){ if(!p.archived) return false; }
+      else if(f==="active"){ if(!hasRed(p) && !hasYellow(p)) return false; }
+      else if(f==="completed"){ if(!patientAllIntegrated(p)) return false; }
       if(severityFilter==="red") return hasRed(p);
       if(severityFilter==="yellow") return hasYellow(p);
       if(severityFilter==="blue") return hasBlue(p);
@@ -1620,15 +1620,16 @@
       return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
     });
 
-    const ordered=f==="followup"?followups:f==="various"?various:f==="archived"?archived:f==="active"?actives:allPatients;
+    const completed=filtered.filter(p=>patientAllIntegrated(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
+    const ordered=f==="followup"?followups:f==="various"?various:f==="completed"?completed:f==="active"?actives:allPatients;
     patientList.innerHTML="";
     ordered.forEach(p=>{
       const counts=computeCounts(p);
       const it=document.createElement("div");
-      it.className="item"+(p.id===selectedPatientId?" active":"")+(p.archived?" archived":"");
+      it.className="item"+(p.id===selectedPatientId?" active":"");
       const pendingDot=pendingDotBySeverity(p);
       const integratedDot=patientAllIntegrated(p)?"ok":"off";
-      const arch=p.archived?'<span class="badge"><span class="dot danger"></span>Archivado</span>':"";
+      const completedBadge=patientAllIntegrated(p)?'<span class="badge"><span class="dot ok"></span>✅ Completado</span>':"";
       // count photos
       const photoCount=(p.actions||[]).reduce((acc,a)=>{
         return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0);
@@ -1647,7 +1648,7 @@
           <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
           <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
           ${photoBadge}
-          ${arch}
+          ${completedBadge}
         </div>
       `;
       it.addEventListener("click",()=>selectPatient(p.id));
