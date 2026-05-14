@@ -463,6 +463,7 @@
     <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
     <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
+    <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
 </header>
 
@@ -1130,7 +1131,7 @@
   let registerMode = false;
   let pendingScanFile = null; // file from scan modal to attach to first action
 
-  const INACTIVITY_LIMIT_MS = 1*60*1000;
+  const INACTIVITY_LIMIT_MS = 30*60*1000;
   let inactivityTimer = null;
 
   function resetInactivityTimer(){
