@@ -1707,10 +1707,9 @@
 
   async function selectPatient(id){
     if(qrCurrentToken) closeQrModal();
-    // Si hay cambios sin guardar, guardar automáticamente antes de cambiar
     if(isDirty && selectedPatientId && selectedPatientId !== id){
-      const saved = await saveCurrentPatient();
-      if(saved) showToast("💾 Cambios guardados automáticamente.", "", null, 2000);
+      const ok = confirm("Tenés cambios sin guardar en este registro.\n¿Querés salir de todas formas sin guardar?");
+      if(!ok) return;
     }
     const p = state.patients.find(x => x.id === id);
     if(!p) return;
@@ -2008,27 +2007,15 @@
   }
 
   function setupDirtyListeners(){
-    [f_identifier_input, f_initial, noteDraft].forEach(input => {
-      if(input){
-        input.addEventListener("input", markDirty);
-        input.addEventListener("keyup", markDirty);
-      }
-    });
     if(actionsWrap){
       actionsWrap.addEventListener("change", markDirty);
       actionsWrap.addEventListener("input", markDirty);
       actionsWrap.addEventListener("keyup", markDirty);
-      actionsWrap.addEventListener("keydown", markDirty);
     }
-    // Forzar listeners directamente por si acaso
-    if(f_initial){
-      f_initial.oninput = markDirty;
-      f_initial.onkeyup = markDirty;
-    }
-    if(noteDraft){
-      noteDraft.oninput = markDirty;
-      noteDraft.onkeyup = markDirty;
-    }
+    // Directo sobre los elementos
+    if(f_initial){ f_initial.oninput = markDirty; }
+    if(noteDraft){ noteDraft.oninput = markDirty; }
+    if(f_identifier_input){ f_identifier_input.oninput = markDirty; }
   }
   const btnBackToLogin = el("btnBackToLogin");
   if(btnBackToLogin) btnBackToLogin.addEventListener("click", () => {
