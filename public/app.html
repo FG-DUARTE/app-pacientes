@@ -2088,6 +2088,8 @@
   // pagehide removido — borraba la sesion al cambiar de pestaña
 
   sb.auth.onAuthStateChange(async(_event,session)=>{
+    // Si el usuario ya estaba logueado y sigue logueado, no hacer nada
+    if(currentUser && session?.user && currentUser.id === session.user.id) return;
     if(inactivityTimer) clearTimeout(inactivityTimer);
     currentSession=session||null; currentUser=session?.user||null;
     await loadProfileFromDb(); updateAuthUI();
