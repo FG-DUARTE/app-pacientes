@@ -686,27 +686,11 @@
     await sb.from("profiles").upsert({user_id:userId,nombre:nombre||"",apellido:apellido||""},{onConflict:"user_id"});
   }
 
-  const SESSION_KEY = "rx_session_token";
-
   async function restoreSession(){
-    // Intentar restaurar desde sessionStorage (persiste al cambiar pestaña)
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if(saved){
-      try {
-        const { access_token, refresh_token } = JSON.parse(saved);
-        const { data, error } = await sb.auth.setSession({ access_token, refresh_token });
-        if(!error && data?.session){
-          currentSession = data.session;
-          currentUser = data.session.user;
-          await loadProfileFromDb();
-          updateAuthUI();
-          return;
-        }
-      } catch(e){}
-      sessionStorage.removeItem(SESSION_KEY);
-    }
-    currentSession = null;
-    currentUser = null;
+    const {data} = await sb.auth.getSession();
+    currentSession = data?.session||null;
+    currentUser = currentSession?.user||null;
+    await loadProfileFromDb();
     updateAuthUI();
   }
 
@@ -718,13 +702,6 @@
     if(error){ setAuthMessage("Falló el login: "+error.message); return; }
     currentSession=data?.session||null;
     currentUser=data?.user||currentSession?.user||null;
-    // Guardar token en sessionStorage para persistir al cambiar pestaña
-    if(data?.session){
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      }));
-    }
     await loadProfileFromDb();
     setAuthMessage("Login correcto.");
     updateAuthUI();
@@ -764,9 +741,10 @@
     if(inactivityTimer) clearTimeout(inactivityTimer);
     try { await sb.auth.signOut({scope:"global"}); } catch(e){}
     try {
-      sessionStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(KEY);
       LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+      Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
+      Object.keys(sessionStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) sessionStorage.removeItem(k); });
     } catch(e){}
     currentSession=null; currentUser=null; currentProfile=null;
     registerMode=false; selectedPatientId=null; severityFilter=null;
@@ -1164,9 +1142,10 @@
       if(inactivityTimer) clearTimeout(inactivityTimer);
       try { await sb.auth.signOut({scope:"global"}); } catch(e){}
       try {
-        sessionStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(KEY);
         LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+        Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
+        sessionStorage.clear();
       } catch(e){}
       currentSession=null; currentUser=null; currentProfile=null;
       registerMode=false; selectedPatientId=null; severityFilter=null;
