@@ -1707,10 +1707,10 @@
 
   async function selectPatient(id){
     if(qrCurrentToken) closeQrModal();
-    // Si hay cambios sin guardar, preguntar antes de cambiar
+    // Si hay cambios sin guardar, guardar automáticamente antes de cambiar
     if(isDirty && selectedPatientId && selectedPatientId !== id){
-      const ok = confirm("Tenés cambios sin guardar en este registro.\n¿Querés salir de todas formas sin guardar?");
-      if(!ok) return;
+      const saved = await saveCurrentPatient();
+      if(saved) showToast("💾 Cambios guardados automáticamente.", "", null, 2000);
     }
     const p = state.patients.find(x => x.id === id);
     if(!p) return;
@@ -1764,6 +1764,41 @@
       if(dup) errs.push("Ya existe un registro con esa identificación.");
     }
     return errs;
+  }
+
+  // ─── SAVE FUNCTION (reutilizable) ───
+  async function saveCurrentPatient(){
+    if(!selectedPatientId) return false;
+    const existing = state.patients.find(x => x.id === selectedPatientId);
+    if(!existing?.dbId) return false; // solo guardar si ya existe en BD
+
+    const p = readFormToPatient(existing);
+    const errs = validatePatient(p, existing);
+    if(errs.length) return false; // si hay error no guardar silenciosamente
+
+    let dbData=null, dbError=null;
+    let targetDbId = existing.dbId;
+
+    const r = await sb.from("patients").update({
+      user_id: currentUser?.id,
+      identifier: p.identifier,
+      datos_generales: p.initialStudy,
+      archived: p.archived
+    }).eq("id", targetDbId).select();
+    dbData=r.data; dbError=r.error;
+
+    if(dbError) return false;
+
+    if(Array.isArray(dbData) && dbData[0]?.id){
+      p.dbId = dbData[0].id;
+      try { await syncPatientActionsToDb(p.dbId, p.actions||[]); } catch(e){}
+    }
+
+    Object.assign(existing, p);
+    addLog(existing.id, "autosaved", structuredClone(existing));
+    saveState();
+    markClean();
+    return true;
   }
 
   // ─── EVENT LISTENERS ───
