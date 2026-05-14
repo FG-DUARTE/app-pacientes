@@ -559,7 +559,7 @@
   const supabaseUrl = "https://ubzcboqndsuugszwarls.supabase.co";
   const supabaseKey = "sb_publishable__BB-kSv0oshfErX0WgHmJQ_CbQX9U38";
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false, autoRefreshToken: true }
+    auth: { persistSession: false, autoRefreshToken: false }
   });
 
   const STORAGE_BUCKET = "archivos";
@@ -1869,7 +1869,16 @@
       dbData=r.data; dbError=r.error;
     }
 
-    if(dbError){ alert("Falló el guardado en Supabase: "+dbError.message); return; }
+    if(dbError){ 
+      // Si el error es de autenticación, mostrar login
+      if(dbError.message?.includes("JWT") || dbError.message?.includes("auth") || dbError.code === "PGRST301"){
+        alert("Tu sesión expiró. Por favor iniciá sesión de nuevo.");
+        currentSession=null; currentUser=null; currentProfile=null;
+        state=defaultState(); updateAuthUI(); renderList(); clearForm();
+        return;
+      }
+      alert("Falló el guardado en Supabase: "+dbError.message); return; 
+    }
 
     // pendingScanFile ya no se usa — la foto se guarda automáticamente desde el modal
 
