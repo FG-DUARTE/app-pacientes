@@ -704,10 +704,13 @@
     currentUser=data?.user||currentSession?.user||null;
     await loadProfileFromDb();
     setAuthMessage("Login correcto.");
+    sessionStorage.setItem("app_active", "1");
     updateAuthUI();
     await loadPatientsFromDb();
     await loadNotesFromDb();
     await loadLogsFromDb();
+    setupInactivityListeners(); resetInactivityTimer();
+    setupDirtyListeners();
     renderList();
     clearForm();
     initialPick();
@@ -2116,6 +2119,18 @@
     }
     applyTheme(currentTheme);
     updateAuthUI();
+
+    // Si es carga nueva (no cambio de pestaña), forzar login
+    const isTabSwitch = sessionStorage.getItem("app_active");
+    if(!isTabSwitch){
+      // Carga nueva — cerrar sesión previa y pedir login
+      try { await sb.auth.signOut(); } catch(e){}
+      currentSession=null; currentUser=null; currentProfile=null;
+      updateAuthUI(); renderList(); clearForm();
+      sessionStorage.setItem("app_active", "1");
+      return;
+    }
+
     await restoreSession();
     if(currentUser){
       await loadProfileFromDb();
