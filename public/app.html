@@ -2009,6 +2009,19 @@
     isDirty = false;
     const ind = el("autosaveIndicator");
     if(ind) ind.classList.remove("visible");
+    // Flash "GUARDADO" en el botón guardar
+    const btn = el("btnSave");
+    if(btn){
+      const prev = btn.textContent;
+      btn.textContent = "✅ GUARDADO";
+      btn.style.background = "linear-gradient(180deg,#10b981,#059669)";
+      btn.style.borderColor = "#10b981";
+      setTimeout(() => {
+        btn.textContent = prev;
+        btn.style.background = "";
+        btn.style.borderColor = "";
+      }, 1200);
+    }
   }
 
   function setupDirtyListeners(){
