@@ -1842,14 +1842,11 @@
     }
 
     const existing=selectedPatientId?state.patients.find(x=>x.id===selectedPatientId):null;
-    console.log("existing:", existing?.identifier, "dbId:", existing?.dbId);
     const shouldSavePatient=(f_identifier_input.value||"").trim()||(f_initial.value||"").trim()||getActionsFromDOM().some(isUsedAction);
-    console.log("shouldSavePatient:", shouldSavePatient, "actions:", getActionsFromDOM());
     if(!shouldSavePatient){ saveState(); renderList(); if(draft) showToast("Nota guardada.","",null,2500); return; }
 
     const p=readFormToPatient(existing);
     const errs=validatePatient(p,existing);
-    console.log("errs:", errs, "p.identifier:", p.identifier);
     if(errs.length){ alert("No se pudo guardar:\n- "+errs.join("\n- ")); return; }
 
     let dbData=null,dbError=null;
@@ -1863,7 +1860,6 @@
       if(targetDbId){
         const r=await sb.from("patients").update({user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}).eq("id",targetDbId).select();
         dbData=r.data; dbError=r.error;
-        console.log("UPDATE result:", dbData, "error:", dbError);
       } else {
         const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
         dbData=r.data; dbError=r.error;
