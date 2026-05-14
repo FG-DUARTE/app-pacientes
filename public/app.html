@@ -1863,6 +1863,7 @@
       if(targetDbId){
         const r=await sb.from("patients").update({user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}).eq("id",targetDbId).select();
         dbData=r.data; dbError=r.error;
+        console.log("UPDATE result:", dbData, "error:", dbError);
       } else {
         const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
         dbData=r.data; dbError=r.error;
