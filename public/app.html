@@ -1128,7 +1128,7 @@
   let registerMode = false;
   let pendingScanFile = null; // file from scan modal to attach to first action
 
-  const INACTIVITY_LIMIT_MS = 1*60*1000;
+  const INACTIVITY_LIMIT_MS = 30*60*1000;
   let inactivityTimer = null;
 
   function resetInactivityTimer(){
@@ -2083,13 +2083,7 @@
   if(btnRecover) btnRecover.addEventListener("click",handleRecover);
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
 
-  window.addEventListener("pagehide",()=>{
-    try {
-      localStorage.removeItem(KEY);
-      Object.keys(localStorage).forEach(k=>{ if(k.toLowerCase().includes("supabase")||k.toLowerCase().includes("auth")) localStorage.removeItem(k); });
-      sessionStorage.clear();
-    } catch(e){}
-  });
+  // pagehide removido — borraba la sesion al cambiar de pestaña
 
   sb.auth.onAuthStateChange(async(_event,session)=>{
     if(inactivityTimer) clearTimeout(inactivityTimer);
