@@ -1883,12 +1883,12 @@
       Object.assign(existing,p);
       addLog(existing.id,"updated",structuredClone(existing));
       saveState(); identifierUnlocked=false; selectPatient(existing.id);
-      markClean();
+      markClean(true);
     } else {
       p.id=uid(); state.patients.push(p);
       addLog(p.id,"created",structuredClone(p));
       saveState(); selectPatient(p.id);
-      markClean();
+      markClean(true);
     }
     renderList();
   });
@@ -2005,22 +2005,24 @@
     if(ind) ind.classList.add("visible");
   }
 
-  function markClean(){
+  function markClean(showFlash = false){
     isDirty = false;
     const ind = el("autosaveIndicator");
     if(ind) ind.classList.remove("visible");
-    // Flash "GUARDADO" en el botón guardar
-    const btn = el("btnSave");
-    if(btn){
-      const prev = btn.textContent;
-      btn.textContent = "✅ GUARDADO";
-      btn.style.background = "linear-gradient(180deg,#10b981,#059669)";
-      btn.style.borderColor = "#10b981";
-      setTimeout(() => {
-        btn.textContent = prev;
-        btn.style.background = "";
-        btn.style.borderColor = "";
-      }, 1200);
+    // Flash "GUARDADO" solo cuando se guardó realmente
+    if(showFlash){
+      const btn = el("btnSave");
+      if(btn){
+        const prev = btn.textContent;
+        btn.textContent = "✅ GUARDADO";
+        btn.style.background = "linear-gradient(180deg,#10b981,#059669)";
+        btn.style.borderColor = "#10b981";
+        setTimeout(() => {
+          btn.textContent = prev;
+          btn.style.background = "";
+          btn.style.borderColor = "";
+        }, 1200);
+      }
     }
   }
 
