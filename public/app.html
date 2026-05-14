@@ -80,6 +80,8 @@
     input, textarea, select{width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--border);color:var(--txt);border-radius:12px;padding:10px 10px;outline:none;font-size:16px;}
     input:disabled{opacity:.75; cursor:not-allowed;}
     textarea{min-height:70px; resize:vertical;}
+    #f_initial{ font-size:13px; }
+    .action-block textarea{ font-size:13px; min-height:90px; }
     .btn{border:1px solid var(--border);background:var(--panel);color:var(--txt);padding:10px 12px;border-radius:12px;cursor:pointer;transition:.15s ease;font-weight:600;font-size:13px;}
     .btn:hover{transform: translateY(-1px); border-color:#2b3d66;}
     .btn.primary{background: linear-gradient(180deg, #2b6cff, #1c4ed8); border-color:#2b6cff; color:#fff;}
@@ -493,7 +495,10 @@
       <div class="sep"></div>
       <h3 style="margin:0 0 8px; font-size:14px">🟠 Notas</h3>
       <textarea id="noteDraft" placeholder="Nueva nota..."></textarea>
-      <div class="mini" style="margin-top:6px">Se guarda con el botón Guardar / Actualizar.</div>
+      <div class="row" style="margin-top:6px">
+        <div class="mini">Escribí y guardá con el botón.</div>
+        <button class="btn small success right" id="btnSaveNote">💾 Guardar nota</button>
+      </div>
       <div class="list" id="noteList" style="margin-top:10px; max-height:26vh"></div>
       <div class="sep"></div>
       <div class="row">
@@ -2022,6 +2027,26 @@
     registerMode = false;
     updateAuthUI();
     setAuthMessage("Usa email + contraseña. Si no tienes cuenta, crea una.");
+  });
+
+  // Botón guardar nota rápido
+  el("btnSaveNote").addEventListener("click", async () => {
+    const draft = (noteDraft.value||"").trim();
+    if(!draft){ alert("Escribí algo antes de guardar."); return; }
+    const note = normalizeNote({text:draft, createdAt:nowISO(), is_deleted:false});
+    const {data:nd, error:ne} = await sb.from("notes").insert([{
+      user_id:currentUser?.id, text:note.text, is_deleted:false,
+      created_at:note.createdAt, deleted_at:null
+    }]).select();
+    if(ne){ alert("Falló el guardado de la nota: "+ne.message); return; }
+    if(nd?.[0]?.id) note.dbId = nd[0].id;
+    state.notes.push(note);
+    addLog(null,"note_created",structuredClone(note));
+    noteDraft.value="";
+    saveState();
+    renderNotes();
+    renderList();
+    showToast("🟠 Nota guardada.", "", null, 2000);
   });
   el("btnCloseQrModal").addEventListener("click", closeQrModal);
   el("qrModal").addEventListener("click", e => { if(e.target === el("qrModal")) closeQrModal(); });
