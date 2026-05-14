@@ -2009,13 +2009,25 @@
 
   function setupDirtyListeners(){
     [f_identifier_input, f_initial, noteDraft].forEach(input => {
-      if(input) input.addEventListener("input", markDirty);
+      if(input){
+        input.addEventListener("input", markDirty);
+        input.addEventListener("keyup", markDirty);
+      }
     });
     if(actionsWrap){
       actionsWrap.addEventListener("change", markDirty);
       actionsWrap.addEventListener("input", markDirty);
       actionsWrap.addEventListener("keyup", markDirty);
       actionsWrap.addEventListener("keydown", markDirty);
+    }
+    // Forzar listeners directamente por si acaso
+    if(f_initial){
+      f_initial.oninput = markDirty;
+      f_initial.onkeyup = markDirty;
+    }
+    if(noteDraft){
+      noteDraft.oninput = markDirty;
+      noteDraft.onkeyup = markDirty;
     }
   }
   const btnBackToLogin = el("btnBackToLogin");
