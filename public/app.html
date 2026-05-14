@@ -1768,29 +1768,41 @@
 
   // ─── SAVE FUNCTION (reutilizable) ───
   async function saveCurrentPatient(){
+    // Guardar nota del draft si hay algo escrito
+    const draft = (noteDraft.value||"").trim();
+    if(draft){
+      const note = normalizeNote({text:draft, createdAt:nowISO(), is_deleted:false});
+      const {data:nd, error:ne} = await sb.from("notes").insert([{
+        user_id:currentUser?.id, text:note.text, is_deleted:false,
+        created_at:note.createdAt, deleted_at:null
+      }]).select();
+      if(!ne){
+        if(nd?.[0]?.id) note.dbId = nd[0].id;
+        state.notes.push(note);
+        addLog(null, "note_created", structuredClone(note));
+        noteDraft.value = "";
+      }
+    }
+
     if(!selectedPatientId) return false;
     const existing = state.patients.find(x => x.id === selectedPatientId);
-    if(!existing?.dbId) return false; // solo guardar si ya existe en BD
+    if(!existing?.dbId) return false;
 
     const p = readFormToPatient(existing);
     const errs = validatePatient(p, existing);
-    if(errs.length) return false; // si hay error no guardar silenciosamente
-
-    let dbData=null, dbError=null;
-    let targetDbId = existing.dbId;
+    if(errs.length) return false;
 
     const r = await sb.from("patients").update({
       user_id: currentUser?.id,
       identifier: p.identifier,
       datos_generales: p.initialStudy,
       archived: p.archived
-    }).eq("id", targetDbId).select();
-    dbData=r.data; dbError=r.error;
+    }).eq("id", existing.dbId).select();
 
-    if(dbError) return false;
+    if(r.error) return false;
 
-    if(Array.isArray(dbData) && dbData[0]?.id){
-      p.dbId = dbData[0].id;
+    if(Array.isArray(r.data) && r.data[0]?.id){
+      p.dbId = r.data[0].id;
       try { await syncPatientActionsToDb(p.dbId, p.actions||[]); } catch(e){}
     }
 
@@ -1996,7 +2008,7 @@
   }
 
   function setupDirtyListeners(){
-    [f_identifier_input, f_initial].forEach(input => {
+    [f_identifier_input, f_initial, noteDraft].forEach(input => {
       if(input) input.addEventListener("input", markDirty);
     });
     if(actionsWrap){
