@@ -516,7 +516,7 @@
         <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:.3px;">Registro: <span id="selectedIdentifier">—</span></div>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
-          <button class="btn primary" id="btnSave" style="background:#fff;color:var(--accent);border-color:#fff;">Guardar / Actualizar</button>
+          <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
         </div>
       </div>
       <span class="autosave-indicator" id="autosaveIndicator">⚠️ Cambios sin guardar</span>
@@ -1730,7 +1730,7 @@
       },0);
       const photoBadge=photoCount>0?`<span class="badge"><span class="dot info"></span>📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
       it.innerHTML=`
-        <p class="title">${escapeHTML(p.identifier||"—")}</p>
+        <p class="title">${escapeHTML(p.identifier||"—")} ${fechaBadge}</p>
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
@@ -1742,7 +1742,6 @@
           <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
           <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
           ${photoBadge}
-          ${fechaBadge}
           ${completedBadge}
         </div>
       `;
