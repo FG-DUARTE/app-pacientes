@@ -497,7 +497,6 @@
       <h3 style="margin:0 0 8px; font-size:14px">🟠 Notas</h3>
       <textarea id="noteDraft" placeholder="Nueva nota..."></textarea>
       <div class="row" style="margin-top:6px">
-        <div class="mini">Escribí y guardá con el botón.</div>
         <button class="btn small success right" id="btnSaveNote">💾 Guardar nota</button>
       </div>
       <div class="list" id="noteList" style="margin-top:10px; max-height:26vh"></div>
@@ -513,20 +512,20 @@
 
     <!-- RIGHT -->
     <section class="card panel-right">
-      <div class="row">
-        <div class="pill">Registro seleccionado: <span id="selectedIdentifier" class="kbd">—</span></div>
-        <span class="autosave-indicator" id="autosaveIndicator">⚠️ Cambios sin guardar</span>
+      <div class="row" style="background:var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:4px;">
+        <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:.3px;">Registro: <span id="selectedIdentifier">—</span></div>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
-          <button class="btn primary" id="btnSave">Guardar / Actualizar</button>
+          <button class="btn primary" id="btnSave" style="background:#fff;color:var(--accent);border-color:#fff;">Guardar / Actualizar</button>
         </div>
       </div>
+      <span class="autosave-indicator" id="autosaveIndicator">⚠️ Cambios sin guardar</span>
       <div class="sep"></div>
       <div>
         <label>Identificación</label>
         <input id="f_identifier_input" placeholder="escribe aquí ......" />
         <input id="f_identifier" type="hidden" />
-        <button class="btn small" id="btnUnlockHC" style="display:none">Editar</button>
+        <button class="btn small" id="btnUnlockHC" style="display:none">Editar ID</button>
         <div class="mini" id="identifierHelp" style="display:none"></div>
       </div>
       <label>Datos generales</label>
@@ -1694,14 +1693,12 @@
     }
     if(identifierUnlocked){
       f_identifier_input.disabled=false;
-      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Bloquear"; btnUnlockHC.disabled=false;
-      el("identifierHelp").style.display="block";
-      el("identifierHelp").textContent="Modo edición ACTIVADO (úsalo solo para correcciones).";
+      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Editar ID"; btnUnlockHC.disabled=false;
+      el("identifierHelp").style.display="none";
     } else {
       f_identifier_input.disabled=true;
-      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Editar"; btnUnlockHC.disabled=false;
-      el("identifierHelp").style.display="block";
-      el("identifierHelp").textContent="Bloqueada tras el primer guardado. Podés desbloquear para corregir.";
+      btnUnlockHC.style.display="inline-flex"; btnUnlockHC.textContent="Editar ID"; btnUnlockHC.disabled=false;
+      el("identifierHelp").style.display="none";
     }
   }
 
