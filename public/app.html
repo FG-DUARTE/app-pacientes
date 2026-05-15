@@ -1240,6 +1240,11 @@
     return "—";
   }
 
+  function hasRed(p){ return (p.actions||[]).some(a=>a.status==="pending"); }
+  function hasYellow(p){ return (p.actions||[]).some(a=>a.status==="done"); }
+  function hasBlue(p){ return (p.actions||[]).some(a=>a.status==="followup"); }
+  function hasPurple(p){ return (p.actions||[]).some(a=>a.status==="various"); }
+
   // ─── FECHA LIMITE HELPERS ───
   function diasRestantes(fechaStr){
     if(!fechaStr) return null;
@@ -1273,10 +1278,6 @@
     }
     return max;
   }
-  function hasYellow(p){ return (p.actions||[]).some(a=>a.status==="done"); }
-  function hasBlue(p){ return (p.actions||[]).some(a=>a.status==="followup"); }
-  function hasPurple(p){ return (p.actions||[]).some(a=>a.status==="various"); }
-
   function pendingDotBySeverity(p){
     if(hasRed(p)) return "danger";
     if(hasYellow(p)) return "warn";
