@@ -583,6 +583,7 @@
     return arr.map(a => ({
       status: String(a?.status||""),
       note: String(a?.note||""),
+      fecha_limite: a?.fecha_limite || null,
       foto1_url: a?.foto1_url || null,
       foto2_url: a?.foto2_url || null,
       foto3_url: a?.foto3_url || null,
@@ -769,14 +770,14 @@
     let actionsData=[];
     if(patientIds.length){
       const ar = await sb.from("patient_actions")
-        .select("id,patient_id,status,note,foto1_url,foto2_url,foto3_url,foto4_url,foto5_url,created_at,updated_at")
+        .select("id,patient_id,status,note,fecha_limite,foto1_url,foto2_url,foto3_url,foto4_url,foto5_url,created_at,updated_at")
         .in("patient_id",patientIds).order("created_at",{ascending:true});
       if(!ar.error&&Array.isArray(ar.data)) actionsData=ar.data;
     }
     const actionsByPatient=new Map();
     for(const row of actionsData){
       const arr=actionsByPatient.get(row.patient_id)||[];
-      arr.push({status:row.status||"",note:row.note||"",foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null,foto3_url:row.foto3_url||null,foto4_url:row.foto4_url||null,foto5_url:row.foto5_url||null});
+      arr.push({status:row.status||"",note:row.note||"",fecha_limite:row.fecha_limite||null,foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null,foto3_url:row.foto3_url||null,foto4_url:row.foto4_url||null,foto5_url:row.foto5_url||null});
       actionsByPatient.set(row.patient_id,arr);
     }
     state.patients=(Array.isArray(patientsData)?patientsData:[]).map(row=>normalizePatient({
@@ -804,6 +805,7 @@
         patient_id: patientDbId,
         status: a.status,
         note: a.note,
+        fecha_limite: a.fecha_limite || null,
         foto1_url: a.foto1_url || ex.foto1_url || null,
         foto2_url: a.foto2_url || ex.foto2_url || null,
         foto3_url: a.foto3_url || ex.foto3_url || null,
@@ -1238,7 +1240,39 @@
     return "—";
   }
 
-  function hasRed(p){ return (p.actions||[]).some(a=>a.status==="pending"); }
+  // ─── FECHA LIMITE HELPERS ───
+  function diasRestantes(fechaStr){
+    if(!fechaStr) return null;
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const fecha = new Date(fechaStr); fecha.setHours(0,0,0,0);
+    return Math.round((fecha - hoy) / (1000*60*60*24));
+  }
+
+  function formatFecha(fechaStr){
+    if(!fechaStr) return "";
+    const [y,m,d] = fechaStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function fechaAlertClass(dias){
+    if(dias === null) return null;
+    if(dias < 0) return "vencida";
+    if(dias <= 2) return "urgente";
+    if(dias <= 5) return "proximo";
+    return null;
+  }
+
+  function hasDeadlineAlert(p){
+    // Devuelve el nivel de alerta más alto entre todas las actuaciones
+    let max = null;
+    for(const a of (p.actions||[])){
+      const dias = diasRestantes(a.fecha_limite);
+      if(dias === null) continue;
+      if(dias < 0 || dias <= 2) return "urgente";
+      if(dias <= 5) max = "proximo";
+    }
+    return max;
+  }
   function hasYellow(p){ return (p.actions||[]).some(a=>a.status==="done"); }
   function hasBlue(p){ return (p.actions||[]).some(a=>a.status==="followup"); }
   function hasPurple(p){ return (p.actions||[]).some(a=>a.status==="various"); }
@@ -1307,6 +1341,7 @@
       actions.push({
         status: String(n.querySelector("select").value||""),
         note: String(n.querySelector("textarea").value||""),
+        fecha_limite: n.dataset.fechaLimite || null,
         foto1_url: n.dataset.foto1||null,
         foto2_url: n.dataset.foto2||null,
         foto3_url: n.dataset.foto3||null,
@@ -1429,6 +1464,7 @@
       block.dataset.foto3 = a.foto3_url||"";
       block.dataset.foto4 = a.foto4_url||"";
       block.dataset.foto5 = a.foto5_url||"";
+      block.dataset.fechaLimite = a.fecha_limite||"";
       block.innerHTML=`
         <div class="row">
           <div class="pill">
@@ -1450,6 +1486,11 @@
         </div>
         <label>Motivo</label>
         <textarea placeholder="escribe aqui ..........."></textarea>
+        <div class="row" style="margin-top:8px;gap:8px;align-items:center;">
+          <span style="font-size:12px;color:var(--muted)">📅</span>
+          <input type="date" data-role="fecha" style="width:auto;flex:1;max-width:160px;font-size:12px;padding:6px 8px;" title="Fecha límite" />
+          <span data-role="fecha-label" style="font-size:12px;"></span>
+        </div>
         <label style="margin-top:10px">Imágenes (máx. 5)</label>
         <div class="photo-thumbs">
           <div data-photo-slot="1"></div>
@@ -1470,6 +1511,25 @@
         markDirty();
       });
       ta.addEventListener("input", markDirty);
+
+      // Fecha límite
+      const fechaInput = block.querySelector('[data-role="fecha"]');
+      const fechaLabel = block.querySelector('[data-role="fecha-label"]');
+      if(a.fecha_limite) fechaInput.value = a.fecha_limite;
+      
+      function updateFechaLabel(){
+        const val = fechaInput.value;
+        block.dataset.fechaLimite = val || "";
+        if(!val){ fechaLabel.textContent=""; fechaLabel.style.color=""; return; }
+        const dias = diasRestantes(val);
+        if(dias < 0){ fechaLabel.textContent=`🚨 Vencida hace ${Math.abs(dias)}d`; fechaLabel.style.color="var(--danger)"; }
+        else if(dias===0){ fechaLabel.textContent="🚨 Vence hoy"; fechaLabel.style.color="var(--danger)"; }
+        else if(dias<=2){ fechaLabel.textContent=`🚨 ${dias}d`; fechaLabel.style.color="var(--danger)"; }
+        else if(dias<=5){ fechaLabel.textContent=`⚠️ ${dias}d`; fechaLabel.style.color="var(--warn)"; }
+        else{ fechaLabel.textContent=`📅 ${formatFecha(val)}`; fechaLabel.style.color="var(--muted)"; }
+      }
+      updateFechaLabel();
+      fechaInput.addEventListener("change", ()=>{ markDirty(); updateFechaLabel(); });
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
         const allBlocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
         const currentBlock = allBlocks[idx] || block;
@@ -1632,8 +1692,13 @@
     });
 
     const identifierNum=x=>{ const n=Number(x?.identifier); return Number.isNaN(n)?Number.POSITIVE_INFINITY:n; };
+    const deadlineScore=p=>{ const a=hasDeadlineAlert(p); return a==="urgente"?0:a==="proximo"?1:2; };
     const sevScore=p=>hasRed(p)?0:hasYellow(p)?1:hasBlue(p)?2:hasPurple(p)?3:4;
-    const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort((a,b)=>sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b));
+    const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort((a,b)=>{
+      const da=deadlineScore(a), db=deadlineScore(b);
+      if(da!==db) return da-db;
+      return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
+    });
     const followups=filtered.filter(p=>hasBlue(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
     const various=filtered.filter(p=>hasPurple(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
     const archived=filtered.filter(p=>p.archived).sort((a,b)=>identifierNum(a)-identifierNum(b));
@@ -1652,7 +1717,13 @@
       const pendingDot=pendingDotBySeverity(p);
       const integratedDot=patientAllIntegrated(p)?"ok":"off";
       const completedBadge=patientAllIntegrated(p)?'<span class="badge"><span class="dot ok"></span>✅ Completado</span>':"";
-      // count photos
+      // Fecha límite badge
+      const alertLevel = hasDeadlineAlert(p);
+      const fechaBadge = alertLevel === "urgente"
+        ? '<span class="badge" style="background:#fee2e2;border-color:#fca5a5;color:#991b1b">🚨 Fecha urgente</span>'
+        : alertLevel === "proximo"
+        ? '<span class="badge" style="background:#fef3c7;border-color:#fcd34d;color:#92400e">⚠️ Fecha próxima</span>'
+        : "";
       const photoCount=(p.actions||[]).reduce((acc,a)=>{
         return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0);
       },0);
@@ -1670,6 +1741,7 @@
           <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
           <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
           ${photoBadge}
+          ${fechaBadge}
           ${completedBadge}
         </div>
       `;
@@ -1736,7 +1808,7 @@
       const note=String(a.note||"");
       let status=String(a.status||"");
       if(note.trim()!==""&&status==="") status="pending";
-      return {status,note,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null,foto3_url:a.foto3_url||null,foto4_url:a.foto4_url||null,foto5_url:a.foto5_url||null};
+      return {status,note,fecha_limite:a.fecha_limite||null,foto1_url:a.foto1_url||null,foto2_url:a.foto2_url||null,foto3_url:a.foto3_url||null,foto4_url:a.foto4_url||null,foto5_url:a.foto5_url||null};
     }).filter(isUsedAction);
   }
 
