@@ -421,7 +421,11 @@
 </div>
 
 <!-- LOGIN PAGE -->
-<div id="loginPage" style="display:none; position:fixed; inset:0; z-index:500; background:linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); align-items:center; justify-content:center;">
+<div id="loginPage" style="display:none; position:fixed; inset:0; z-index:500; align-items:center; justify-content:center; background:linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);">
+  <!-- tema claro -->
+  <style>
+    body:not(.theme-dark) #loginPage { background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 50%,#1e3a5f 100%) !important; }
+  </style>
   <!-- Fondo decorativo -->
   <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
     <div style="position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.15),transparent 70%);top:-100px;left:-100px;"></div>
@@ -431,7 +435,7 @@
   <div style="position:relative;width:100%;max-width:420px;padding:16px;">
     <!-- Logo e icono -->
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-size:48px;margin-bottom:12px;">📋</div>
+      <img src="/icon-192.png" alt="logo" style="width:80px;height:80px;border-radius:20px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.3);" />
       <h1 style="margin:0;font-size:24px;font-weight:900;color:#fff;letter-spacing:.3px;">Base de Registros</h1>
       <p style="margin:8px 0 0;color:#93a4c7;font-size:14px;">Sistema de gestión de actuaciones</p>
     </div>
@@ -474,9 +478,6 @@
       <div class="hint" id="authHint" style="margin-top:12px;text-align:center;color:#64748b;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
     </div>
 
-    <div style="text-align:center;margin-top:20px;">
-      <button class="btn small" id="btnThemeToggleLogin" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#93a4c7;">🌙 Modo noche</button>
-    </div>
   </div>
 </div>
 
@@ -1208,7 +1209,10 @@
     currentTheme = theme==="dark"?"dark":"light";
     document.body.classList.toggle("theme-dark",currentTheme==="dark");
     localStorage.setItem("rx_theme_mode",currentTheme);
-    if(btnThemeToggle) btnThemeToggle.textContent = currentTheme==="dark"?"☀️ Modo día":"🌙 Modo noche";
+    const label = currentTheme==="dark"?"☀️ Modo día":"🌙 Modo noche";
+    if(btnThemeToggle) btnThemeToggle.textContent = label;
+    const btnLogin = el("btnThemeToggleLogin");
+    if(btnLogin) btnLogin.textContent = label;
   }
 
   function toggleTheme(){ applyTheme(currentTheme==="dark"?"light":"dark"); }
