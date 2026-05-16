@@ -506,14 +506,32 @@
     <div id="welcomeBannerText">Bienvenido</div>
     <div class="mini"></div>
   </div>
-  <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
-    <div class="pill clickable" id="pillRed" title="Ver registros con rojo" style="flex-direction:column;gap:2px;">🔴 <span id="sumRed" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">PENDIENTES</span></div>
-    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo" style="flex-direction:column;gap:2px;">🟡 <span id="sumYellow" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">REALIZADOS</span></div>
-    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento" style="flex-direction:column;gap:2px;">🔵 <span id="sumBlue" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">SEGUIMIENTO</span></div>
-    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS" style="flex-direction:column;gap:2px;">🟣 <span id="sumPurple" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">VARIOS</span></div>
-    <div class="pill clickable" id="pillGreen" title="Ver registros completados" style="flex-direction:column;gap:2px;">🟢 <span id="sumGreen" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">COMPLETADOS</span></div>
-    <div class="pill clickable" id="pillOrange" title="Ver notas" style="flex-direction:column;gap:2px;">🟠 <span id="sumOrange" class="kbd">0</span><span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">NOTAS</span></div>
-    <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
+  <div class="row" id="globalSummary" style="margin-top:10px; gap:8px; flex-wrap:wrap">
+    <div class="pill clickable" id="pillRed" title="Ver registros con rojo" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🔴 <span id="sumRed" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">PENDIENTES</span>
+    </div>
+    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🟡 <span id="sumYellow" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">REALIZADOS</span>
+    </div>
+    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🔵 <span id="sumBlue" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">SEGUIMIENTO</span>
+    </div>
+    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🟣 <span id="sumPurple" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">VARIOS</span>
+    </div>
+    <div class="pill clickable" id="pillGreen" title="Ver registros completados" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🟢 <span id="sumGreen" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">COMPLETADOS</span>
+    </div>
+    <div class="pill clickable" id="pillOrange" title="Ver notas" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+      <span>🟠 <span id="sumOrange" class="kbd">0</span></span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">NOTAS</span>
+    </div>
+    <div class="pill">Total: <span id="sumTotal" class="kbd">0</span></div>
     <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
 </header>
@@ -1800,19 +1818,17 @@
       const photoCount=(p.actions||[]).reduce((acc,a)=>{
         return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0);
       },0);
-      const photoBadge=photoCount>0?`<span class="badge"><span class="dot info"></span>📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
+      const photoBadge=photoCount>0?`<span class="badge">📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
       it.innerHTML=`
         <p class="title">${escapeHTML(p.identifier||"—")} ${fechaBadge}</p>
         <div class="muted">Identificación</div>
         <div class="badges">
-          <span class="badge"><span class="dot ${pendingDot}"></span>Pendientes</span>
-          <span class="badge"><span class="dot ${integratedDot}"></span>Todo integrado</span>
-          <span class="badge"><span class="dot off"></span>Actuaciones: ${counts.total}</span>
-          <span class="badge"><span class="dot danger"></span>🔴: ${counts.pending}</span>
-          <span class="badge"><span class="dot warn"></span>🟡: ${counts.done}</span>
-          <span class="badge"><span class="dot info"></span>🔵: ${counts.followup}</span>
-          <span class="badge"><span class="dot violet"></span>🟣: ${counts.various}</span>
-          <span class="badge"><span class="dot ok"></span>🟢: ${counts.integrated}</span>
+          <span class="badge">Act: ${counts.total}</span>
+          <span class="badge">🔴 ${counts.pending}</span>
+          <span class="badge">🟡 ${counts.done}</span>
+          <span class="badge">🔵 ${counts.followup}</span>
+          <span class="badge">🟣 ${counts.various}</span>
+          <span class="badge">🟢 ${counts.integrated}</span>
           ${photoBadge}
           ${completedBadge}
         </div>
