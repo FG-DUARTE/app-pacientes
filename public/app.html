@@ -301,6 +301,16 @@
       justify-content:center;
     }
     /* EMAIL SENT MODAL */
+    @keyframes pill-pulse-red {
+      0%,100%{ background:var(--panel); border-color:var(--border); }
+      50%{ background:rgba(239,68,68,.18); border-color:var(--danger); }
+    }
+    @keyframes pill-pulse-yellow {
+      0%,100%{ background:var(--panel); border-color:var(--border); }
+      50%{ background:rgba(245,158,11,.18); border-color:var(--warn); }
+    }
+    .pill.pulse-red{ animation: pill-pulse-red 1.4s ease-in-out infinite; }
+    .pill.pulse-yellow{ animation: pill-pulse-yellow 1.4s ease-in-out infinite; }
     .email-modal-overlay{
       display:none; position:fixed; inset:0;
       background:rgba(0,0,0,.55); z-index:3000;
@@ -1706,6 +1716,22 @@
       if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumPurple,sumOrange,sumTotal][i]);
     });
     updateSummaryPillsActiveState();
+
+    // Parpadeo de pills según fechas límite
+    let hasUrgentRed=false, hasUrgentYellow=false, hasUrgentBlue=false, hasUrgentPurple=false;
+    let hasProximoRed=false, hasProximoYellow=false, hasProximoBlue=false, hasProximoPurple=false;
+    state.patients.forEach(p=>{
+      const alert = hasDeadlineAlert(p);
+      if(!alert) return;
+      if(hasRed(p)){ if(alert==="urgente") hasUrgentRed=true; else hasProximoRed=true; }
+      if(hasYellow(p)){ if(alert==="urgente") hasUrgentYellow=true; else hasProximoYellow=true; }
+      if(hasBlue(p)){ if(alert==="urgente") hasUrgentBlue=true; else hasProximoBlue=true; }
+      if(hasPurple(p)){ if(alert==="urgente") hasUrgentPurple=true; else hasProximoPurple=true; }
+    });
+    if(pillRed){ pillRed.classList.toggle("pulse-red", hasUrgentRed); pillRed.classList.toggle("pulse-yellow", !hasUrgentRed && hasProximoRed); }
+    if(pillYellow){ pillYellow.classList.toggle("pulse-red", hasUrgentYellow); pillYellow.classList.toggle("pulse-yellow", !hasUrgentYellow && hasProximoYellow); }
+    if(pillBlue){ pillBlue.classList.toggle("pulse-red", hasUrgentBlue); pillBlue.classList.toggle("pulse-yellow", !hasUrgentBlue && hasProximoBlue); }
+    if(pillPurple){ pillPurple.classList.toggle("pulse-red", hasUrgentPurple); pillPurple.classList.toggle("pulse-yellow", !hasUrgentPurple && hasProximoPurple); }
     sortPatients();
     const q=(search.value||"").trim();
     const f=filterStatus.value;
