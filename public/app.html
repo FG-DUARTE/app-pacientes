@@ -507,11 +507,12 @@
     <div class="mini"></div>
   </div>
   <div class="row" id="globalSummary" style="margin-top:10px; gap:12px; flex-wrap:wrap">
-    <div class="pill clickable" id="pillRed" title="Ver registros con rojo"><span class="dot danger"></span> 🔴 <span id="sumRed" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo"><span class="dot warn"></span> 🟡 <span id="sumYellow" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento"><span class="dot info"></span> 🔵 <span id="sumBlue" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS"><span class="dot violet"></span> 🟣 <span id="sumPurple" class="kbd">0</span></div>
-    <div class="pill clickable" id="pillOrange" title="Ver notas"><span class="dot orange"></span> 🟠 <span id="sumOrange" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillRed" title="Ver registros con rojo">🔴 <span id="sumRed" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo">🟡 <span id="sumYellow" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento">🔵 <span id="sumBlue" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS">🟣 <span id="sumPurple" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillGreen" title="Ver registros completados">🟢 <span id="sumGreen" class="kbd">0</span></div>
+    <div class="pill clickable" id="pillOrange" title="Ver notas">🟠 <span id="sumOrange" class="kbd">0</span></div>
     <div class="pill">Total pendientes: <span id="sumTotal" class="kbd">0</span></div>
     <button class="btn small success" id="btnOpenScanModal" style="display:none">📷 Escanear documento</button>
   </div>
@@ -1705,21 +1706,21 @@
   }
 
   function renderList(){
-    let sumRed=0,sumYellow=0,sumBlue=0,sumPurple=0;
+    let sumRed=0,sumYellow=0,sumBlue=0,sumPurple=0,sumGreen=0;
     state.patients.forEach(p=>{
       const c=computeCounts(p);
-      sumRed+=c.pending; sumYellow+=c.done; sumBlue+=c.followup; sumPurple+=c.various;
+      sumRed+=c.pending; sumYellow+=c.done; sumBlue+=c.followup; sumPurple+=c.various; sumGreen+=c.integrated;
     });
     const sumOrange=activeNotes().length;
     const sumTotal=sumRed+sumYellow+sumBlue;
-    ["sumRed","sumYellow","sumBlue","sumPurple","sumOrange","sumTotal"].forEach((id,i)=>{
-      if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumPurple,sumOrange,sumTotal][i]);
+    ["sumRed","sumYellow","sumBlue","sumPurple","sumGreen","sumOrange","sumTotal"].forEach((id,i)=>{
+      if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumPurple,sumGreen,sumOrange,sumTotal][i]);
     });
     updateSummaryPillsActiveState();
 
     // Parpadeo de pills según fechas límite
-    let hasUrgentRed=false, hasUrgentYellow=false, hasUrgentBlue=false, hasUrgentPurple=false;
-    let hasProximoRed=false, hasProximoYellow=false, hasProximoBlue=false, hasProximoPurple=false;
+    let hasUrgentRed=false, hasUrgentYellow=false, hasUrgentBlue=false, hasUrgentPurple=false, hasUrgentGreen=false;
+    let hasProximoRed=false, hasProximoYellow=false, hasProximoBlue=false, hasProximoPurple=false, hasProximoGreen=false;
     state.patients.forEach(p=>{
       const alert = hasDeadlineAlert(p);
       if(!alert) return;
@@ -1727,11 +1728,14 @@
       if(hasYellow(p)){ if(alert==="urgente") hasUrgentYellow=true; else hasProximoYellow=true; }
       if(hasBlue(p)){ if(alert==="urgente") hasUrgentBlue=true; else hasProximoBlue=true; }
       if(hasPurple(p)){ if(alert==="urgente") hasUrgentPurple=true; else hasProximoPurple=true; }
+      if(patientAllIntegrated(p)){ if(alert==="urgente") hasUrgentGreen=true; else hasProximoGreen=true; }
     });
+    const pillGreen = el("pillGreen");
     if(pillRed){ pillRed.classList.toggle("pulse-red", hasUrgentRed); pillRed.classList.toggle("pulse-yellow", !hasUrgentRed && hasProximoRed); }
     if(pillYellow){ pillYellow.classList.toggle("pulse-red", hasUrgentYellow); pillYellow.classList.toggle("pulse-yellow", !hasUrgentYellow && hasProximoYellow); }
     if(pillBlue){ pillBlue.classList.toggle("pulse-red", hasUrgentBlue); pillBlue.classList.toggle("pulse-yellow", !hasUrgentBlue && hasProximoBlue); }
     if(pillPurple){ pillPurple.classList.toggle("pulse-red", hasUrgentPurple); pillPurple.classList.toggle("pulse-yellow", !hasUrgentPurple && hasProximoPurple); }
+    if(pillGreen){ pillGreen.classList.toggle("pulse-red", hasUrgentGreen); pillGreen.classList.toggle("pulse-yellow", !hasUrgentGreen && hasProximoGreen); }
     sortPatients();
     const q=(search.value||"").trim();
     const f=filterStatus.value;
@@ -1767,20 +1771,16 @@
     const identifierNum=x=>{ const n=Number(x?.identifier); return Number.isNaN(n)?Number.POSITIVE_INFINITY:n; };
     const deadlineScore=p=>{ const a=hasDeadlineAlert(p); return a==="urgente"?0:a==="proximo"?1:2; };
     const sevScore=p=>hasRed(p)?0:hasYellow(p)?1:hasBlue(p)?2:hasPurple(p)?3:4;
-    const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort((a,b)=>{
+    const deadlineSort = (a,b) => {
       const da=deadlineScore(a), db=deadlineScore(b);
       if(da!==db) return da-db;
       return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
-    });
-    const followups=filtered.filter(p=>hasBlue(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
-    const various=filtered.filter(p=>hasPurple(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
-    const archived=filtered.filter(p=>p.archived).sort((a,b)=>identifierNum(a)-identifierNum(b));
-    const allPatients=filtered.sort((a,b)=>{
-      if(a.archived!==b.archived) return a.archived?1:-1;
-      return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
-    });
-
-    const completed=filtered.filter(p=>patientAllIntegrated(p)).sort((a,b)=>identifierNum(a)-identifierNum(b));
+    };
+    const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort(deadlineSort);
+    const followups=filtered.filter(p=>hasBlue(p)).sort(deadlineSort);
+    const various=filtered.filter(p=>hasPurple(p)).sort(deadlineSort);
+    const completed=filtered.filter(p=>patientAllIntegrated(p)).sort(deadlineSort);
+    const allPatients=filtered.sort(deadlineSort);
     const ordered=f==="followup"?followups:f==="various"?various:f==="completed"?completed:f==="active"?actives:allPatients;
     patientList.innerHTML="";
     ordered.forEach(p=>{
@@ -2125,6 +2125,8 @@
   if(pillYellow) pillYellow.addEventListener("click",()=>{ severityFilter=severityFilter==="yellow"?null:"yellow"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillBlue) pillBlue.addEventListener("click",()=>{ severityFilter=severityFilter==="blue"?null:"blue"; if(severityFilter) filterStatus.value="followup"; renderList(); });
   if(pillPurple) pillPurple.addEventListener("click",()=>{ severityFilter=severityFilter==="purple"?null:"purple"; if(severityFilter) filterStatus.value="various"; renderList(); });
+  const pillGreenEl = el("pillGreen");
+  if(pillGreenEl) pillGreenEl.addEventListener("click",()=>{ severityFilter=null; filterStatus.value="completed"; renderList(); });
   if(pillOrange) pillOrange.addEventListener("click",()=>{ severityFilter=severityFilter==="orange"?null:"orange"; if(severityFilter) filterStatus.value="notes"; renderList(); });
 
   // ─── SCAN MODAL EVENTS ───
