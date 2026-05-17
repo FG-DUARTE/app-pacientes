@@ -1656,18 +1656,16 @@
             }
           }
         }
-        // Recargar desde Supabase y refrescar — limpiar filtro activo
+        // Recargar desde Supabase y refrescar panel derecho directamente
         await loadPatientsFromDb();
         patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
-        renderList();
-        // Re-seleccionar el registro para refrescar el panel derecho con datos frescos
         const fresh = state.patients.find(x => x.id === selectedPatientId);
         if(fresh){
-          const prevDirty = isDirty;
-          isDirty = false;
-          await selectPatient(fresh.id);
-          isDirty = prevDirty;
+          renderActions(fresh.actions||[]);
+          setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
         }
+        markClean();
+        renderList();
       });
 
       actionsWrap.appendChild(block);
