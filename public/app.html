@@ -1639,11 +1639,21 @@
         for(const f of [f1,f2,f3,f4,f5]) if(f) await deletePhotoFromStorage(f);
         const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
         if(p?.dbId){
+          // Buscar la fila exacta por status + note + foto1 para no depender del índice DOM
           const { data: rows } = await sb.from("patient_actions")
-            .select("id").eq("patient_id", p.dbId)
+            .select("id, status, note, foto1_url")
+            .eq("patient_id", p.dbId)
             .order("created_at", { ascending: true });
-          if(rows && rows[idx]){
-            await sb.from("patient_actions").delete().eq("id", rows[idx].id);
+          if(rows){
+            // Encontrar la fila que coincide con esta actuación
+            const matchRow = rows.find(r =>
+              r.status === (a.status||"") &&
+              r.note === (a.note||"") &&
+              (r.foto1_url||null) === (a.foto1_url||null)
+            );
+            if(matchRow){
+              await sb.from("patient_actions").delete().eq("id", matchRow.id);
+            }
           }
         }
         // Recargar desde Supabase y refrescar
@@ -2292,10 +2302,7 @@
   });
 
   function initialPick(){
-    if(state.patients.length){
-      const p=state.patients.find(x=>!x.archived)||state.patients[0];
-      selectPatient(p.id);
-    } else { clearForm(); }
+    clearForm(); // Siempre inicia en blanco
   }
 
   async function boot(){
