@@ -1640,20 +1640,18 @@
         const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
         if(p?.dbId){
           const { data: rows } = await sb.from("patient_actions")
-            .select("id")
-            .eq("patient_id", p.dbId)
+            .select("id").eq("patient_id", p.dbId)
             .order("created_at", { ascending: true });
           if(rows && rows[idx]){
             await sb.from("patient_actions").delete().eq("id", rows[idx].id);
           }
         }
-        // Usar el array completo del state, no el DOM (que puede estar filtrado)
-        if(p){
-          p.actions = (p.actions||[]).filter((_,i) => i !== idx);
-          saveState();
-          renderActions(p.actions);
-        }
-        markDirty();
+        // Recargar desde Supabase y refrescar
+        await loadPatientsFromDb();
+        const fresh = state.patients.find(x => x.id === selectedPatientId);
+        if(fresh) renderActions(fresh.actions||[]);
+        markClean();
+        renderList();
       });
 
       actionsWrap.appendChild(block);
