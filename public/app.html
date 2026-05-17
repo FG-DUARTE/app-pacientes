@@ -1656,9 +1656,11 @@
             }
           }
         }
-        // Recargar desde Supabase y refrescar
+        // Recargar desde Supabase y refrescar — limpiar filtro activo
         await loadPatientsFromDb();
         const fresh = state.patients.find(x => x.id === selectedPatientId);
+        // Quitar filtro activo de pills de etiqueta
+        patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
         if(fresh) renderActions(fresh.actions||[]);
         markClean();
         renderList();
