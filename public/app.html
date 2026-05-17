@@ -108,6 +108,11 @@
     .identifier{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
     .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
     .badge.badge-active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    .pill.action-filter-badge.badge-active[data-status="pending"]{ background:rgba(239,68,68,.15); border-color:var(--danger); color:var(--danger); }
+    .pill.action-filter-badge.badge-active[data-status="done"]{ background:rgba(245,158,11,.15); border-color:var(--warn); color:var(--warn); }
+    .pill.action-filter-badge.badge-active[data-status="followup"]{ background:rgba(59,130,246,.15); border-color:var(--info); color:var(--info); }
+    .pill.action-filter-badge.badge-active[data-status="various"]{ background:rgba(139,92,246,.15); border-color:var(--violet); color:var(--violet); }
+    .pill.action-filter-badge.badge-active[data-status="integrated"]{ background:rgba(16,185,129,.15); border-color:var(--ok); color:var(--ok); }
     .dot{width:10px;height:10px;border-radius:50%;}
     .dot.off{background:var(--off);}
     .dot.warn{background:var(--warn);}
@@ -1824,11 +1829,11 @@
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge">Act: ${counts.total}</span>
-          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="pending" style="cursor:pointer;" title="Ver solo pendientes">🔴 ${counts.pending}</span>
-          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="done" style="cursor:pointer;" title="Ver solo realizados">🟡 ${counts.done}</span>
-          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="followup" style="cursor:pointer;" title="Ver solo seguimiento">🔵 ${counts.followup}</span>
-          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="various" style="cursor:pointer;" title="Ver solo varios">🟣 ${counts.various}</span>
-          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="integrated" style="cursor:pointer;" title="Ver solo completados">🟢 ${counts.integrated}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="pending" title="Ver solo pendientes" style="font-size:12px;padding:4px 8px;">🔴 ${counts.pending}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="done" title="Ver solo realizados" style="font-size:12px;padding:4px 8px;">🟡 ${counts.done}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="followup" title="Ver solo seguimiento" style="font-size:12px;padding:4px 8px;">🔵 ${counts.followup}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="various" title="Ver solo varios" style="font-size:12px;padding:4px 8px;">🟣 ${counts.various}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="integrated" title="Ver solo completados" style="font-size:12px;padding:4px 8px;">🟢 ${counts.integrated}</span>
           ${photoBadge}
           ${completedBadge}
         </div>
