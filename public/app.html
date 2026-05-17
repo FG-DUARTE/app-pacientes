@@ -1835,9 +1835,10 @@
         return acc+(a.foto1_url?1:0)+(a.foto2_url?1:0)+(a.foto3_url?1:0)+(a.foto4_url?1:0)+(a.foto5_url?1:0);
       },0);
       const photoBadge=photoCount>0?`<span class="badge">📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
+      const firstLine = (p.initialStudy||"").split("\n")[0].trim();
       it.innerHTML=`
         <p class="title">${escapeHTML(p.identifier||"—")} ${fechaBadge}</p>
-        <div class="muted">Identificación</div>
+        <div class="muted">${firstLine ? escapeHTML(firstLine) : "Identificación"}</div>
         <div class="badges">
           <span class="badge">Act: ${counts.total}</span>
           <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="pending" title="Ver solo pendientes" style="font-size:12px;padding:4px 8px;">🔴 ${counts.pending}</span>
