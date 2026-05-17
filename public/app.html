@@ -107,7 +107,7 @@
     .title{font-weight:800; font-size:14px; margin:0;}
     .identifier{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
     .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
-    .badge{display:inline-flex; align-items:center; gap:6px;padding:5px 8px; border-radius:999px; font-size:12px;background:var(--panel); border:1px solid var(--border);}
+    .badge.badge-active{ background:var(--accent); color:#fff; border-color:var(--accent); }
     .dot{width:10px;height:10px;border-radius:50%;}
     .dot.off{background:var(--off);}
     .dot.warn{background:var(--warn);}
@@ -1824,16 +1824,43 @@
         <div class="muted">Identificación</div>
         <div class="badges">
           <span class="badge">Act: ${counts.total}</span>
-          <span class="badge">🔴 ${counts.pending}</span>
-          <span class="badge">🟡 ${counts.done}</span>
-          <span class="badge">🔵 ${counts.followup}</span>
-          <span class="badge">🟣 ${counts.various}</span>
-          <span class="badge">🟢 ${counts.integrated}</span>
+          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="pending" style="cursor:pointer;" title="Ver solo pendientes">🔴 ${counts.pending}</span>
+          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="done" style="cursor:pointer;" title="Ver solo realizados">🟡 ${counts.done}</span>
+          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="followup" style="cursor:pointer;" title="Ver solo seguimiento">🔵 ${counts.followup}</span>
+          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="various" style="cursor:pointer;" title="Ver solo varios">🟣 ${counts.various}</span>
+          <span class="badge action-filter-badge" data-pid="${p.id}" data-status="integrated" style="cursor:pointer;" title="Ver solo completados">🟢 ${counts.integrated}</span>
           ${photoBadge}
           ${completedBadge}
         </div>
       `;
-      it.addEventListener("click",()=>selectPatient(p.id));
+      it.addEventListener("click", e => {
+        // Si clickó un badge de color, filtrar actuaciones
+        const badge = e.target.closest(".action-filter-badge");
+        if(badge){
+          e.stopPropagation();
+          const pid = badge.dataset.pid;
+          const status = badge.dataset.status;
+          // Seleccionar el registro si no está seleccionado
+          if(selectedPatientId !== pid) selectPatient(pid);
+          else {
+            // Filtrar actuaciones por color
+            const patient = state.patients.find(x => x.id === pid);
+            if(!patient) return;
+            const filtered = (patient.actions||[]).filter(a => a.status === status);
+            const allActive = badge.classList.contains("badge-active");
+            // Toggle — si ya está activo mostrar todas
+            patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
+            if(!allActive && filtered.length){
+              badge.classList.add("badge-active");
+              renderActions(filtered);
+            } else {
+              renderActions(patient.actions||[]);
+            }
+          }
+          return;
+        }
+        selectPatient(p.id);
+      });
       patientList.appendChild(it);
     });
     countPatients.textContent=String(state.patients.length);
