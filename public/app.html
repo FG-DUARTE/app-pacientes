@@ -1658,12 +1658,16 @@
         }
         // Recargar desde Supabase y refrescar — limpiar filtro activo
         await loadPatientsFromDb();
-        const fresh = state.patients.find(x => x.id === selectedPatientId);
-        // Quitar filtro activo de pills de etiqueta
         patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
-        if(fresh) renderActions(fresh.actions||[]);
-        markClean();
         renderList();
+        // Re-seleccionar el registro para refrescar el panel derecho con datos frescos
+        const fresh = state.patients.find(x => x.id === selectedPatientId);
+        if(fresh){
+          const prevDirty = isDirty;
+          isDirty = false;
+          await selectPatient(fresh.id);
+          isDirty = prevDirty;
+        }
       });
 
       actionsWrap.appendChild(block);
