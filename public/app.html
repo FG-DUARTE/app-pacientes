@@ -1656,13 +1656,15 @@
             }
           }
         }
+        // Limpiar panel derecho inmediatamente para evitar el fantasma
+        actionsWrap.innerHTML = "";
+        setActionsCount(0);
         // Recargar desde Supabase y refrescar panel derecho directamente
         await loadPatientsFromDb();
         patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
         const fresh = state.patients.find(x => x.id === selectedPatientId);
         if(fresh){
           renderActions(fresh.actions||[]);
-          setActionsCount(actionsWrap.querySelectorAll(".action-block").length);
         }
         markClean();
         renderList();
