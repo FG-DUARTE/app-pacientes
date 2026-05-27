@@ -1231,6 +1231,7 @@
   let selectedPatientId = null;
   let identifierUnlocked = false;
   let severityFilter = null;
+  let actasCount = 0;
   let currentTheme = localStorage.getItem("rx_theme_mode")||"light";
   let currentSession = null;
   let currentUser = null;
@@ -1778,6 +1779,7 @@
     ["sumRed","sumYellow","sumBlue","sumGreen","sumOrange"].forEach((id,i)=>{
       if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumGreen,sumOrange][i]);
     });
+    if(el("sumPurple")) el("sumPurple").textContent = String(actasCount);
     updateSummaryPillsActiveState();
 
     // Parpadeo de pills según fechas límite
@@ -2285,7 +2287,8 @@
     el("actaTitulo").value = "";
     el("actaDescripcion").value = "";
     const actas = await loadActasFromDb();
-    if(el("sumPurple")) el("sumPurple").textContent = String(actas.length);
+    actasCount = actas.length;
+    if(el("sumPurple")) el("sumPurple").textContent = String(actasCount);
     renderActas(actas);
     showToast("🟣 Acta guardada.", "", null, 2000);
   });
@@ -2452,9 +2455,9 @@
         }]);
         actasData = await loadActasFromDb();
       }
-      if(el("sumPurple")) el("sumPurple").textContent = String(actasData.length);
+      actasCount = actasData.length;
       renderList(); clearForm(); initialPick();
-      if(el("sumPurple")) el("sumPurple").textContent = String(actasData.length);
+      actasCount = actasData.length;
       setupDirtyListeners();
     } else {
       renderList(); clearForm();
