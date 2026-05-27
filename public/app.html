@@ -367,6 +367,31 @@
   </div>
 </div>
 
+<!-- ACTAS MODAL -->
+<div class="modal-overlay" id="actasModal">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="row" style="margin-bottom:12px">
+      <div class="modal-title">🟣 Actas</div>
+      <button class="btn small ghost right" id="btnCloseActasModal">× Cerrar</button>
+    </div>
+    <div class="hint" style="margin-bottom:12px">Registro permanente de situaciones e incidencias. Las actas no se pueden borrar.</div>
+
+    <!-- Nueva acta -->
+    <div class="card" style="margin-bottom:14px;background:var(--panel);">
+      <label>Título</label>
+      <input id="actaTitulo" placeholder="Título del acta..." />
+      <label>Descripción</label>
+      <textarea id="actaDescripcion" placeholder="Descripción de la situación..." style="min-height:80px;"></textarea>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="btnGuardarActa">+ Guardar acta</button>
+      </div>
+    </div>
+
+    <!-- Lista de actas -->
+    <div id="actasList" style="display:flex;flex-direction:column;gap:10px;max-height:50vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <!-- EMAIL SENT MODAL -->
 <div class="email-modal-overlay" id="emailModal">
   <div class="email-modal-box">
@@ -488,6 +513,8 @@
         <button class="btn ghost" id="btnRegister" style="color:#93a4c7;border-color:transparent;font-size:13px;">Crear cuenta</button>
         <span style="color:#475569;">·</span>
         <button class="btn ghost" id="btnRecover" style="color:#93a4c7;border-color:transparent;font-size:13px;">Recuperar clave</button>
+        <span style="color:#475569;">·</span>
+        <button class="btn ghost" id="btnForgetLogin" style="color:#475569;border-color:transparent;font-size:11px;">Olvidar este dispositivo</button>
       </div>
 
       <div class="hint" id="authHint" style="margin-top:12px;text-align:center;color:#64748b;">Usa email + contraseña. Si no tienes cuenta, crea una.</div>
@@ -512,25 +539,25 @@
     <div class="mini"></div>
   </div>
   <div class="row" id="globalSummary" style="margin-top:10px; gap:8px; flex-wrap:wrap">
-    <div class="pill clickable" id="pillRed" title="Ver registros con rojo" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+    <div class="pill clickable" id="pillRed" title="Ver urgentes" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🔴 <span id="sumRed" class="kbd">0</span></span>
-      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">PENDIENTES</span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">URGENTES</span>
     </div>
-    <div class="pill clickable" id="pillYellow" title="Ver registros con amarillo" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+    <div class="pill clickable" id="pillYellow" title="Ver en proceso" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🟡 <span id="sumYellow" class="kbd">0</span></span>
-      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">REALIZADOS</span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">EN PROCESO</span>
     </div>
-    <div class="pill clickable" id="pillBlue" title="Ver registros en seguimiento" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+    <div class="pill clickable" id="pillBlue" title="Ver seguimiento" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🔵 <span id="sumBlue" class="kbd">0</span></span>
       <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">SEGUIMIENTO</span>
     </div>
-    <div class="pill clickable" id="pillPurple" title="Ver registros VARIOS" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+    <div class="pill clickable" id="pillPurple" title="Ver actas" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🟣 <span id="sumPurple" class="kbd">0</span></span>
-      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">VARIOS</span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">ACTAS</span>
     </div>
-    <div class="pill clickable" id="pillGreen" title="Ver registros completados" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
+    <div class="pill clickable" id="pillGreen" title="Ver resueltos" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🟢 <span id="sumGreen" class="kbd">0</span></span>
-      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">COMPLETADOS</span>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">RESUELTOS</span>
     </div>
     <div class="pill clickable" id="pillOrange" title="Ver notas" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🟠 <span id="sumOrange" class="kbd">0</span></span>
@@ -555,9 +582,9 @@
         <input id="search" placeholder="Buscar por identificación o texto (motivos / datos)" />
         <select id="filterStatus" style="max-width:190px">
           <option value="active">Activos</option>
-          <option value="followup">En seguimiento</option>
+          <option value="followup">Seguimiento</option>
           <option value="various">Varios</option>
-          <option value="completed">Completados</option>
+          <option value="completed">Resueltos</option>
           <option value="notes">Notas</option>
           <option value="all">Todos</option>
         </select>
@@ -607,7 +634,7 @@
       <div class="sep"></div>
       <h3 style="margin:0 0 8px; font-size:14px">Actuaciones</h3>
       <div class="hint" style="margin-bottom:10px">
-        Estados: 🔴 Pendiente · 🟡 Realizado · 🔵 En seguimiento · 🟣 Varios · 🟢 Integrado/Completado.
+        Estados: 🔴 Urgente · 🟡 En proceso · 🔵 Seguimiento · 🟢 Resuelto.
       </div>
       <div id="actionsWrap"></div>
       <div class="row" style="margin-top:8px">
@@ -1312,11 +1339,11 @@
   }
 
   function statusLabel(s){
-    if(s==="pending") return "Pendiente";
-    if(s==="done") return "Realizado";
-    if(s==="followup") return "En seguimiento";
+    if(s==="pending") return "Urgente";
+    if(s==="done") return "En proceso";
+    if(s==="followup") return "Seguimiento";
     if(s==="various") return "Varios";
-    if(s==="integrated") return "Integrado";
+    if(s==="integrated") return "Resuelto";
     return "—";
   }
 
@@ -1555,11 +1582,10 @@
           <div class="right" style="min-width:220px;flex:1">
             <select>
               <option value="">Estado de la actuación</option>
-              <option value="pending">🔴 Pendiente</option>
-              <option value="done">🟡 Realizado</option>
-              <option value="followup">🔵 En seguimiento</option>
-              <option value="various">🟣 Varios</option>
-              <option value="integrated">🟢 Integrado/Completado</option>
+              <option value="pending">🔴 Urgente</option>
+              <option value="done">🟡 En proceso</option>
+              <option value="followup">🔵 Seguimiento</option>
+              <option value="integrated">🟢 Resuelto</option>
             </select>
           </div>
           <button class="btn small" data-role="qr" title="Subir fotos desde móvil" style="background:linear-gradient(180deg,#10b981,#059669);color:#fff;border-color:#10b981;font-size:16px;padding:6px 10px;">📸</button>
@@ -2184,7 +2210,67 @@
   if(pillRed) pillRed.addEventListener("click",()=>{ severityFilter=severityFilter==="red"?null:"red"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillYellow) pillYellow.addEventListener("click",()=>{ severityFilter=severityFilter==="yellow"?null:"yellow"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillBlue) pillBlue.addEventListener("click",()=>{ severityFilter=severityFilter==="blue"?null:"blue"; if(severityFilter) filterStatus.value="followup"; renderList(); });
-  if(pillPurple) pillPurple.addEventListener("click",()=>{ severityFilter=severityFilter==="purple"?null:"purple"; if(severityFilter) filterStatus.value="various"; renderList(); });
+  if(pillPurple) pillPurple.addEventListener("click", openActasModal);
+
+  // ─── ACTAS ───
+  async function loadActasFromDb(){
+    if(!currentUser) return [];
+    const { data } = await sb.from("actas")
+      .select("id,titulo,descripcion,created_at")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false });
+    return Array.isArray(data) ? data : [];
+  }
+
+  function renderActas(actas){
+    const list = el("actasList");
+    if(!list) return;
+    if(!actas.length){
+      list.innerHTML = '<div class="muted">No hay actas registradas.</div>';
+      return;
+    }
+    list.innerHTML = actas.map(a => `
+      <div class="card" style="background:var(--panel);box-shadow:none;margin-bottom:8px;">
+        <div class="row">
+          <div style="font-weight:700;font-size:14px;">${escapeHTML(a.titulo)}</div>
+          <div class="right muted">${formatTS(a.created_at)}</div>
+        </div>
+        <div style="margin-top:6px;font-size:13px;white-space:pre-wrap;color:var(--muted);">${escapeHTML(a.descripcion||"")}</div>
+      </div>
+    `).join("");
+  }
+
+  async function openActasModal(){
+    el("actasModal").classList.add("open");
+    el("actaTitulo").value = "";
+    el("actaDescripcion").value = "";
+    el("actasList").innerHTML = '<div class="muted">Cargando...</div>';
+    const actas = await loadActasFromDb();
+    if(el("sumPurple")) el("sumPurple").textContent = String(actas.length);
+    renderActas(actas);
+  }
+
+  el("btnCloseActasModal").addEventListener("click", () => el("actasModal").classList.remove("open"));
+  el("actasModal").addEventListener("click", e => { if(e.target === el("actasModal")) el("actasModal").classList.remove("open"); });
+
+  el("btnGuardarActa").addEventListener("click", async () => {
+    const titulo = (el("actaTitulo").value||"").trim();
+    const descripcion = (el("actaDescripcion").value||"").trim();
+    if(!titulo){ alert("Escribí un título para el acta."); return; }
+    const btn = el("btnGuardarActa");
+    btn.disabled = true; btn.textContent = "Guardando...";
+    const { error } = await sb.from("actas").insert([{
+      user_id: currentUser.id, titulo, descripcion
+    }]);
+    btn.disabled = false; btn.textContent = "+ Guardar acta";
+    if(error){ alert("Error al guardar: " + error.message); return; }
+    el("actaTitulo").value = "";
+    el("actaDescripcion").value = "";
+    const actas = await loadActasFromDb();
+    if(el("sumPurple")) el("sumPurple").textContent = String(actas.length);
+    renderActas(actas);
+    showToast("🟣 Acta guardada.", "", null, 2000);
+  });
   const pillGreenEl = el("pillGreen");
   if(pillGreenEl) pillGreenEl.addEventListener("click",()=>{ severityFilter=null; filterStatus.value="completed"; renderList(); });
   if(pillOrange) pillOrange.addEventListener("click",()=>{ severityFilter=severityFilter==="orange"?null:"orange"; if(severityFilter) filterStatus.value="notes"; renderList(); });
@@ -2290,6 +2376,16 @@
   });
   if(btnRegister) btnRegister.addEventListener("click",handleRegister);
   if(btnRecover) btnRecover.addEventListener("click",handleRecover);
+  const btnForgetLogin = el("btnForgetLogin");
+  if(btnForgetLogin) btnForgetLogin.addEventListener("click", () => {
+    try {
+      Object.keys(localStorage).forEach(k => localStorage.removeItem(k));
+      Object.keys(sessionStorage).forEach(k => sessionStorage.removeItem(k));
+    } catch(e){}
+    if(authEmail) authEmail.value = "";
+    if(authPassword) authPassword.value = "";
+    setAuthMessage("Datos del dispositivo borrados.");
+  });
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
 
   // pagehide removido — borraba la sesion al cambiar de pestaña
@@ -2329,6 +2425,8 @@
       await loadProfileFromDb();
       setupInactivityListeners(); resetInactivityTimer();
       await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
+      const actasData = await loadActasFromDb();
+      if(el("sumPurple")) el("sumPurple").textContent = String(actasData.length);
       renderList(); clearForm(); initialPick();
       setupDirtyListeners();
     } else {
