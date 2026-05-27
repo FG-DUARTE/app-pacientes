@@ -376,6 +376,9 @@
     </div>
     <div class="hint" style="margin-bottom:12px">Registro permanente de situaciones e incidencias. Las actas no se pueden borrar.</div>
 
+    <!-- Búsqueda -->
+    <input id="actasSearch" placeholder="🔍 Buscar en actas..." style="margin-bottom:12px;" />
+
     <!-- Nueva acta -->
     <div class="card" style="margin-bottom:14px;background:var(--panel);">
       <label>Título</label>
@@ -2222,14 +2225,19 @@
     return Array.isArray(data) ? data : [];
   }
 
+  let actasCache = [];
+
   function renderActas(actas){
+    actasCache = actas;
+    const q = normTxt((el("actasSearch")?.value||"").trim());
+    const filtered = q ? actas.filter(a => normTxt(a.titulo).includes(q) || normTxt(a.descripcion||"").includes(q)) : actas;
     const list = el("actasList");
     if(!list) return;
-    if(!actas.length){
-      list.innerHTML = '<div class="muted">No hay actas registradas.</div>';
+    if(!filtered.length){
+      list.innerHTML = '<div class="muted">No hay actas que coincidan.</div>';
       return;
     }
-    list.innerHTML = actas.map(a => `
+    list.innerHTML = filtered.map(a => `
       <div class="card" style="background:var(--panel);box-shadow:none;margin-bottom:8px;">
         <div class="row">
           <div style="font-weight:700;font-size:14px;">${escapeHTML(a.titulo)}</div>
@@ -2245,13 +2253,26 @@
     el("actaTitulo").value = "";
     el("actaDescripcion").value = "";
     el("actasList").innerHTML = '<div class="muted">Cargando...</div>';
-    const actas = await loadActasFromDb();
+    let actas = await loadActasFromDb();
+
+    // Si no tiene ninguna acta, crear la de apertura automáticamente
+    if(actas.length === 0){
+      const apertura = {
+        user_id: currentUser.id,
+        titulo: "APERTURA DEL LIBRO DE ACTAS",
+        descripcion: `Este libro tiene por objeto dejar constancia escrita y cronológica de los hechos, situaciones e incidencias relevantes que se produzcan en el desarrollo diario de la actividad profesional.\n\nCada acta registrada en este sistema constituye un documento fehaciente de lo acontecido, con indicación automática de la fecha y hora exacta de su registro. Las actas son de carácter permanente e inmodificable, garantizando así la integridad y trazabilidad del historial.\n\nSe registrarán en este libro aquellas situaciones que, por su relevancia, naturaleza o posibles implicaciones futuras, requieran quedar debidamente documentadas: incidencias del servicio, comunicaciones relevantes, hechos inusuales, decisiones adoptadas, observaciones de interés o cualquier circunstancia que el profesional considere oportuno dejar asentada.\n\nEl acceso a este registro es individual y privado. Cada usuario tiene acceso exclusivo a sus propias actas.`
+      };
+      await sb.from("actas").insert([apertura]);
+      actas = await loadActasFromDb();
+    }
+
     if(el("sumPurple")) el("sumPurple").textContent = String(actas.length);
     renderActas(actas);
   }
 
-  el("btnCloseActasModal").addEventListener("click", () => el("actasModal").classList.remove("open"));
-  el("actasModal").addEventListener("click", e => { if(e.target === el("actasModal")) el("actasModal").classList.remove("open"); });
+  el("btnCloseActasModal").addEventListener("click", () => { el("actasModal").classList.remove("open"); el("actasSearch").value = ""; });
+  el("actasModal").addEventListener("click", e => { if(e.target === el("actasModal")){ el("actasModal").classList.remove("open"); el("actasSearch").value = ""; } });
+  el("actasSearch").addEventListener("input", () => renderActas(actasCache));
 
   el("btnGuardarActa").addEventListener("click", async () => {
     const titulo = (el("actaTitulo").value||"").trim();
