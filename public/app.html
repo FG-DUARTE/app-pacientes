@@ -815,6 +815,8 @@
     await loadPatientsFromDb();
     await loadNotesFromDb();
     await loadLogsFromDb();
+    const actasLogin = await loadActasFromDb();
+    actasCount = actasLogin.length;
     setupInactivityListeners(); resetInactivityTimer();
     setupDirtyListeners();
     renderList();
