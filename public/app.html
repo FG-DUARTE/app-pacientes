@@ -1775,8 +1775,8 @@
     });
     const sumOrange=activeNotes().length;
     const sumTotal=sumRed+sumYellow+sumBlue;
-    ["sumRed","sumYellow","sumBlue","sumPurple","sumGreen","sumOrange","sumTotal"].forEach((id,i)=>{
-      if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumPurple,sumGreen,sumOrange,sumTotal][i]);
+    ["sumRed","sumYellow","sumBlue","sumGreen","sumOrange"].forEach((id,i)=>{
+      if(el(id)) el(id).textContent=String([sumRed,sumYellow,sumBlue,sumGreen,sumOrange][i]);
     });
     updateSummaryPillsActiveState();
 
