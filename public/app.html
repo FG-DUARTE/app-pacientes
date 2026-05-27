@@ -2443,7 +2443,15 @@
       await loadProfileFromDb();
       setupInactivityListeners(); resetInactivityTimer();
       await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
-      const actasData = await loadActasFromDb();
+      let actasData = await loadActasFromDb();
+      if(actasData.length === 0){
+        await sb.from("actas").insert([{
+          user_id: currentUser.id,
+          titulo: "APERTURA DEL LIBRO DE ACTAS",
+          descripcion: `Este libro tiene por objeto dejar constancia escrita y cronológica de los hechos, situaciones e incidencias relevantes que se produzcan en el desarrollo diario de la actividad profesional.\n\nCada acta registrada en este sistema constituye un documento fehaciente de lo acontecido, con indicación automática de la fecha y hora exacta de su registro. Las actas son de carácter permanente e inmodificable, garantizando así la integridad y trazabilidad del historial.\n\nSe registrarán en este libro aquellas situaciones que, por su relevancia, naturaleza o posibles implicaciones futuras, requieran quedar debidamente documentadas: incidencias del servicio, comunicaciones relevantes, hechos inusuales, decisiones adoptadas, observaciones de interés o cualquier circunstancia que el profesional considere oportuno dejar asentada.\n\nEl acceso a este registro es individual y privado. Cada usuario tiene acceso exclusivo a sus propias actas.`
+        }]);
+        actasData = await loadActasFromDb();
+      }
       if(el("sumPurple")) el("sumPurple").textContent = String(actasData.length);
       renderList(); clearForm(); initialPick();
       setupDirtyListeners();
