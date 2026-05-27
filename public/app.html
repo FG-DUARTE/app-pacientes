@@ -1869,11 +1869,9 @@
         <div class="muted">${firstLine ? escapeHTML(firstLine) : "Identificación"}</div>
         <div class="badges">
           <span class="badge">Act: ${counts.total}</span>
-          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="pending" title="Ver solo pendientes" style="font-size:12px;padding:4px 8px;">🔴 ${counts.pending}</span>
-          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="done" title="Ver solo realizados" style="font-size:12px;padding:4px 8px;">🟡 ${counts.done}</span>
-          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="followup" title="Ver solo seguimiento" style="font-size:12px;padding:4px 8px;">🔵 ${counts.followup}</span>
-          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="various" title="Ver solo varios" style="font-size:12px;padding:4px 8px;">🟣 ${counts.various}</span>
-          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="integrated" title="Ver solo completados" style="font-size:12px;padding:4px 8px;">🟢 ${counts.integrated}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="pending" title="Ver solo urgentes" style="font-size:12px;padding:4px 8px;">🔴 ${counts.pending}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="done" title="Ver solo en proceso" style="font-size:12px;padding:4px 8px;">🟡 ${counts.done}</span>
+          <span class="pill clickable action-filter-badge" data-pid="${p.id}" data-status="integrated" title="Ver solo resueltos" style="font-size:12px;padding:4px 8px;">🟢 ${counts.integrated}</span>
           ${photoBadge}
           ${completedBadge}
         </div>
