@@ -1,32 +1,60 @@
 # NOTAS DEL PROYECTO — Base de Registros
 
 ## Stack
-- **Frontend:** HTML puro, CSS, JS vanilla — todo en un solo archivo `public/app.html`
+- **Frontend principal:** HTML/CSS/JS vanilla en `public/app.html` (app completa)
+- **Capa soporte:** Next.js 16 (App Router) — servidor local, API routes, futuras integraciones
 - **Base de datos:** Supabase (PostgreSQL)
 - **Storage:** Supabase Storage — bucket `archivos`
 - **Auth:** Supabase Auth (email + password)
 - **Deploy:** Vercel (auto-deploy desde GitHub)
 - **Repo:** GitHub (rama `main`)
-- **Editor:** VSCode
+- **Editor:** VSCode / Cursor
 - **OCR:** Tesseract.js v5 (corre en el navegador, sin servidor)
 - **QR:** qrcodejs (CDN cloudflare)
 - **Edge Functions:** Supabase Edge Functions (Deno)
 
 ---
 
+## Arquitectura puente
+
+La app principal vive en `public/app.html`. Next.js actúa como **capa puente**:
+
+- `npm run dev` → servidor local en http://localhost:3000
+- `/` → iframe a `app.html` (vía `app/page.tsx`) o redirección en Vercel
+- `/app.html` → acceso directo a la app
+- `/api/keepalive` → endpoint App Router para UptimeRobot
+- `lib/supabase/` → cliente Supabase para rutas Next (no usado por app.html)
+
+**No migrar la UI a React** sin decisión explícita. La lógica de negocio permanece en HTML vanilla.
+
+---
+
 ## Estructura del proyecto
 ```
-proyecto/
+app-pacientes/
+  ├── app/                          ← Next.js App Router (capa soporte)
+  │     ├── api/keepalive/route.ts  ← GET /api/keepalive (anti-pausa Supabase)
+  │     ├── layout.tsx              ← metadata del shell Next
+  │     ├── page.tsx                ← iframe a app.html en /
+  │     └── test-db/                ← prueba conexión Supabase (dev)
+  ├── lib/
+  │     └── supabase/client.ts      ← cliente Supabase para rutas Next
   ├── public/
-  │     ├── app.html          ← app principal
-  │     ├── upload.html       ← página mini para subir fotos por QR desde móvil
-  │     ├── manifest.json     ← PWA
-  │     ├── icon-192.png
-  │     ├── icon-512.png
-  │     └── apple-touch-icon.png
-  ├── vercel.json             ← redirige / a /app.html
-  └── NOTAS.md               ← este archivo
+  │     ├── app.html                ← ★ app principal (toda la lógica)
+  │     ├── upload.html             ← página mini para subir fotos por QR desde móvil
+  │     ├── manifest.json           ← PWA
+  │     ├── icon-192.png            ← icono PWA (192×192)
+  │     ├── icon-512.png            ← icono PWA (512×512)
+  │     └── apple-touch-icon.png    ← icono iOS
+  ├── _backups_local/               ← backups locales (gitignored)
+  ├── vercel.json                   ← redirige / a /app.html
+  ├── NOTAS.md                      ← este archivo
+  ├── README.md                     ← guía de arranque y arquitectura
+  └── AGENTS.md                     ← reglas para agentes de IA
 ```
+
+### Boilerplate sin uso (candidatos a eliminar futura)
+- `public/file.svg`, `public/vercel.svg`, `public/window.svg` — restos de create-next-app
 
 ---
 
@@ -58,8 +86,11 @@ proyecto/
 
 ## Keep-alive (anti-pausa Supabase)
 - UptimeRobot hace ping cada 8hs a `/api/keepalive`
-- El endpoint está en Vercel y consulta la tabla `app_health`
+- Endpoint App Router: `app/api/keepalive/route.ts` (funciona con `npm run dev` y Vercel)
+- Consulta la tabla `app_health` en Supabase
+- Usa `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` si existen; si no, credenciales embebidas
 - Evita que Supabase pause la BD por inactividad
+- **Migrado desde** `api/keepalive.js` (formato Vercel serverless legacy, eliminado)
 
 ---
 
@@ -137,7 +168,9 @@ proyecto/
 
 ## PWA
 - Instalable en móvil (iOS: Safari → compartir → añadir a inicio) y PC (Chrome: ícono en barra de direcciones)
-- `manifest.json` con icono 192px y 512px
+- `manifest.json` referencia `/icon-192.png` y `/icon-512.png`
+- `app.html` referencia `/apple-touch-icon.png` e `/icon-192.png` (logo login)
+- Iconos presentes en `public/` y trackeados en git
 - `maximum-scale=1, user-scalable=no` para evitar zoom en iOS al enfocar inputs
 - `font-size: 16px` en inputs para evitar zoom automático en iOS
 
