@@ -82,6 +82,8 @@
     textarea{min-height:70px; resize:vertical;}
     #f_initial{ font-size:13px; }
     .action-block textarea{ font-size:13px; min-height:90px; }
+    .action-block input[type="date"][data-role="fecha"]{position:absolute;width:1px;height:1px;opacity:0;padding:0;border:0;pointer-events:none;overflow:hidden;}
+    .action-block [data-role="fecha-label"],.action-block [data-role="fecha-icon"]{cursor:pointer;}
     .btn{border:1px solid var(--border);background:var(--panel);color:var(--txt);padding:10px 12px;border-radius:12px;cursor:pointer;transition:.15s ease;font-weight:600;font-size:13px;}
     .btn:hover{transform: translateY(-1px); border-color:#2b3d66;}
     .btn.primary{background: linear-gradient(180deg, #2b6cff, #1c4ed8); border-color:#2b6cff; color:#fff;}
@@ -1371,6 +1373,15 @@
     return `${d}/${m}/${y}`;
   }
 
+  function openDatePicker(input){
+    if(!input || input.disabled) return;
+    if(typeof input.showPicker === "function"){
+      try{ input.showPicker(); return; }catch(_){}
+    }
+    input.focus();
+    input.click();
+  }
+
   function fechaAlertClass(dias){
     if(dias === null) return null;
     if(dias < 0) return "vencida";
@@ -1598,10 +1609,10 @@
         </div>
         <label>Motivo</label>
         <textarea placeholder="escribe aqui ..........."></textarea>
-        <div class="row" style="margin-top:8px;gap:8px;align-items:center;">
-          <span style="font-size:12px;color:var(--muted)">📅</span>
-          <input type="date" data-role="fecha" style="width:auto;flex:1;max-width:160px;font-size:12px;padding:6px 8px;" title="Fecha límite" />
-          <span data-role="fecha-label" style="font-size:12px;"></span>
+        <div class="row" style="margin-top:8px;gap:8px;align-items:center;position:relative;">
+          <span data-role="fecha-icon" style="font-size:12px;color:var(--muted)" title="Fecha límite">📅</span>
+          <span data-role="fecha-label" style="font-size:12px;color:var(--muted)" title="Fecha límite"></span>
+          <input type="date" data-role="fecha" tabindex="-1" aria-hidden="true" title="Fecha límite" />
         </div>
         <label style="margin-top:10px">Imágenes (máx. 5)</label>
         <div class="photo-thumbs">
@@ -1632,15 +1643,18 @@
       function updateFechaLabel(){
         const val = fechaInput.value;
         block.dataset.fechaLimite = val || "";
-        if(!val){ fechaLabel.textContent=""; fechaLabel.style.color=""; return; }
+        if(!val){ fechaLabel.textContent="Sin fecha"; fechaLabel.style.color="var(--muted)"; return; }
         const dias = diasRestantes(val);
-        if(dias < 0){ fechaLabel.textContent=`🚨 Vencida hace ${Math.abs(dias)}d`; fechaLabel.style.color="var(--danger)"; }
-        else if(dias===0){ fechaLabel.textContent="🚨 Vence hoy"; fechaLabel.style.color="var(--danger)"; }
-        else if(dias<=2){ fechaLabel.textContent=`🚨 ${dias}d`; fechaLabel.style.color="var(--danger)"; }
-        else if(dias<=5){ fechaLabel.textContent=`⚠️ ${dias}d`; fechaLabel.style.color="var(--warn)"; }
-        else{ fechaLabel.textContent=`📅 ${formatFecha(val)}`; fechaLabel.style.color="var(--muted)"; }
+        const txt = formatFecha(val);
+        if(dias < 0){ fechaLabel.textContent=`🚨 ${txt}`; fechaLabel.style.color="var(--danger)"; }
+        else if(dias===0){ fechaLabel.textContent=`🚨 ${txt}`; fechaLabel.style.color="var(--danger)"; }
+        else if(dias<=2){ fechaLabel.textContent=`🚨 ${txt}`; fechaLabel.style.color="var(--danger)"; }
+        else if(dias<=5){ fechaLabel.textContent=`⚠️ ${txt}`; fechaLabel.style.color="var(--warn)"; }
+        else{ fechaLabel.textContent=txt; fechaLabel.style.color="var(--muted)"; }
       }
       updateFechaLabel();
+      fechaLabel.addEventListener("click", ()=> openDatePicker(fechaInput));
+      block.querySelector('[data-role="fecha-icon"]')?.addEventListener("click", ()=> openDatePicker(fechaInput));
       fechaInput.addEventListener("change", ()=>{ markDirty(); updateFechaLabel(); });
       block.querySelector('[data-role="qr"]').addEventListener("click", () => {
         const allBlocks = Array.from(actionsWrap.querySelectorAll(".action-block"));
@@ -1664,39 +1678,26 @@
       });
       block.querySelector('[data-role="remove"]').addEventListener("click", async ()=>{
         if(!confirm("¿Eliminar esta actuación y sus fotos?")) return;
+        const remaining = getActionsFromDOM();
+        remaining.splice(idx, 1);
         const f1=block.dataset.foto1||null; const f2=block.dataset.foto2||null;
         const f3=block.dataset.foto3||null; const f4=block.dataset.foto4||null;
         const f5=block.dataset.foto5||null;
         for(const f of [f1,f2,f3,f4,f5]) if(f) await deletePhotoFromStorage(f);
         const p = selectedPatientId ? state.patients.find(x => x.id === selectedPatientId) : null;
         if(p?.dbId){
-          // Buscar la fila exacta por status + note + foto1 para no depender del índice DOM
           const { data: rows } = await sb.from("patient_actions")
-            .select("id, status, note, foto1_url")
+            .select("id")
             .eq("patient_id", p.dbId)
             .order("created_at", { ascending: true });
-          if(rows){
-            // Encontrar la fila que coincide con esta actuación
-            const matchRow = rows.find(r =>
-              r.status === (a.status||"") &&
-              r.note === (a.note||"") &&
-              (r.foto1_url||null) === (a.foto1_url||null)
-            );
-            if(matchRow){
-              await sb.from("patient_actions").delete().eq("id", matchRow.id);
-            }
+          if(rows && rows[idx]){
+            await sb.from("patient_actions").delete().eq("id", rows[idx].id);
           }
         }
-        // Limpiar panel derecho inmediatamente para evitar el fantasma
-        actionsWrap.innerHTML = "";
-        setActionsCount(0);
-        // Recargar desde Supabase y refrescar panel derecho directamente
-        await loadPatientsFromDb();
+        if(p) p.actions = remaining;
+        saveState();
+        renderActions(remaining);
         patientList.querySelectorAll(".action-filter-badge").forEach(b => b.classList.remove("badge-active"));
-        const fresh = state.patients.find(x => x.id === selectedPatientId);
-        if(fresh){
-          renderActions(fresh.actions||[]);
-        }
         markClean();
         renderList();
       });
