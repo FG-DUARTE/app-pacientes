@@ -105,6 +105,12 @@
     .item:hover{border-color:#2b3d66;}
     .item.active{border-color: var(--accent); box-shadow: 0 0 0 2px rgba(110,168,254,.15) inset;}
     .item.archived{opacity:.7;}
+    .item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+    .item-mod-date{font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0;line-height:1.3;margin-top:1px;}
+    .filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;}
+    .filters-row input[type="date"]{max-width:140px;font-size:12px;padding:8px;}
+    .filters-row select{max-width:220px;font-size:12px;padding:8px;}
+    .filters-row label{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:4px;}
     .muted{color:var(--muted); font-size:12px;}
     .title{font-weight:800; font-size:14px; margin:0;}
     .identifier{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--accent);}
@@ -593,8 +599,17 @@
           <option value="all">Todos</option>
         </select>
       </div>
+      <div class="filters-row">
+        <select id="sortOrder" title="Orden de registros">
+          <option value="mod-desc">Modificación más reciente</option>
+          <option value="mod-asc">Modificación más antigua</option>
+          <option value="id-asc">ID menor a mayor</option>
+        </select>
+        <label>Desde <input type="date" id="filterModDesde" title="Modificación desde (DD/MM/AAAA)" /></label>
+        <label>Hasta <input type="date" id="filterModHasta" title="Modificación hasta (DD/MM/AAAA)" /></label>
+      </div>
       <div class="hint" style="margin-top:8px">
-        La búsqueda usa identificación, datos generales y motivos de actuaciones.
+        Búsqueda por identificación, datos y motivos. Rango opcional sobre última modificación (inclusive).
       </div>
       <div class="sep"></div>
       <div class="list" id="patientList"></div>
@@ -887,7 +902,7 @@
     const actionsByPatient=new Map();
     for(const row of actionsData){
       const arr=actionsByPatient.get(row.patient_id)||[];
-      arr.push({status:row.status||"",note:row.note||"",fecha_limite:row.fecha_limite||null,foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null,foto3_url:row.foto3_url||null,foto4_url:row.foto4_url||null,foto5_url:row.foto5_url||null});
+      arr.push({status:row.status||"",note:row.note||"",fecha_limite:row.fecha_limite||null,foto1_url:row.foto1_url||null,foto2_url:row.foto2_url||null,foto3_url:row.foto3_url||null,foto4_url:row.foto4_url||null,foto5_url:row.foto5_url||null,updatedAt:row.updated_at||null});
       actionsByPatient.set(row.patient_id,arr);
     }
     state.patients=(Array.isArray(patientsData)?patientsData:[]).map(row=>normalizePatient({
@@ -1214,6 +1229,9 @@
   const btnUnlockHC = el("btnUnlockHC");
   const search = el("search");
   const filterStatus = el("filterStatus");
+  const sortOrder = el("sortOrder");
+  const filterModDesde = el("filterModDesde");
+  const filterModHasta = el("filterModHasta");
   const actionsWrap = el("actionsWrap");
   const btnAddAction = el("btnAddAction");
   const actionsCount = el("actionsCount");
@@ -1323,12 +1341,65 @@
     return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   }
 
-  function sortPatients(){
-    state.patients.sort((a,b)=>{
-      const na=Number(a.identifier),nb=Number(b.identifier);
-      if(!Number.isNaN(na)&&!Number.isNaN(nb)) return na-nb;
+  function parseISODate(iso){
+    if(!iso) return null;
+    const d=new Date(iso);
+    return Number.isNaN(d.getTime())?null:d;
+  }
+
+  function getUltimaModificacion(p){
+    let max=parseISODate(p?.updatedAt);
+    for(const a of (p?.actions||[])){
+      const d=parseISODate(a?.updatedAt);
+      if(d&&(!max||d>max)) max=d;
+    }
+    return max;
+  }
+
+  function formatDateOnly(d){
+    if(!d) return "";
+    const day=String(d.getDate()).padStart(2,"0");
+    const month=String(d.getMonth()+1).padStart(2,"0");
+    return `${day}/${month}/${d.getFullYear()}`;
+  }
+
+  function formatUltimaModificacion(p){
+    return formatDateOnly(getUltimaModificacion(p));
+  }
+
+  function parseFilterDateInput(val){
+    if(!val) return null;
+    const d=new Date(val+"T00:00:00");
+    return Number.isNaN(d.getTime())?null:d;
+  }
+
+  function matchesModDateRange(p,desde,hasta){
+    if(!desde&&!hasta) return true;
+    const mod=getUltimaModificacion(p);
+    if(!mod) return false;
+    const modDay=new Date(mod);
+    modDay.setHours(0,0,0,0);
+    if(desde&&modDay<desde) return false;
+    if(hasta&&modDay>hasta) return false;
+    return true;
+  }
+
+  function identifierNum(x){
+    const n=Number(x?.identifier);
+    return Number.isNaN(n)?Number.POSITIVE_INFINITY:n;
+  }
+
+  function applySelectedSort(a,b){
+    const order=sortOrder?.value||"mod-desc";
+    if(order==="id-asc"){
+      const na=identifierNum(a),nb=identifierNum(b);
+      if(na!==nb) return na-nb;
       return (a.identifier||"").localeCompare(b.identifier||"","es",{sensitivity:"base"});
-    });
+    }
+    const ma=getUltimaModificacion(a)?.getTime()??0;
+    const mb=getUltimaModificacion(b)?.getTime()??0;
+    if(ma!==mb) return order==="mod-asc"?ma-mb:mb-ma;
+    return identifierNum(a)-identifierNum(b);
   }
 
   function formatTS(iso){
@@ -1803,9 +1874,10 @@
     if(pillBlue){ pillBlue.classList.toggle("pulse-red", hasUrgentBlue); pillBlue.classList.toggle("pulse-yellow", !hasUrgentBlue && hasProximoBlue); }
     if(pillPurple){ pillPurple.classList.toggle("pulse-red", hasUrgentPurple); pillPurple.classList.toggle("pulse-yellow", !hasUrgentPurple && hasProximoPurple); }
     if(pillGreen){ pillGreen.classList.toggle("pulse-red", hasUrgentGreen); pillGreen.classList.toggle("pulse-yellow", !hasUrgentGreen && hasProximoGreen); }
-    sortPatients();
     const q=(search.value||"").trim();
     const f=filterStatus.value;
+    const modDesde=parseFilterDateInput(filterModDesde?.value);
+    const modHasta=parseFilterDateInput(filterModHasta?.value);
 
     if(f==="notes"||severityFilter==="orange"){
       patientList.innerHTML="";
@@ -1815,6 +1887,7 @@
     }
 
     const filtered=state.patients.filter(p=>{
+      if(!matchesModDateRange(p,modDesde,modHasta)) return false;
       const m=matchesSearchAll(p,q);
       if(q&&m){
         if(severityFilter==="red") return hasRed(p);
@@ -1835,13 +1908,13 @@
       return true;
     });
 
-    const identifierNum=x=>{ const n=Number(x?.identifier); return Number.isNaN(n)?Number.POSITIVE_INFINITY:n; };
     const deadlineScore=p=>{ const a=hasDeadlineAlert(p); return a==="urgente"?0:a==="proximo"?1:2; };
     const sevScore=p=>hasRed(p)?0:hasYellow(p)?1:hasBlue(p)?2:hasPurple(p)?3:4;
     const deadlineSort = (a,b) => {
       const da=deadlineScore(a), db=deadlineScore(b);
       if(da!==db) return da-db;
-      return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
+      if(da<2) return sevScore(a)!==sevScore(b)?sevScore(a)-sevScore(b):identifierNum(a)-identifierNum(b);
+      return applySelectedSort(a,b);
     };
     const actives=filtered.filter(p=>!p.archived&&(p.actions||[]).filter(isUsedAction).length>0).sort(deadlineSort);
     const followups=filtered.filter(p=>hasBlue(p)).sort(deadlineSort);
@@ -1869,8 +1942,12 @@
       },0);
       const photoBadge=photoCount>0?`<span class="badge">📷 ${photoCount} foto${photoCount>1?"s":""}</span>`:"";
       const firstLine = (p.initialStudy||"").split("\n")[0].trim();
+      const modDate=formatUltimaModificacion(p);
       it.innerHTML=`
-        <p class="title">${escapeHTML(p.identifier||"—")} ${fechaBadge}</p>
+        <div class="item-head">
+          <p class="title">${escapeHTML(p.identifier||"—")} ${fechaBadge}</p>
+          ${modDate?`<span class="item-mod-date" title="Última modificación">${modDate}</span>`:""}
+        </div>
         <div class="muted">${firstLine ? escapeHTML(firstLine) : "Identificación"}</div>
         <div class="badges">
           <span class="badge">Act: ${counts.total}</span>
@@ -2211,6 +2288,9 @@
 
   search.addEventListener("input",renderList);
   filterStatus.addEventListener("change",()=>{ severityFilter=null; renderList(); });
+  if(sortOrder) sortOrder.addEventListener("change",renderList);
+  if(filterModDesde) filterModDesde.addEventListener("change",renderList);
+  if(filterModHasta) filterModHasta.addEventListener("change",renderList);
 
   if(pillRed) pillRed.addEventListener("click",()=>{ severityFilter=severityFilter==="red"?null:"red"; if(severityFilter) filterStatus.value="active"; renderList(); });
   if(pillYellow) pillYellow.addEventListener("click",()=>{ severityFilter=severityFilter==="yellow"?null:"yellow"; if(severityFilter) filterStatus.value="active"; renderList(); });
