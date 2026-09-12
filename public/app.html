@@ -338,12 +338,36 @@
     .email-modal-icon{font-size:52px; margin-bottom:12px;}
     .email-modal-title{font-size:20px; font-weight:900; margin:0 0 8px; color:var(--txt);}
     .email-modal-body{color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:20px;}
-    /* AUTOSAVE dirty indicator */
-    .autosave-indicator{
-      font-size:11px; color:var(--warn); font-weight:700;
-      display:none; align-items:center; gap:4px;
+    /* Floating save bubble */
+    .save-bubble{
+      position:fixed; top:max(12px, env(safe-area-inset-top, 12px)); right:max(12px, env(safe-area-inset-right, 12px));
+      z-index:4000; display:none; align-items:center; gap:8px;
+      padding:10px 16px; border-radius:999px; font-size:13px; font-weight:700;
+      box-shadow:0 4px 16px rgba(0,0,0,.18), 0 1px 4px rgba(0,0,0,.1);
+      cursor:pointer; user-select:none; border:1px solid transparent;
+      transition:opacity .2s ease, transform .2s ease, background .2s ease, color .2s ease;
+      max-width:min(calc(100vw - 24px), 320px);
     }
-    .autosave-indicator.visible{display:inline-flex;}
+    .save-bubble.visible{display:inline-flex;}
+    .save-bubble.dirty{
+      background:linear-gradient(180deg,#fb923c,#ea580c); color:#fff;
+      border-color:rgba(234,88,12,.5);
+    }
+    .save-bubble.dirty:hover{ transform:translateY(-1px); box-shadow:0 6px 20px rgba(234,88,12,.35); }
+    .save-bubble.saving{
+      background:linear-gradient(180deg,#94a3b8,#64748b); color:#fff;
+      border-color:rgba(100,116,139,.5); cursor:wait; pointer-events:none;
+    }
+    .save-bubble.error{
+      background:linear-gradient(180deg,#ef4444,#b91c1c); color:#fff;
+      border-color:rgba(185,28,28,.6);
+    }
+    .save-bubble.error:hover{ transform:translateY(-1px); box-shadow:0 6px 20px rgba(239,68,68,.4); }
+    .save-bubble-spinner{
+      width:14px; height:14px; border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff; border-radius:50%; animation:saveBubbleSpin .7s linear infinite; flex-shrink:0;
+    }
+    @keyframes saveBubbleSpin{ to{ transform:rotate(360deg); } }
     /* QR MODAL */
     .qr-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;padding:16px;}
     .qr-modal-overlay.open{display:flex;}
@@ -355,6 +379,8 @@
   </style>
 </head>
 <body>
+
+<div class="save-bubble" id="saveBubble" role="status" aria-live="polite" hidden></div>
 
 <!-- QR MODAL -->
 <div class="qr-modal-overlay" id="qrModal">
@@ -636,10 +662,8 @@
         <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:.3px;">Registro: <span id="selectedIdentifier">—</span></div>
         <div class="right row" style="gap:8px">
           <button class="btn danger" id="btnDeletePatient">Borrar registro</button>
-          <button class="btn primary" id="btnSave">Cambios / Guardar</button>
         </div>
       </div>
-      <span class="autosave-indicator" id="autosaveIndicator">⚠️ Cambios sin guardar</span>
       <div class="sep"></div>
       <div>
         <label>Identificación</label>
@@ -1236,7 +1260,7 @@
   const btnAddAction = el("btnAddAction");
   const actionsCount = el("actionsCount");
   const btnNew = el("btnNew");
-  const btnSave = el("btnSave");
+  const saveBubble = el("saveBubble");
   const btnViewPatientHistory = el("btnViewPatientHistory");
   const btnViewGlobalHistory = el("btnViewGlobalHistory");
   const btnDeletePatient = el("btnDeletePatient");
@@ -2022,11 +2046,15 @@
     renderActions([]); lockHCIfNeeded(); renderList();
   }
 
+  function confirmDiscardIfDirty(){
+    if(!isDirty) return true;
+    return confirm("Tienes cambios sin guardar. Si continúas, se perderán. ¿Quieres continuar?");
+  }
+
   async function selectPatient(id){
     if(qrCurrentToken) closeQrModal();
     if(isDirty && selectedPatientId && selectedPatientId !== id){
-      const ok = confirm("Tenés cambios sin guardar en este registro.\n¿Querés salir de todas formas sin guardar?");
-      if(!ok) return;
+      if(!confirmDiscardIfDirty()) return;
     }
     const p = state.patients.find(x => x.id === id);
     if(!p) return;
@@ -2139,79 +2167,124 @@
     lockHCIfNeeded();
   });
 
-  btnNew.addEventListener("click",clearForm);
+  btnNew.addEventListener("click",()=>{
+    if(!confirmDiscardIfDirty()) return;
+    clearForm();
+  });
 
-  btnSave.addEventListener("click",async()=>{
-    const draft=(noteDraft.value||"").trim();
-    if(draft){
-      const note=normalizeNote({text:draft,createdAt:nowISO(),is_deleted:false});
-      const {data:nd,error:ne}=await sb.from("notes").insert([{user_id:currentUser?.id,text:note.text,is_deleted:false,created_at:note.createdAt,deleted_at:null}]).select();
-      if(ne){ alert("Falló el guardado de la nota: "+ne.message); return; }
-      if(nd?.[0]?.id) note.dbId=nd[0].id;
-      state.notes.push(note);
-      addLog(null,"note_created",structuredClone(note));
-      noteDraft.value="";
-    }
+  async function savePatientForm(){
+    if(isSaving) return;
+    isSaving = true;
+    saveBubbleError = null;
+    updateSaveBubble();
 
-    const existing=selectedPatientId?state.patients.find(x=>x.id===selectedPatientId):null;
-    const shouldSavePatient=(f_identifier_input.value||"").trim()||(f_initial.value||"").trim()||getActionsFromDOM().some(isUsedAction);
-    if(!shouldSavePatient){ saveState(); renderList(); if(draft) showToast("Nota guardada.","",null,2500); return; }
-
-    const p=readFormToPatient(existing);
-    const errs=validatePatient(p,existing);
-    if(errs.length){ alert("No se pudo guardar:\n- "+errs.join("\n- ")); return; }
-
-    let dbData=null,dbError=null;
-    if(existing){
-      let targetDbId=existing.dbId||null;
-      if(!targetDbId){
-        const found=await sb.from("patients").select("id").eq("user_id",currentUser?.id).eq("identifier",p.identifier).limit(1).maybeSingle();
-        if(found.error){ alert("Falló búsqueda: "+found.error.message); return; }
-        if(found.data?.id) targetDbId=found.data.id;
+    try {
+      const draft=(noteDraft.value||"").trim();
+      if(draft){
+        const note=normalizeNote({text:draft,createdAt:nowISO(),is_deleted:false});
+        const {data:nd,error:ne}=await sb.from("notes").insert([{user_id:currentUser?.id,text:note.text,is_deleted:false,created_at:note.createdAt,deleted_at:null}]).select();
+        if(ne){
+          saveBubbleError = "Falló el guardado de la nota: "+ne.message;
+          isSaving = false;
+          updateSaveBubble();
+          return;
+        }
+        if(nd?.[0]?.id) note.dbId=nd[0].id;
+        state.notes.push(note);
+        addLog(null,"note_created",structuredClone(note));
+        noteDraft.value="";
       }
-      if(targetDbId){
-        const r=await sb.from("patients").update({user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}).eq("id",targetDbId).select();
-        dbData=r.data; dbError=r.error;
+
+      const existing=selectedPatientId?state.patients.find(x=>x.id===selectedPatientId):null;
+      const shouldSavePatient=(f_identifier_input.value||"").trim()||(f_initial.value||"").trim()||getActionsFromDOM().some(isUsedAction);
+      if(!shouldSavePatient){
+        saveState(); renderList();
+        if(draft) showToast("Nota guardada.","",null,2500);
+        markClean();
+        return;
+      }
+
+      const p=readFormToPatient(existing);
+      const errs=validatePatient(p,existing);
+      if(errs.length){
+        saveBubbleError = errs.join("; ");
+        isSaving = false;
+        updateSaveBubble();
+        return;
+      }
+
+      let dbData=null,dbError=null;
+      if(existing){
+        let targetDbId=existing.dbId||null;
+        if(!targetDbId){
+          const found=await sb.from("patients").select("id").eq("user_id",currentUser?.id).eq("identifier",p.identifier).limit(1).maybeSingle();
+          if(found.error){
+            saveBubbleError = "Falló búsqueda: "+found.error.message;
+            isSaving = false;
+            updateSaveBubble();
+            return;
+          }
+          if(found.data?.id) targetDbId=found.data.id;
+        }
+        if(targetDbId){
+          const r=await sb.from("patients").update({user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}).eq("id",targetDbId).select();
+          dbData=r.data; dbError=r.error;
+        } else {
+          const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
+          dbData=r.data; dbError=r.error;
+        }
       } else {
         const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
         dbData=r.data; dbError=r.error;
       }
-    } else {
-      const r=await sb.from("patients").insert([{user_id:currentUser?.id,identifier:p.identifier,datos_generales:p.initialStudy,archived:p.archived}]).select();
-      dbData=r.data; dbError=r.error;
-    }
 
-    if(dbError){ 
-      // Si el error es de autenticación, mostrar login
-      if(dbError.message?.includes("JWT") || dbError.message?.includes("auth") || dbError.code === "PGRST301"){
-        alert("Tu sesión expiró. Por favor iniciá sesión de nuevo.");
-        currentSession=null; currentUser=null; currentProfile=null;
-        state=defaultState(); updateAuthUI(); renderList(); clearForm();
+      if(dbError){
+        if(dbError.message?.includes("JWT") || dbError.message?.includes("auth") || dbError.code === "PGRST301"){
+          alert("Tu sesión expiró. Por favor iniciá sesión de nuevo.");
+          currentSession=null; currentUser=null; currentProfile=null;
+          state=defaultState(); updateAuthUI(); renderList(); clearForm();
+          markClean();
+          return;
+        }
+        saveBubbleError = "Falló el guardado en Supabase: "+dbError.message;
+        isSaving = false;
+        updateSaveBubble();
         return;
       }
-      alert("Falló el guardado en Supabase: "+dbError.message); return; 
-    }
 
-    // pendingScanFile ya no se usa — la foto se guarda automáticamente desde el modal
+      if(Array.isArray(dbData)&&dbData[0]?.id){
+        p.dbId=dbData[0].id;
+        try { await syncPatientActionsToDb(p.dbId,p.actions||[]); }
+        catch(actErr){
+          saveBubbleError = "Registro guardado, pero falló sync de actuaciones: "+actErr.message;
+          isSaving = false;
+          updateSaveBubble();
+          return;
+        }
+      }
 
-    if(Array.isArray(dbData)&&dbData[0]?.id){
-      p.dbId=dbData[0].id;
-      try { await syncPatientActionsToDb(p.dbId,p.actions||[]); }
-      catch(actErr){ alert("Registro guardado, pero falló sync de actuaciones: "+actErr.message); }
+      if(existing){
+        Object.assign(existing,p);
+        addLog(existing.id,"updated",structuredClone(existing));
+        saveState(); identifierUnlocked=false;
+        await selectPatient(existing.id);
+      } else {
+        p.id=uid(); state.patients.push(p);
+        addLog(p.id,"created",structuredClone(p));
+        saveState();
+        await selectPatient(p.id);
+      }
+      renderList();
+    } catch(err){
+      saveBubbleError = err?.message || String(err);
+      isSaving = false;
+      updateSaveBubble();
     }
+  }
 
-    if(existing){
-      Object.assign(existing,p);
-      addLog(existing.id,"updated",structuredClone(existing));
-      saveState(); identifierUnlocked=false; selectPatient(existing.id);
-      markClean(true);
-    } else {
-      p.id=uid(); state.patients.push(p);
-      addLog(p.id,"created",structuredClone(p));
-      saveState(); selectPatient(p.id);
-      markClean(true);
-    }
-    renderList();
+  if(saveBubble) saveBubble.addEventListener("click", ()=>{
+    if(isSaving) return;
+    savePatientForm();
   });
 
   btnDeletePatient.addEventListener("click",async()=>{
@@ -2405,34 +2478,59 @@
   el("lightboxClose").addEventListener("click",closeLightbox);
   el("lightbox").addEventListener("click",(e)=>{ if(e.target===el("lightbox")) closeLightbox(); });
 
-  // ─── DIRTY TRACKING — solo indicador + confirmación al salir ───
+  // ─── DIRTY TRACKING — burbuja flotante + confirmación al salir ───
   let isDirty = false;
+  let isSaving = false;
+  let saveBubbleError = null;
+
+  function updateSaveBubble(){
+    if(!saveBubble) return;
+    if(!isDirty && !isSaving){
+      saveBubble.hidden = true;
+      saveBubble.classList.remove("visible","dirty","saving","error");
+      saveBubble.innerHTML = "";
+      saveBubble.removeAttribute("title");
+      return;
+    }
+    saveBubble.hidden = false;
+    saveBubble.classList.add("visible");
+    if(isSaving){
+      saveBubble.classList.remove("dirty","error");
+      saveBubble.classList.add("saving");
+      saveBubble.innerHTML = '<span class="save-bubble-spinner" aria-hidden="true"></span><span>Guardando…</span>';
+      saveBubble.removeAttribute("title");
+    } else if(saveBubbleError){
+      saveBubble.classList.remove("dirty","saving");
+      saveBubble.classList.add("error");
+      saveBubble.innerHTML = "<span>Error al guardar</span>";
+      saveBubble.title = saveBubbleError;
+    } else {
+      saveBubble.classList.remove("saving","error");
+      saveBubble.classList.add("dirty");
+      saveBubble.innerHTML = "<span>Cambios sin guardar</span>";
+      saveBubble.title = "Clic para guardar";
+    }
+  }
 
   function markDirty(){
     isDirty = true;
-    const ind = el("autosaveIndicator");
-    if(ind) ind.classList.add("visible");
+    if(!isSaving) saveBubbleError = null;
+    updateSaveBubble();
   }
 
-  function markClean(showFlash = false){
+  function markClean(){
     isDirty = false;
-    const ind = el("autosaveIndicator");
-    if(ind) ind.classList.remove("visible");
-    if(showFlash){
-      const btn = el("btnSave");
-      if(btn){
-        const prev = btn.textContent;
-        btn.textContent = "Guardando...";
-        btn.style.background = "linear-gradient(180deg,#10b981,#059669)";
-        btn.style.borderColor = "#10b981";
-        setTimeout(() => {
-          btn.textContent = prev;
-          btn.style.background = "";
-          btn.style.borderColor = "";
-        }, 1200);
-      }
-    }
+    isSaving = false;
+    saveBubbleError = null;
+    updateSaveBubble();
   }
+
+  window.addEventListener("beforeunload", (e)=>{
+    if(isDirty && !isSaving){
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
 
   function setupDirtyListeners(){
     if(actionsWrap){

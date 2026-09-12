@@ -24,3 +24,20 @@
 
 - Sincronización en tiempo real de fechas tras subida QR sin recargar.
 - Migración gradual de UI a React (solo si se decide explícitamente).
+
+## Burbuja flotante de guardado
+
+### Implementado
+
+- **Indicador único** en esquina superior derecha (`#saveBubble`), fijo, forma pill, alta prioridad visual.
+- **Estados:**
+  - Sin cambios pendientes: burbuja oculta (sin “Guardado” permanente).
+  - Cambios sin guardar: naranja/rojo, texto “Cambios sin guardar”, clic → misma función `savePatientForm()` que el antiguo botón “Cambios / Guardar”.
+  - Guardando: “Guardando…”, gris/azul, spinner, no permite doble clic.
+  - Error: rojo intenso, “Error al guardar”, clic reintenta; detalle en `title`/tooltip; mantiene estado dirty.
+  - Éxito: `markClean()` — burbuja desaparece por completo.
+- **Dirty tracking reutilizado:** flag `isDirty`, `markDirty()` / `markClean()`, listeners en `setupDirtyListeners()` y llamadas puntuales en actuaciones/fotos — sin segundo sistema de dirty state.
+- **Controles retirados:** botón `#btnSave` (“Cambios / Guardar”) e indicador `#autosaveIndicator`.
+- **Protección de navegación:**
+  - `beforeunload` cuando `isDirty` (no tras guardado exitoso).
+  - Cambio de registro (`selectPatient`) y “+ Nuevo” (`btnNew`): confirmación “Tienes cambios sin guardar. Si continúas, se perderán. ¿Quieres continuar?” — cancelar mantiene el registro y los cambios; aceptar descarta y continúa (coherente con `markClean()` al cargar otro registro).
