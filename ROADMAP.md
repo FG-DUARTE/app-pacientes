@@ -90,7 +90,16 @@
   4. Pulsaciones rápidas → último valor coherente con Supabase → OK.
 - **Pendiente:** prueba de fallo de red (mensaje + restauración).
 
-### Próxima fase — 3
+### Fase 3 — calendario mensual ✅ (implementada y validada manualmente)
 
-- Navegación semanal, distribución por días, contadores de cupo usado/libre/excedido.
-- Después: CRUD favores, alertas de cupo completo, respuesta automática.
+- **Diseño:** cuadrícula mensual lun–dom; días de meses adyacentes atenuados; navegación ‹ › y «Hoy»; día actual seleccionado al abrir.
+- **Contadores superiores:** semana del **día seleccionado** (lun–dom): Utilizados / Disponibles / Exceso.
+- **Indicadores por fila semanal:** `N/cupo favores` (disponible / completo / excedido).
+- **Datos:** `favor_entries` por `study_date`; rango de cuadrícula visible; fechas locales; anti-respuestas obsoletas.
+- **Detalle del día:** listado read-only; sin CRUD (reservado Fase 4).
+- **Validación manual (usuario):** calendario, contadores, navegación y detalle — satisfactorio.
+
+### Próxima fase — 4
+
+- **Alta, edición y eliminación de favores** (`favor_entries`).
+- Después: alertas de cupo completo, respuesta automática para solicitantes.
