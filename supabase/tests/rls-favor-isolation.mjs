@@ -69,6 +69,25 @@ function expectNoRows(name, data, error) {
   else fail(name, `devolvió ${rows.length} fila(s)`);
 }
 
+/** Fecha futura en Europe/Madrid (limpieza DELETE compatible con Fase 4). */
+function madridFutureYMD(daysAhead = 14) {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const y = Number(parts.find((p) => p.type === "year").value);
+  const m = Number(parts.find((p) => p.type === "month").value);
+  const d = Number(parts.find((p) => p.type === "day").value);
+  const dt = new Date(y, m - 1, d + daysAhead);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
 async function signIn(label, email, password) {
   const client = createClient(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -113,6 +132,8 @@ async function main() {
 
     console.log("Sesiones autenticadas (sin imprimir ids, tokens ni claves).\n");
 
+    const testStudyDate = madridFutureYMD(14);
+
     // ─── favor_entries — Usuario A ───────────────────────────────────────────
     console.log("favor_entries — sesión A");
 
@@ -121,7 +142,7 @@ async function main() {
         .from("favor_entries")
         .insert({
           user_id: userIdA,
-          study_date: new Date().toISOString().slice(0, 10),
+          study_date: testStudyDate,
           modality: "TC",
           patient_ref: MARKER,
           requester: "RLS probe A",
@@ -141,7 +162,7 @@ async function main() {
         .from("favor_entries")
         .insert({
           user_id: userIdB,
-          study_date: new Date().toISOString().slice(0, 10),
+          study_date: testStudyDate,
           modality: "TC",
           patient_ref: MARKER_SPOOF,
           requester: "RLS probe spoof",
@@ -180,7 +201,7 @@ async function main() {
         .from("favor_entries")
         .insert({
           user_id: userIdB,
-          study_date: new Date().toISOString().slice(0, 10),
+          study_date: testStudyDate,
           modality: "RM",
           patient_ref: MARKER,
           requester: "RLS probe B",

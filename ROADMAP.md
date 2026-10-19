@@ -99,7 +99,21 @@
 - **Detalle del día:** listado read-only; sin CRUD (reservado Fase 4).
 - **Validación manual (usuario):** calendario, contadores, navegación y detalle — satisfactorio.
 
-### Próxima fase — 4
+### Fase 4 — gestión de favores ✅ (implementada y validada)
 
-- **Alta, edición y eliminación de favores** (`favor_entries`).
-- Después: alertas de cupo completo, respuesta automática para solicitantes.
+- **Alta / edición / eliminación** en `public/cupo-favores.js`; estilos en `public/app.html`.
+- **Reglas (Europe/Madrid):** crear solo hoy o futuro; editar datos en pasado/hoy/futuro; cambiar fecha solo en futuros; eliminar hoy y futuros; pasado no eliminable.
+- **UX:** modal fecha **DD/MM/AAAA** + calendario nativo auxiliar; mensajes comprensibles (sin errores RLS crudos); autocompletado de solicitante.
+- **Migraciones SQL** (aplicadas en Supabase producción, también en repo):
+  1. `20261019193000_cupo_favores_fase4_temporal_rules.sql`
+  2. `20261019200000_cupo_favores_fase4_no_past_insert.sql`
+  3. `20261019213000_cupo_favores_fase4_delete_today.sql`
+- **Pruebas automatizadas:** `supabase/tests/favor-temporal-rules.mjs` — **11/11 OK** (usuario, cierre Fase 4). `rls-favor-isolation.mjs` sin regresión.
+- **Validación manual (usuario):** eliminación hoy/futuro, formulario DD/MM/AAAA, mensajes de error — satisfactorio.
+- **Build:** `npm run build` OK en cierre de fase.
+- **Históricos:** favores pasados visibles y editables; no eliminables.
+- **Futuro (no implementado):** historial y estadísticas avanzadas.
+
+### Próxima fase — 5
+
+- Alertas de cupo completo, respuesta automática para solicitantes.

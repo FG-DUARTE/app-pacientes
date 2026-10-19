@@ -467,6 +467,38 @@
     .cupo-day-item-mod{ font-weight:800; margin-bottom:4px; }
     .cupo-day-item-ref,.cupo-day-item-req{ color:var(--muted); font-size:12px; }
     .cupo-day-item-note{ margin-top:6px; font-size:12px; white-space:pre-wrap; }
+    .cupo-day-item-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .cupo-day-detail-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .cupo-day-detail-head .cupo-day-detail-title{ margin:0; }
+    .cupo-day-toast{
+      font-size:13px; margin:0 0 10px; padding:8px 10px; border-radius:10px;
+      border:1px solid var(--border); background:var(--panel);
+    }
+    .cupo-day-toast.is-ok{ color:var(--ok); border-color:rgba(16,185,129,.35); }
+    .cupo-day-toast.is-warn{ color:var(--warn); border-color:rgba(245,158,11,.35); }
+    .cupo-day-toast.is-error{ color:var(--danger); border-color:rgba(239,68,68,.35); }
+    .cupo-favor-modal-overlay{
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:3100;
+      align-items:center; justify-content:center; padding:16px;
+    }
+    .cupo-favor-modal-overlay.open{ display:flex; }
+    .cupo-favor-modal-box{ max-width:480px; }
+    .cupo-favor-form label{ display:block; font-size:12px; font-weight:700; margin:12px 0 6px; color:var(--muted); }
+    .cupo-favor-form input,.cupo-favor-form select,.cupo-favor-form textarea{
+      width:100%; box-sizing:border-box;
+    }
+    .cupo-favor-form textarea{ min-height:72px; resize:vertical; }
+    .cupo-favor-form-error{ font-size:12px; color:var(--danger); margin:8px 0 0; min-height:1.2em; }
+    .cupo-favor-date-row{ display:flex; gap:8px; align-items:stretch; }
+    .cupo-favor-date-row input[type="text"]{ flex:1 1 auto; min-width:0; }
+    .cupo-favor-date-row .btn{ flex:0 0 auto; align-self:stretch; }
+    .cupo-favor-field-error{ font-size:12px; color:var(--danger); margin:6px 0 0; min-height:1.2em; }
+    .cupo-favor-date-hint{ font-size:11px; color:var(--muted); margin:4px 0 0; }
+    .cupo-favor-date-native{
+      position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0;
+    }
+    .cupo-favor-modal-actions{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; margin-top:16px; }
+    .cupo-favor-modal-actions .btn.danger{ background:var(--danger); color:#fff; border-color:transparent; }
     @media (max-width:520px){
       .cupo-cal-day{ min-height:46px; padding:4px 2px; }
       .cupo-cal-day-num{ font-size:12px; }
