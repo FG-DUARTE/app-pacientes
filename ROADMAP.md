@@ -41,3 +41,41 @@
 - **Protección de navegación:**
   - `beforeunload` cuando `isDirty` (no tras guardado exitoso).
   - Cambio de registro (`selectPatient`) y “+ Nuevo” (`btnNew`): confirmación “Tienes cambios sin guardar. Si continúas, se perderán. ¿Quieres continuar?” — cancelar mantiene el registro y los cambios; aceptar descarta y continúa (coherente con `markClean()` al cargar otro registro).
+
+## Cupo de favores
+
+### Decisiones aprobadas
+
+- Módulo accesible para **todos los usuarios autenticados**; datos **aislados por usuario** (RLS en PostgreSQL, no solo filtros JS).
+- **Cupo semanal** independiente por usuario: entero **1–20**, predeterminado **4**; tabla `favor_settings`.
+- Favores en **`favor_entries`**; la semana cuenta por **`study_date`** (tipo `DATE`), no por `created_at`.
+- **`patient_ref`**: iniciales o código breve (máx. 32 caracteres en BD); **sin** validación regex de HC en SQL; la UI advertirá al usuario.
+- Modalidad **`Otro`** con descripción opcional (`modality_other`, máx. 80 caracteres).
+- **Encabezado dinámico** según sección (Seguimiento de pacientes / Cupo de favores).
+- Código del módulo en **archivo JavaScript independiente**, reutilizando sesión y cliente Supabase de `app.html`.
+- **No modificar** tablas existentes (`patients`, `patient_actions`, `notes`, `actas`, `profiles`, etc.).
+
+### Fase 0 — base de datos y seguridad ✅ (completada y verificada)
+
+- Migración ejecutada en Supabase; tablas `favor_settings` y `favor_entries`; RLS activo (8 políticas).
+- Prueba de aislamiento: `supabase/tests/rls-favor-isolation.mjs` — **16/16 OK** (dos usuarios reales); registros temporales eliminados.
+- **Artefactos:** `supabase/migrations/20261019180000_cupo_favores_fase0.sql`, `supabase/README.md`, `supabase/tests/README-rls-favor-isolation.md`.
+
+### Fase 1 — navegación y estructura inicial ✅ (completada y validada manualmente)
+
+- Selector en cabecera (`#appSectionNav`); título dinámico; `#favoresWrap` + `public/cupo-favores.js`.
+- Integración `CupoFavores.init({ root, getClient, getUser })` — un solo cliente Supabase y sesión existente.
+- Protección dirty: `confirmDiscardIfDirty()` al pasar a favores; burbuja oculta en sección favores; login/logout en sección pacientes.
+- **Corrección descarte:** `discardDirtyPatientFormAndRestore()` + `applyPatientToForm()` — restauración desde BD/memoria antes de `markClean()`; si falla, no navega.
+- **Validación manual (usuario):** navegación entre secciones, edición de pacientes, protección de cambios sin guardar — satisfactorio.
+- **Build:** `npm run build` OK en cierre de fase.
+
+### Arquitectura (decisiones registradas)
+
+- Módulo en JS separado; shell en `app.html` mínimo; sin React; sin `service_role`.
+- Privacidad por usuario vía RLS; semana por `study_date`; cupo en `favor_settings` (fase 2).
+
+### Próxima fase — 2
+
+- **Configuración del cupo semanal individual:** valor predeterminado **4**, rango **1–20**, autosave en `favor_settings`, medidor visual.
+- Después: CRUD favores, navegación semanal, respuesta automática.

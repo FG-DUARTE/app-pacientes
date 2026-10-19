@@ -368,6 +368,33 @@
       border-top-color:#fff; border-radius:50%; animation:saveBubbleSpin .7s linear infinite; flex-shrink:0;
     }
     @keyframes saveBubbleSpin{ to{ transform:rotate(360deg); } }
+    .app-section-nav{
+      display:inline-flex; gap:4px; padding:4px; margin:0 0 10px;
+      border-radius:999px; border:1px solid var(--header-border);
+      background:var(--panel); flex-wrap:wrap; max-width:100%;
+    }
+    .app-section-nav button{
+      border:none; background:transparent; color:var(--muted);
+      font-size:12px; font-weight:700; padding:8px 14px; border-radius:999px;
+      cursor:pointer; transition:.15s ease; white-space:nowrap;
+    }
+    .app-section-nav button:hover{ color:var(--txt); background:rgba(37,99,235,.08); }
+    .app-section-nav button.active{
+      background:linear-gradient(180deg, #2b6cff, #1c4ed8); color:#fff;
+      box-shadow:0 2px 8px rgba(37,99,235,.25);
+    }
+    @media (max-width:520px){
+      .app-section-nav{ width:100%; justify-content:stretch; }
+      .app-section-nav button{ flex:1 1 auto; text-align:center; padding:10px 8px; font-size:11px; }
+    }
+    .cupo-favores-card{ max-width:720px; margin:0 auto; }
+    .cupo-favores-title{ margin:0 0 10px; font-size:22px; font-weight:800; }
+    .cupo-favores-lead{ margin:0 0 16px; color:var(--muted); font-size:15px; line-height:1.45; }
+    .cupo-favores-status{
+      display:block; padding:12px 14px; border-radius:12px;
+      font-size:13px; line-height:1.4; color:var(--txt);
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(16,185,129,.06));
+    }
     /* QR MODAL */
     .qr-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;padding:16px;}
     .qr-modal-overlay.open{display:flex;}
@@ -561,7 +588,11 @@
 </div>
 
 <header id="appHeader" style="display:none;">
-  <h1>BASE DE REGISTROS (actuaciones)</h1>
+  <nav class="app-section-nav" id="appSectionNav" aria-label="Sección de la aplicación">
+    <button type="button" id="navSectionPatients" class="active" aria-current="page">Seguimiento de pacientes</button>
+    <button type="button" id="navSectionFavores">Cupo de favores</button>
+  </nav>
+  <h1 id="appMainTitle">Seguimiento de pacientes</h1>
   <div class="row" style="justify-content:space-between; align-items:center; gap:12px;">
     <div class="sub"></div>
     <div class="row" style="gap:8px; align-items:center;">
@@ -575,7 +606,7 @@
     <div id="welcomeBannerText">Bienvenido</div>
     <div class="mini"></div>
   </div>
-  <div class="row" id="globalSummary" style="margin-top:10px; gap:8px; flex-wrap:wrap">
+  <div class="row" id="globalSummary" style="margin-top:10px; gap:8px; flex-wrap:wrap" data-patients-only="true">
     <div class="pill clickable" id="pillRed" title="Ver urgentes" style="flex-direction:column;gap:1px;align-items:center;padding:6px 10px;">
       <span>🔴 <span id="sumRed" class="kbd">0</span></span>
       <span style="font-size:9px;color:var(--muted);letter-spacing:.3px;">URGENTES</span>
@@ -695,7 +726,12 @@
   </div>
 </div>
 
+<div class="wrap" id="favoresWrap" style="display:none" aria-hidden="true">
+  <div id="cupoFavoresRoot"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/cupo-favores.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -796,8 +832,16 @@
     const appHeader = el("appHeader");
     if(loginPage) loginPage.style.display = logged ? "none" : "flex";
     if(appHeader) appHeader.style.display = logged ? "block" : "none";
-    if(appWrap) appWrap.style.display = logged ? "block" : "none";
     if(btnLogout) btnLogout.style.display = logged ? "inline-flex" : "none";
+    if(!logged){
+      activeAppSection = "patients";
+      if(appWrap) appWrap.style.display = "none";
+      if(favoresWrap){ favoresWrap.style.display = "none"; favoresWrap.setAttribute("aria-hidden","true"); }
+      if(window.CupoFavores) window.CupoFavores.destroy();
+      cupoFavoresInitialized = false;
+    } else {
+      applyAppSectionUI();
+    }
     if(authStatusText) authStatusText.textContent = logged ? (currentUser.email||"Usuario autenticado") : "No autenticado";
     if(registerFields) registerFields.style.display = (!logged&&registerMode) ? "grid" : "none";
     if(btnRegister) btnRegister.textContent = registerMode ? "Confirmar alta" : "Crear cuenta";
@@ -860,9 +904,11 @@
     actasCount = actasLogin.length;
     setupInactivityListeners(); resetInactivityTimer();
     setupDirtyListeners();
+    activeAppSection = "patients";
     renderList();
     clearForm();
     initialPick();
+    applyAppSectionUI();
   }
 
   async function handleRegister(){
@@ -898,6 +944,9 @@
     } catch(e){}
     currentSession=null; currentUser=null; currentProfile=null;
     registerMode=false; selectedPatientId=null; severityFilter=null;
+    activeAppSection = "patients";
+    if(window.CupoFavores) window.CupoFavores.destroy();
+    cupoFavoresInitialized = false;
     state=defaultState();
     // No limpiamos los campos para que el llavero del navegador funcione
     if(authNombre) authNombre.value="";
@@ -1226,6 +1275,14 @@
   const noteList = el("noteList");
   const noteDraft = el("noteDraft");
   const appWrap = el("appWrap");
+  const favoresWrap = el("favoresWrap");
+  const cupoFavoresRoot = el("cupoFavoresRoot");
+  const navSectionPatients = el("navSectionPatients");
+  const navSectionFavores = el("navSectionFavores");
+  const appMainTitle = el("appMainTitle");
+  const globalSummary = el("globalSummary");
+  let activeAppSection = "patients";
+  let cupoFavoresInitialized = false;
   const authCard = el("authCard");
   const registerFields = el("registerFields");
   const authNombre = el("authNombre");
@@ -2051,6 +2108,112 @@
     return confirm("Tienes cambios sin guardar. Si continúas, se perderán. ¿Quieres continuar?");
   }
 
+  /** Repinta el formulario desde state.patients (datos persistidos en memoria/BD). */
+  function applyPatientToForm(p){
+    if(!p) return false;
+    selectedPatientId = p.id;
+    identifierUnlocked = false;
+    selectedIdentifier.textContent = p.identifier || "—";
+    lastUpdated.textContent = `Últ. actualización: ${formatTS(p.updatedAt)}`;
+    f_identifier_input.value = p.identifier || "";
+    f_identifier.value = p.identifier || "";
+    f_initial.value = p.initialStudy || "";
+    renderActions(p.actions || []);
+    historyPanel.style.display = "none";
+    historyPanel.innerHTML = "";
+    lockHCIfNeeded();
+    renderList();
+    updateQrButton();
+    return true;
+  }
+
+  /** Tras confirmar descarte: restaurar DOM desde Supabase/state; markClean solo si ok. */
+  async function discardDirtyPatientFormAndRestore(){
+    if(qrCurrentToken) closeQrModal();
+    try {
+      if(!selectedPatientId){
+        if(noteDraft) noteDraft.value = "";
+        clearForm();
+        markClean();
+        return true;
+      }
+      const prior = state.patients.find(x => x.id === selectedPatientId);
+      if(!prior) return false;
+
+      let p = prior;
+      if(currentUser && prior.dbId){
+        await loadPatientsFromDb();
+        const refreshed = state.patients.find(x => x.dbId === prior.dbId);
+        if(refreshed) p = refreshed;
+      }
+
+      if(!applyPatientToForm(p)) return false;
+      if(noteDraft) noteDraft.value = "";
+      markClean();
+      return true;
+    } catch(_e){
+      return false;
+    }
+  }
+
+  function ensureCupoFavoresModule(){
+    if(cupoFavoresInitialized || !cupoFavoresRoot || !window.CupoFavores) return;
+    window.CupoFavores.init({
+      root: cupoFavoresRoot,
+      getClient: () => sb,
+      getUser: () => currentUser,
+    });
+    cupoFavoresInitialized = true;
+  }
+
+  function applyAppSectionUI(){
+    const logged = !!currentUser;
+    const isPatients = activeAppSection === "patients";
+    const isFavores = activeAppSection === "favores";
+    if(appMainTitle){
+      appMainTitle.textContent = isFavores ? "Cupo de favores" : "Seguimiento de pacientes";
+    }
+    document.title = isFavores ? "Cupo de favores — Base de Registros" : "Seguimiento de pacientes — Base de Registros";
+    if(navSectionPatients){
+      navSectionPatients.classList.toggle("active", isPatients);
+      navSectionPatients.setAttribute("aria-current", isPatients ? "page" : "false");
+    }
+    if(navSectionFavores){
+      navSectionFavores.classList.toggle("active", isFavores);
+      navSectionFavores.setAttribute("aria-current", isFavores ? "page" : "false");
+    }
+    if(globalSummary) globalSummary.style.display = logged && isPatients ? "flex" : "none";
+    if(el("btnOpenScanModal")) el("btnOpenScanModal").style.display = logged && isPatients ? "inline-flex" : "none";
+    if(appWrap) appWrap.style.display = logged && isPatients ? "block" : "none";
+    if(favoresWrap){
+      favoresWrap.style.display = logged && isFavores ? "block" : "none";
+      favoresWrap.setAttribute("aria-hidden", logged && isFavores ? "false" : "true");
+    }
+    if(logged && isFavores) ensureCupoFavoresModule();
+    if(window.CupoFavores){
+      if(isFavores) window.CupoFavores.onShow();
+      else window.CupoFavores.onHide();
+    }
+    updateSaveBubble();
+  }
+
+  async function requestAppSection(section){
+    if(!currentUser) return;
+    if(section !== "patients" && section !== "favores") return;
+    if(section === activeAppSection) return;
+    if(section === "favores" && activeAppSection === "patients" && isDirty){
+      if(!confirmDiscardIfDirty()) return;
+      const restored = await discardDirtyPatientFormAndRestore();
+      if(!restored){
+        alert("No se pudieron descartar los cambios. Permanecés en Seguimiento de pacientes.");
+        updateSaveBubble();
+        return;
+      }
+    }
+    activeAppSection = section;
+    applyAppSectionUI();
+  }
+
   async function selectPatient(id){
     if(qrCurrentToken) closeQrModal();
     if(isDirty && selectedPatientId && selectedPatientId !== id){
@@ -2058,17 +2221,8 @@
     }
     const p = state.patients.find(x => x.id === id);
     if(!p) return;
-    selectedPatientId=id; identifierUnlocked=false;
-    selectedIdentifier.textContent=p.identifier||"—";
-    lastUpdated.textContent=`Últ. actualización: ${formatTS(p.updatedAt)}`;
-    f_identifier_input.value=p.identifier||"";
-    f_identifier.value=p.identifier||"";
-    f_initial.value=p.initialStudy||"";
-    renderActions(p.actions||[]);
-    historyPanel.style.display="none"; historyPanel.innerHTML="";
-    lockHCIfNeeded(); renderList();
+    applyPatientToForm(p);
     markClean();
-    updateQrButton();
   }
 
   function autocorrectActions(actions){
@@ -2485,6 +2639,11 @@
 
   function updateSaveBubble(){
     if(!saveBubble) return;
+    if(activeAppSection === "favores"){
+      saveBubble.hidden = true;
+      saveBubble.classList.remove("visible","dirty","saving","error");
+      return;
+    }
     if(!isDirty && !isSaving){
       saveBubble.hidden = true;
       saveBubble.classList.remove("visible","dirty","saving","error");
@@ -2590,6 +2749,9 @@
   });
   if(btnLogout) btnLogout.addEventListener("click",(e)=>{ e.preventDefault(); handleLogout(); });
 
+  if(navSectionPatients) navSectionPatients.addEventListener("click", () => requestAppSection("patients"));
+  if(navSectionFavores) navSectionFavores.addEventListener("click", () => requestAppSection("favores"));
+
   // pagehide removido — borraba la sesion al cambiar de pestaña
 
   sb.auth.onAuthStateChange(async(_event,session)=>{
@@ -2599,11 +2761,14 @@
     currentSession=session||null; currentUser=session?.user||null;
     await loadProfileFromDb(); updateAuthUI();
     if(currentUser){
+      activeAppSection = "patients";
       await loadPatientsFromDb(); await loadNotesFromDb(); await loadLogsFromDb();
     } else {
       currentProfile=null; state=defaultState(); saveState();
+      activeAppSection = "patients";
     }
     renderList(); clearForm(); initialPick();
+    applyAppSectionUI();
   });
 
   function initialPick(){
@@ -2640,6 +2805,8 @@
       renderList(); clearForm(); initialPick();
       actasCount = actasData.length;
       setupDirtyListeners();
+      activeAppSection = "patients";
+      applyAppSectionUI();
     } else {
       renderList(); clearForm();
     }
