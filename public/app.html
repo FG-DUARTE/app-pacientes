@@ -395,6 +395,31 @@
       font-size:13px; line-height:1.4; color:var(--txt);
       background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(16,185,129,.06));
     }
+    .cupo-quota-block{ margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+    .cupo-quota-label{ font-size:13px; font-weight:700; color:var(--txt); margin:0 0 10px; }
+    .cupo-quota-row{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+    .cupo-quota-stepper{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px; border-radius:999px; border:1px solid var(--border); background:var(--panel);
+    }
+    .cupo-quota-stepper button{
+      width:36px; height:36px; border-radius:50%; border:1px solid var(--border);
+      background:var(--card); color:var(--txt); font-size:18px; font-weight:700;
+      cursor:pointer; line-height:1; padding:0; transition:.15s ease;
+    }
+    .cupo-quota-stepper button:hover:not(:disabled){ border-color:var(--accent); background:rgba(37,99,235,.08); }
+    .cupo-quota-stepper button:disabled{ opacity:.4; cursor:not-allowed; }
+    .cupo-quota-value{
+      min-width:2.5ch; text-align:center; font-size:20px; font-weight:800;
+      font-variant-numeric:tabular-nums; color:var(--accent); padding:0 6px;
+    }
+    .cupo-quota-feedback{ font-size:12px; color:var(--muted); min-height:1.35em; margin-top:8px; }
+    .cupo-quota-feedback.is-saving{ color:var(--info); }
+    .cupo-quota-feedback.is-ok{ color:var(--ok); }
+    .cupo-quota-feedback.is-error{ color:var(--danger); }
+    @media (max-width:520px){
+      .cupo-quota-stepper button{ width:44px; height:44px; }
+    }
     /* QR MODAL */
     .qr-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center;padding:16px;}
     .qr-modal-overlay.open{display:flex;}

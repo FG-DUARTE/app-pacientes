@@ -75,7 +75,22 @@
 - Módulo en JS separado; shell en `app.html` mínimo; sin React; sin `service_role`.
 - Privacidad por usuario vía RLS; semana por `study_date`; cupo en `favor_settings` (fase 2).
 
-### Próxima fase — 2
+### Fase 2 — cupo semanal individual ✅ (implementada y validada manualmente)
 
-- **Configuración del cupo semanal individual:** valor predeterminado **4**, rango **1–20**, autosave en `favor_settings`, medidor visual.
-- Después: CRUD favores, navegación semanal, respuesta automática.
+- **UI:** control «Cupo semanal» [−] valor [+] (1–20; botones deshabilitados en límites).
+- **Persistencia:** `favor_settings.weekly_quota` por usuario (RLS); default **4** sin fila; **upsert** en autosave al modificar.
+- **Cola de guardado:** `saveChain` + `pendingSaveValue` — escrituras serializadas; el último valor pulsado es el que persiste en Supabase.
+- **UX:** carga, «Guardando…», «Guardado» breve; en error, restauración al último valor confirmado en BD.
+- **Independencia:** cada usuario ve y guarda solo su cupo (`user_id` de sesión).
+- **Arquitectura:** lógica en `public/cupo-favores.js`; estilos stepper en `app.html`; sin `isDirty` / burbuja de pacientes.
+- **Validación manual (usuario):**
+  1. Modificar cupo, recargar → persiste OK.
+  2. Dos usuarios con cupos distintos → OK.
+  3. Límites 1 y 20 → OK.
+  4. Pulsaciones rápidas → último valor coherente con Supabase → OK.
+- **Pendiente:** prueba de fallo de red (mensaje + restauración).
+
+### Próxima fase — 3
+
+- Navegación semanal, distribución por días, contadores de cupo usado/libre/excedido.
+- Después: CRUD favores, alertas de cupo completo, respuesta automática.
